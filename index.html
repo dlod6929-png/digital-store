@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- أيقونة الموقع الديناميكية (سحابة تحميل للمنتجات الرقمية) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff6b35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z'/><polyline points='13 16 9 12 5 16'/><line x1='9' y1='12' x2='9' y2='21'/></svg>">
+  <title>منتجات رقمية</title>
+  
+  <!-- مكتبة الأيقونات التفاعلية -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style>
+    :root {
+      --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --text-secondary: #64748b;
+      --primary: #ff6b35; --primary-rgb: 255, 107, 53;
+      --border: #e2e8f0; --radius: 16px;
+    }
+    [data-theme="dark"] {
+      --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --text-secondary: #94a3b8;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); line-height: 1.6; padding: 1rem; transition: background 0.4s, color 0.4s; }
+
+    /* === الهيدر === */
+    header { display: flex; justify-content: center; align-items: center; padding: 1rem 1.5rem; background: var(--card); border-radius: var(--radius); margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+    .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: bold; color: var(--primary); }
+    .logo i { font-size: 1.8rem; }
+
+    /* === المنتجات === */
+    .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
+    .product-card { background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; }
+    .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    
+    .product-image { height: 180px; background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1), rgba(var(--primary-rgb), 0.05)); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 4rem; border-bottom: 1px solid var(--border); }
+    .product-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+    .product-card h3 { margin-bottom: 0.5rem; font-size: 1.2rem; }
+    .price { color: var(--primary); font-weight: bold; font-size: 1.4rem; margin: 0.5rem 0; }
+    .desc { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem; flex-grow: 1; }
+    
+    .buy-btn { width: 100%; padding: 0.8rem; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb), 0.3); }
+    .buy-btn:hover { box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3); transform: scale(1.02); }
+    .buy-btn i { font-size: 1.2rem; }
+
+    footer { text-align: center; margin-top: 4rem; padding: 1rem; color: var(--text-secondary); font-size: 0.9rem; }
+
+    @media (max-width: 600px) { .products { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <i class="ph-bold ph-package"></i>
+      <span id="siteName">منتجات رقمية</span>
+    </div>
+  </header>
+
+  <main class="products" id="productsGrid"></main>
+
+  <footer>
+    <p id="footerText">© 2026 منتجات رقمية. جميع الحقوق محفوظة.</p>
+  </footer>
+
+  <script>
+    // === إعدادات النصوص ===
+    const texts = {
+      ar: { siteName: "منتجات رقمية", footer: "© 2026 منتجات رقمية. جميع الحقوق محفوظة.", buy: "شراء الآن" },
+      en: { siteName: "Digital Products", footer: "© 2026 Digital Products. All rights reserved.", buy: "Buy Now" }
+    };
+
+    // === كشف اللغة التلقائي (حسب لغة الجهاز) ===
+    const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
+    
+    // === كشف الوضع (مضيء/مظلم) تلقائي (حسب إعدادات الجهاز) ===
+    const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+    // === تطبيق الإعدادات ===
+    function applyLanguage() {
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      document.title = texts[lang].siteName; // تحديث اسم التبويب
+      document.getElementById('siteName').textContent = texts[lang].siteName;
+      document.getElementById('footerText').textContent = texts[lang].footer;
+      renderProducts(); // إعادة رسم المنتجات لتحديث النصوص
+    }
+
+    function applyTheme() {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    // تحديث الوضع تلقائياً إذا قام المستخدم بتغيير إعدادات جهازه أثناء تصفح الموقع
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      const newTheme = e.matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+    });
+
+    // === بيانات المنتجات التجريبية ===
+    const products = [
+      { id: '1', title_ar: 'قالب سيرة ذاتية احترافي', title_en: 'Professional CV Template', price: '$5', desc_ar: 'قالب Word قابل للتعديل بالكامل وتصميم عصري', desc_en: 'Fully editable Word template with modern design', icon: 'ph-file-doc' },
+      { id: '2', title_ar: 'حزمة أيقونات واجهة المستخدم', title_en: 'UI Icons Pack', price: '$12', desc_ar: '+500 أيقونة SVG و PNG عالية الدقة', desc_en: '+500 high-quality SVG & PNG icons', icon: 'ph-shapes' },
+      { id: '3', title_ar: 'كتاب إتقان البرمجة', title_en: 'Mastering Programming eBook', price: '$8', desc_ar: 'دليلك الشامل لتعلم أساسيات البرمجة', desc_en: 'Your comprehensive guide to learning programming basics', icon: 'ph-book-open-text' }
+    ];
+
+    // === عرض المنتجات ===
+    function renderProducts() {
+      const grid = document.getElementById('productsGrid');
+      grid.innerHTML = ''; // مسح المحتوى الحالي
+      
+      products.forEach(p => {
+        grid.innerHTML += `
+          <div class="product-card">
+            <div class="product-image">
+              <i class="ph-bold ${p.icon}"></i>
+            </div>
+            <div class="product-content">
+              <h3>${lang === 'ar' ? p.title_ar : p.title_en}</h3>
+              <div class="price">${p.price}</div>
+              <p class="desc">${lang === 'ar' ? p.desc_ar : p.desc_en}</p>
+              <button class="buy-btn" onclick="handleBuy('${p.id}')">
+                <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // دالة مؤقتة لزر الشراء
+    function handleBuy(productId) {
+      alert(`Product ID: ${productId}\nThis will connect to the Cloudflare Worker later!`);
+    }
+
+    // === التشغيل لأول مرة ===
+    applyLanguage();
+    applyTheme();
+  </script>
+</body>
+</html>
