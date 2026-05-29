@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- أيقونة الموقع الديناميكية (سحابة تحميل للمنتجات الرقمية) -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff6b35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z'/><polyline points='13 16 9 12 5 16'/><line x1='9' y1='12' x2='9' y2='21'/></svg>">
   <title>منتجات رقمية</title>
-  
-  <!-- مكتبة الأيقونات التفاعلية -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   
   <style>
@@ -23,12 +20,10 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
     body { background: var(--bg); color: var(--text); line-height: 1.6; padding: 1rem; transition: background 0.4s, color 0.4s; }
 
-    /* === الهيدر === */
     header { display: flex; justify-content: center; align-items: center; padding: 1rem 1.5rem; background: var(--card); border-radius: var(--radius); margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
     .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: bold; color: var(--primary); }
     .logo i { font-size: 1.8rem; }
 
-    /* === المنتجات === */
     .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
     .product-card { background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; }
     .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
@@ -44,6 +39,100 @@
     .buy-btn i { font-size: 1.2rem; }
 
     footer { text-align: center; margin-top: 4rem; padding: 1rem; color: var(--text-secondary); font-size: 0.9rem; }
+
+    /* === النافذة المنبثقة (Modal) === */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal {
+      background: var(--card);
+      padding: 2rem;
+      border-radius: var(--radius);
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+    .modal h3 {
+      margin-bottom: 1rem;
+      color: var(--text);
+      font-size: 1.3rem;
+    }
+    .modal p {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color 0.3s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .modal-buttons button {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    .btn-confirm {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-confirm:hover {
+      box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.4);
+    }
+    .btn-cancel {
+      background: var(--border);
+      color: var(--text);
+    }
+    .btn-cancel:hover {
+      background: #cbd5e1;
+    }
+    [data-theme="dark"] .btn-cancel:hover {
+      background: #475569;
+    }
 
     @media (max-width: 600px) { .products { grid-template-columns: 1fr; } }
   </style>
@@ -62,20 +151,37 @@
     <p id="footerText"> Digital Products 2026 ©  </p>
   </footer>
 
+  <!-- النافذة المنبثقة للإيميل -->
+  <div class="modal-overlay" id="emailModal">
+    <div class="modal">
+      <h3>📧 إكمال عملية الشراء</h3>
+      <p>يرجى إدخال بريدك الإلكتروني لاستلام المنتج بعد الدفع</p>
+      
+      <div class="form-group">
+        <label for="customerEmail">البريد الإلكتروني *</label>
+        <input type="email" id="customerEmail" placeholder="example@email.com" required>
+      </div>
+      
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="closeEmailModal()">إلغاء</button>
+        <button class="btn-confirm" onclick="confirmPurchase()">تأكيد الشراء</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // === إعدادات الربط مع الخادم ===
     const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
     const API_ORDERS_URL = API_URL.replace('/products', '/orders');
 
-    // === إعدادات النصوص ===
     const texts = {
       ar: { siteName: "Digital Products", footer: "© 2026 Digital Products. جميع الحقوق محفوظة.", buy: "شراء الآن" },
       en: { siteName: "Digital Products", footer: "© 2026 Digital Products. All rights reserved.", buy: "Buy Now" }
     };
 
-    // === كشف اللغة والوضع التلقائي ===
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    
+    let selectedProductId = null;
 
     function applyLanguage() {
       document.documentElement.lang = lang;
@@ -93,7 +199,6 @@
       document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
     });
 
-    // === جلب المنتجات من الـ API ===
     async function renderProducts() {
       const grid = document.getElementById('productsGrid');
       grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">جاري تحميل المنتجات...</p>`;
@@ -124,7 +229,7 @@
                 <h3>${title}</h3>
                 <div class="price">${priceDisplay}</div>
                 <p class="desc">${lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product'}</p>
-                <button class="buy-btn" onclick="handleBuy('${p.id}')">
+                <button class="buy-btn" onclick="openEmailModal('${p.id}')">
                   <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
                 </button>
               </div>
@@ -137,19 +242,49 @@
       }
     }
 
-    // === دالة معالجة الشراء (متصلة بالـ Worker) ===
-    async function handleBuy(productId) {
-      const btn = event.currentTarget;
+    // === دوال النافذة المنبثقة ===
+    function openEmailModal(productId) {
+      selectedProductId = productId;
+      document.getElementById('emailModal').classList.add('active');
+      document.getElementById('customerEmail').focus();
+    }
+
+    function closeEmailModal() {
+      document.getElementById('emailModal').classList.remove('active');
+      selectedProductId = null;
+      document.getElementById('customerEmail').value = '';
+    }
+
+    function isValidEmail(email) {
+      return /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email);
+    }
+
+    async function confirmPurchase() {
+      const emailInput = document.getElementById('customerEmail');
+      const email = emailInput.value.trim();
+      
+      if (!email) {
+        alert('⚠️ يرجى إدخال البريد الإلكتروني');
+        emailInput.focus();
+        return;
+      }
+      
+      if (!isValidEmail(email)) {
+        alert('⚠️ يرجى إدخال بريد إلكتروني صحيح');
+        emailInput.focus();
+        return;
+      }
+      
+      const btn = event.target;
       const originalHTML = btn.innerHTML;
       
-      // 1. تعطيل الزر وتغيير النص مؤقتاً
       btn.disabled = true;
       btn.innerHTML = '⏳ جاري المعالجة...';
 
       const orderData = {
-        guest_email: "customer@example.com", // ⚠️ لاحقاً: نأخذه من خانة إدخال
-        payment_method: "shamcash",          // ⚠️ لاحقاً: نخلي العميل يختار
-        items: [{ product_id: productId, quantity: 1 }]
+        guest_email: email,
+        payment_method: "shamcash",
+        items: [{ product_id: selectedProductId, quantity: 1 }]
       };
 
       try {
@@ -162,10 +297,11 @@
         const result = await response.json();
 
         if (result.success) {
+          closeEmailModal();
           if (result.data.payment_url) {
             window.location.href = result.data.payment_url;
           } else {
-            alert(`✅ تم إنشاء طلبك بنجاح!\nرقم الطلب: ${result.data.order_id}\n(رابط الدفع غير متاح في وضع التجربة)`);
+            alert(`✅ تم إنشاء طلبك بنجاح!\nرقم الطلب: ${result.data.order_id}\nالبريد: ${email}\n\n(رابط الدفع غير متاح في وضع التجربة)`);
           }
         } else {
           alert(`⚠️ حدث خطأ: ${result.error}`);
@@ -174,13 +310,32 @@
         console.error('Purchase error:', err);
         alert('⚠️ فشل الاتصال بالخادم. تأكد من الإنترنت وحاول لاحقاً.');
       } finally {
-        // 2. إعادة الزر لحالته الطبيعية
         btn.disabled = false;
         btn.innerHTML = originalHTML;
       }
     }
 
-    // === التشغيل ===
+    // إغلاق النافذة عند الضغط خارجها
+    document.getElementById('emailModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeEmailModal();
+      }
+    });
+
+    // إغلاق النافذة بزر Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeEmailModal();
+      }
+    });
+
+    // إرسال النموذج بزر Enter
+    document.getElementById('customerEmail').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        confirmPurchase();
+      }
+    });
+
     applyLanguage();
     applyTheme();
     renderProducts();
