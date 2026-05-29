@@ -300,15 +300,21 @@
       }
     }
 
-    function handleBuyClick(button) {
-      selectedProductId = button.dataset.id;
-      selectedProductName = button.dataset.name;
-      selectedProductPrice = parseFloat(button.dataset.price);
-      
-      console.log('🛒 Product:', selectedProductName, '| Price:', selectedProductPrice);
-      
-      openEmailModal(selectedProductId, selectedProductName);
-    }
+function handleBuyClick(button) {
+  selectedProductId = button.dataset.productId;      // ✅ صحيح
+  selectedProductName = button.dataset.productName;  // ✅ صحيح
+  selectedProductPrice = parseFloat(button.dataset.productPrice); // ✅ صحيح
+  
+  console.log('🛒 Product:', selectedProductName, '| Price:', selectedProductPrice);
+  
+  if (!selectedProductPrice || isNaN(selectedProductPrice)) {
+    console.error('❌ Price not found or invalid:', button.dataset.productPrice);
+    alert('⚠️ خطأ في سعر المنتج. يرجى تحديث الصفحة.');
+    return;
+  }
+  
+  openEmailModal(selectedProductId, selectedProductName);
+}
 
     function openEmailModal(productId, productName) {
       selectedProductId = productId;
