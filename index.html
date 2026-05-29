@@ -56,9 +56,7 @@
     </div>
   </header>
 
-  <main class="products" id="productsGrid">
-    <!-- سيتم تحميل المنتجات هنا ديناميكياً -->
-  </main>
+  <main class="products" id="productsGrid"></main>
 
   <footer>
     <p id="footerText"> Digital Products 2026 ©  </p>
@@ -66,8 +64,8 @@
 
   <script>
     // === إعدادات الربط مع الخادم ===
-    // ⚠️ تأكد أن هذا الرابط مطابق تماماً لرابط الـ Worker الخاص بك
     const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
+    const API_ORDERS_URL = API_URL.replace('/products', '/orders');
 
     // === إعدادات النصوص ===
     const texts = {
@@ -75,13 +73,10 @@
       en: { siteName: "Digital Products", footer: "© 2026 Digital Products. All rights reserved.", buy: "Buy Now" }
     };
 
-    // === كشف اللغة التلقائي (حسب لغة الجهاز) ===
+    // === كشف اللغة والوضع التلقائي ===
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
-    
-    // === كشف الوضع (مضيء/مظلم) تلقائي (حسب إعدادات الجهاز) ===
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 
-    // === تطبيق الإعدادات ===
     function applyLanguage() {
       document.documentElement.lang = lang;
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
@@ -94,17 +89,13 @@
       document.documentElement.setAttribute('data-theme', theme);
     }
 
-    // تحديث الوضع تلقائياً إذا قام المستخدم بتغيير إعدادات جهازه أثناء تصفح الموقع
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-      const newTheme = e.matches ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', newTheme);
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
     });
 
-    // === جلب وعرض المنتجات من الـ API ===
+    // === جلب المنتجات من الـ API ===
     async function renderProducts() {
       const grid = document.getElementById('productsGrid');
-      
-      // عرض حالة التحميل
       grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">جاري تحميل المنتجات...</p>`;
       
       try {
@@ -112,41 +103,27 @@
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
         const result = await response.json();
-        
-        if (!result.success) throw new Error(result.error || 'خطأ غير معروف من الخادم');
+        if (!result.success) throw new Error(result.error || 'خطأ غير معروف');
         
         const products = result.data;
-        
-        // إذا لم تكن هناك منتجات
         if (!products || products.length === 0) {
           grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">لا توجد منتجات متاحة حالياً</p>`;
           return;
         }
         
-        // مسح رسالة التحميل وعرض المنتجات
         grid.innerHTML = '';
-        
         products.forEach(p => {
-          // اختيار العنوان والوصف حسب اللغة
           const title = lang === 'ar' ? p.title_ar : p.title_en;
-          // ملاحظة: الوصف غير موجود في جدول المنتجات الحالي، نضع نص افتراضي
-          const description = lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product';
-          
-          // تنسيق السعر (رقم + عملة)
           const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
-          
-          // أيقونة افتراضية (لأن المنتجات من الـ API ما فيها icon)
           const icon = 'ph-package'; 
           
           grid.innerHTML += `
             <div class="product-card">
-              <div class="product-image">
-                <i class="ph-bold ${icon}"></i>
-              </div>
+              <div class="product-image"><i class="ph-bold ${icon}"></i></div>
               <div class="product-content">
                 <h3>${title}</h3>
                 <div class="price">${priceDisplay}</div>
-                <p class="desc">${description}</p>
+                <p class="desc">${lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product'}</p>
                 <button class="buy-btn" onclick="handleBuy('${p.id}')">
                   <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
                 </button>
@@ -154,23 +131,59 @@
             </div>
           `;
         });
-        
       } catch (err) {
         console.error('Error loading products:', err);
-        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ فشل تحميل المنتجات. تأكد من اتصال الإنترنت أو حاول لاحقاً.</p>`;
+        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ فشل تحميل المنتجات. تأكد من الاتصال وحاول لاحقاً.</p>`;
       }
     }
 
-    // دالة مؤقتة لزر الشراء
-    function handleBuy(productId) {
-      // هنا سيتم لاحقاً إرسال طلب للشراء إلى الـ Worker
-      alert(`Product ID: ${productId}\nسيتم ربط عملية الشراء قريباً!`);
+    // === دالة معالجة الشراء (متصلة بالـ Worker) ===
+    async function handleBuy(productId) {
+      const btn = event.currentTarget;
+      const originalHTML = btn.innerHTML;
+      
+      // 1. تعطيل الزر وتغيير النص مؤقتاً
+      btn.disabled = true;
+      btn.innerHTML = '⏳ جاري المعالجة...';
+
+      const orderData = {
+        guest_email: "customer@example.com", // ⚠️ لاحقاً: نأخذه من خانة إدخال
+        payment_method: "shamcash",          // ⚠️ لاحقاً: نخلي العميل يختار
+        items: [{ product_id: productId, quantity: 1 }]
+      };
+
+      try {
+        const response = await fetch(API_ORDERS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          if (result.data.payment_url) {
+            window.location.href = result.data.payment_url;
+          } else {
+            alert(`✅ تم إنشاء طلبك بنجاح!\nرقم الطلب: ${result.data.order_id}\n(رابط الدفع غير متاح في وضع التجربة)`);
+          }
+        } else {
+          alert(`⚠️ حدث خطأ: ${result.error}`);
+        }
+      } catch (err) {
+        console.error('Purchase error:', err);
+        alert('⚠️ فشل الاتصال بالخادم. تأكد من الإنترنت وحاول لاحقاً.');
+      } finally {
+        // 2. إعادة الزر لحالته الطبيعية
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+      }
     }
 
-    // === التشغيل لأول مرة ===
+    // === التشغيل ===
     applyLanguage();
     applyTheme();
-    renderProducts(); // استدعاء دالة جلب المنتجات عند تحميل الصفحة
+    renderProducts();
   </script>
 </body>
 </html>
