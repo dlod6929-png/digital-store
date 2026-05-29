@@ -481,75 +481,106 @@
       return true;
     }
 
-    async function confirmPurchase() {
-      const emailInput = document.getElementById('customerEmail');
-      const email = emailInput.value.trim();
-      
-      if (!email) {
-        showEmailError();
-        emailInput.focus();
-        return;
-      }
-      
-      if (!isValidEmail(email)) {
-        showEmailError();
-        emailInput.focus();
-        return;
-      }
-      
-      const btn = event.currentTarget;
-      const originalHTML = btn.innerHTML;
-      
-      btn.disabled = true;
-      btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
+async function confirmPurchase() {
+  const emailInput = document.getElementById('customerEmail');
+  const email = emailInput.value.trim();
+  
+  if (!email) {
+    showEmailError();
+    emailInput.focus();
+    return;
+  }
+  
+  if (!isValidEmail(email)) {
+    showEmailError();
+    emailInput.focus();
+    return;
+  }
+  
+  const btn = event.currentTarget;
+  const originalHTML = btn.innerHTML;
+  
+  btn.disabled = true;
+  btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
 
-      const orderData = {
-        guest_email: email,
-        payment_method: "cwallet",
-        items: [{ product_id: selectedProductId, quantity: 1 }]
+  const orderData = {
+    guest_email: email,
+    payment_method: "cwallet",
+    items: [{ product_id: selectedProductId, quantity: 1 }]
+  };
+
+  console.log('📤 Sending order:', orderData);
+
+  try {
+    const response = await fetch(API_ORDERS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData)
+    });
+
+    const result = await response.json();
+    console.log('📥 Response:', result);
+
+    if (result.success) {
+      closeEmailModal();
+      
+      // === تجهيز رابط الدفع بناءً على الطريقة المختارة ===
+      const product = productsCache.find(p => p.id === selectedProductId);
+      const price = product ? product.price : 0;
+      const paymentMethod = document.getElementById('paymentMethodSelect').value;
+      let paymentUrl = '';
+
+      if (paymentMethod === 'cwallet_id') {
+        // ✅ الدفع عبر معرف CWallet الثابت
+        if (!CONFIG.CWALLET_ID || CONFIG.CWALLET_ID === '123456789') {
+          alert('⚠️ يرجى ضبط معرف CWallet في إعدادات الكود أولاً');
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+          return;
+        }
+        paymentUrl = `https://cwallet.com/request?amount=${price}&currency=${CONFIG.CWALLET_CURRENCY}&network=${CONFIG.CWALLET_NETWORK}&cwallet_id=${CONFIG.CWALLET_ID}`;
+      } else {
+        // ✅ الدفع عبر عنوان المحفظة الثابت
+        if (!CONFIG.CWALLET_ADDRESS || CONFIG.CWALLET_ADDRESS === '0xYourWalletAddressHere...') {
+          alert('⚠️ يرجى ضبط عنوان المحفظة في إعدادات الكود أولاً');
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+          return;
+        }
+        paymentUrl = `https://cwallet.com/request?amount=${price}&currency=${CONFIG.CWALLET_CURRENCY}&network=${CONFIG.CWALLET_NETWORK}&address=${CONFIG.CWALLET_ADDRESS}`;
+      }
+
+      // ✅ عرض الرابط في الكونسول للتحقق
+      console.log('🔗 Payment URL:', paymentUrl);
+      
+      // ✅ فتح صفحة الدفع والتركيز عليها
+      const newTab = window.open(paymentUrl, '_blank');
+      if (newTab) {
+        newTab.focus();
+      } else {
+        alert(lang === 'ar' ? '⚠️ تم حظر النافذة المنبثقة، يرجى السماح بالنوافذ المنبثقة للموقع' : '⚠️ Popup blocked, please allow popups for this site');
+      }
+
+      currentOrderData = {
+        orderId: result.data.order_id,
+        product: selectedProductName,
+        email: email
       };
-
-      console.log('📤 Sending order:', orderData);
-
-      try {
-        const response = await fetch(API_ORDERS_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(orderData)
-        });
-
-        const result = await response.json();
-        console.log('📥 Response:', result);
-
-        if (result.success) {
-          closeEmailModal();
-          
-          // === تجهيز رابط الدفع بناءً على الطريقة المختارة ===
-          const product = productsCache.find(p => p.id === selectedProductId);
-          const price = product ? product.price : 0;
-          const paymentMethod = document.getElementById('paymentMethodSelect').value;
-          let paymentUrl = '';
-
-          if (paymentMethod === 'cwallet_id') {
-            // ✅ الدفع عبر معرف CWallet الثابت (الموجود في CONFIG)
-            if (!CONFIG.CWALLET_ID || CONFIG.CWALLET_ID === '123456789') {
-              alert('⚠️ يرجى ضبط معرف CWallet في إعدادات الكود أولاً');
-              btn.disabled = false;
-              btn.innerHTML = originalHTML;
-              return;
-            }
-            paymentUrl = `https://cwallet.com/request?amount=${price}&currency=${CONFIG.CWALLET_CURRENCY}&network=${CONFIG.CWALLET_NETWORK}&cwallet_id=${CONFIG.CWALLET_ID}`;
-          } else {
-            // ✅ الدفع عبر عنوان المحفظة الثابت (الموجود في CONFIG)
-            if (!CONFIG.CWALLET_ADDRESS || CONFIG.CWALLET_ADDRESS === '0xYourWalletAddressHere...') {
-              alert('⚠️ يرجى ضبط عنوان المحفظة في إعدادات الكود أولاً');
-              btn.disabled = false;
-              btn.innerHTML = originalHTML;
-              return;
-            }
-            paymentUrl = `https://cwallet.com/request?amount=${price}&currency=${CONFIG.CWALLET_CURRENCY}&network=${CONFIG.CWALLET_NETWORK}&address=${CONFIG.CWALLET_ADDRESS}`;
-          }
-
+      
+      console.log('✅ Order data saved:', currentOrderData);
+      showSuccessModal(currentOrderData);
+      
+    } else {
+      alert(`${lang === 'ar' ? '⚠️ حدث خطأ: ' : '⚠️ Error: '}${result.error}`);
+    }
+  } catch (err) {
+    console.error('❌ Purchase error:', err);
+    alert(lang === 'ar' ? '⚠️ فشل الاتصال بالخادم' : '⚠️ Failed to connect to server');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHTML;
+  }
+}
           // فتح صفحة الدفع في نافذة جديدة
           window.open(paymentUrl, '_blank');
 
