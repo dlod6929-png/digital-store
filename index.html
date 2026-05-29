@@ -271,7 +271,6 @@
     const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
     const API_ORDERS_URL = API_URL.replace('/products', '/orders');
 
-    // === النصوص المترجمة ===
     const texts = {
       ar: {
         siteName: "منتجات رقمية",
@@ -317,15 +316,12 @@
       }
     };
 
-    // === كشف اللغة والوضع ===
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     
-    // === المتغيرات العامة ===
     let selectedProductId = null;
     let selectedProductName = null;
     let currentOrderData = null;
-    let productsCache = [];
 
     function applyLanguage() {
       document.documentElement.lang = lang;
@@ -364,8 +360,6 @@
         if (!result.success) throw new Error(result.error || 'خطأ غير معروف');
         
         const products = result.data;
-        productsCache = products; // ✅ حفظ المنتجات في الكاش
-        
         if (!products || products.length === 0) {
           grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات متاحة حالياً' : 'No products available'}</p>`;
           return;
@@ -377,7 +371,7 @@
           const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
           const icon = 'ph-package'; 
           
-          // ✅ تمرير الـ ID فقط، والاسم نبحث عنه من الكاش
+          // ✅ تمرير الـ ID والاسم معاً (الحل الجذري)
           grid.innerHTML += `
             <div class="product-card">
               <div class="product-image"><i class="ph-bold ${icon}"></i></div>
@@ -385,7 +379,7 @@
                 <h3>${title}</h3>
                 <div class="price">${priceDisplay}</div>
                 <p class="desc">${lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product'}</p>
-                <button class="buy-btn" onclick="openEmailModal('${p.id}')">
+                <button class="buy-btn" onclick="openEmailModal('${p.id}', '${title.replace(/'/g, "\\'")}')">
                   <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
                 </button>
               </div>
@@ -398,17 +392,10 @@
       }
     }
 
-    // === دوال النافذة المنبثقة للإيميل ===
-    function openEmailModal(productId) {
+    function openEmailModal(productId, productName) {
       selectedProductId = productId;
-      
-      // ✅ البحث عن اسم المنتج من الكاش (الحل الجذري لمشكلة null)
-      const product = productsCache.find(p => p.id === productId);
-      if (product) {
-        selectedProductName = lang === 'ar' ? product.title_ar : product.title_en;
-      } else {
-        selectedProductName = lang === 'ar' ? 'منتج غير معروف' : 'Unknown Product';
-      }
+      // ✅ نستخدم الاسم الممرر مباشرة (مضمون 100%)
+      selectedProductName = productName || (lang === 'ar' ? 'منتج غير معروف' : 'Unknown Product');
       
       document.getElementById('emailModal').classList.add('active');
       document.getElementById('customerEmail').focus();
@@ -428,7 +415,7 @@
       const error = document.getElementById('emailError');
       input.classList.remove('error');
       error.classList.remove('show');
-      input.style.borderColor = ''; // إعادة اللون الأصلي
+      input.style.borderColor = '';
     }
 
     function showEmailError() {
@@ -443,10 +430,10 @@
     }
 
     function isValidEmail(email) {
-      if (!/^[\x00-\x7F]+$/.test(email)) return false; // منع غير ASCII
+      if (!/^[\x00-\x7F]+$/.test(email)) return false;
       const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!re.test(email)) return false;
-      if (email.includes('xn--')) return false; // منع Punycode
+      if (email.includes('xn--')) return false;
       const hasLetters = /[a-zA-Z]/.test(email);
       if (!hasLetters) return false;
       const parts = email.split('@');
@@ -497,7 +484,7 @@
           closeEmailModal();
           currentOrderData = {
             orderId: result.data.order_id,
-            product: selectedProductName, // ✅ الآن الاسم محفوظ صحيح
+            product: selectedProductName,
             email: email
           };
           showSuccessModal(currentOrderData);
@@ -513,7 +500,6 @@
       }
     }
 
-    // === دوال نافذة النجاح ===
     function showSuccessModal(orderData) {
       const detailsDiv = document.getElementById('orderDetails');
       detailsDiv.innerHTML = `
@@ -547,7 +533,6 @@
       });
     }
 
-    // إغلاق النوافذ عند الضغط خارجها
     document.querySelectorAll('.modal-overlay').forEach(modal => {
       modal.addEventListener('click', function(e) {
         if (e.target === this) {
@@ -557,7 +542,6 @@
       });
     });
 
-    // إغلاق النوافذ بزر Escape
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         closeEmailModal();
@@ -565,17 +549,14 @@
       }
     });
 
-    // إرسال النموذج بزر Enter
     document.getElementById('customerEmail').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
         confirmPurchase();
       }
     });
 
-    // === التحقق من الإيميل (النسخة المحسّنة) ===
     const emailInput = document.getElementById('customerEmail');
 
-    // أثناء الكتابة: أخضر إذا صحيح، عادي إذا غير مكتمل
     emailInput.addEventListener('input', function(e) {
       const email = e.target.value.trim();
       if (email && isValidEmail(email)) {
@@ -587,7 +568,6 @@
       }
     });
 
-    // عند الخروج من الخانة: أحمر فقط إذا غلط
     emailInput.addEventListener('blur', function(e) {
       const email = e.target.value.trim();
       if (email && !isValidEmail(email)) {
