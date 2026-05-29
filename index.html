@@ -12,6 +12,7 @@
       --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --text-secondary: #64748b;
       --primary: #ff6b35; --primary-rgb: 255, 107, 53;
       --border: #e2e8f0; --radius: 16px;
+      --error: #ef4444; --success: #10b981;
     }
     [data-theme="dark"] {
       --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --text-secondary: #94a3b8;
@@ -40,7 +41,7 @@
 
     footer { text-align: center; margin-top: 4rem; padding: 1rem; color: var(--text-secondary); font-size: 0.9rem; }
 
-    /* === النافذة المنبثقة (Modal) === */
+    /* === النوافذ المنبثقة (Modals) === */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -52,6 +53,7 @@
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s ease;
+      backdrop-filter: blur(4px);
     }
     .modal-overlay.active {
       opacity: 1;
@@ -63,9 +65,10 @@
       border-radius: var(--radius);
       max-width: 400px;
       width: 90%;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
       transform: scale(0.9);
       transition: transform 0.3s ease;
+      border: 1px solid var(--border);
     }
     .modal-overlay.active .modal {
       transform: scale(1);
@@ -74,11 +77,15 @@
       margin-bottom: 1rem;
       color: var(--text);
       font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     .modal p {
       color: var(--text-secondary);
       margin-bottom: 1.5rem;
       font-size: 0.95rem;
+      line-height: 1.6;
     }
     .form-group {
       margin-bottom: 1.5rem;
@@ -97,12 +104,32 @@
       font-size: 1rem;
       background: var(--bg);
       color: var(--text);
-      transition: border-color 0.3s;
+      transition: all 0.3s;
     }
     .form-group input:focus {
       outline: none;
       border-color: var(--primary);
     }
+    .form-group input.error {
+      border-color: var(--error);
+      animation: shake 0.5s ease-in-out;
+    }
+    .error-message {
+      color: var(--error);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+    .error-message.show {
+      display: block;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+
     .modal-buttons {
       display: flex;
       gap: 0.75rem;
@@ -115,6 +142,10 @@
       cursor: pointer;
       font-weight: bold;
       transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
     .btn-confirm {
       background: var(--primary);
@@ -130,11 +161,53 @@
     .btn-cancel:hover {
       background: #cbd5e1;
     }
+    .btn-copy {
+      background: var(--success);
+      color: white;
+      margin-top: 1rem;
+      width: 100%;
+    }
+    .btn-copy:hover {
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+    .order-details {
+      background: var(--bg);
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      font-family: monospace;
+      font-size: 0.9rem;
+      border: 1px solid var(--border);
+    }
+    .order-details div {
+      margin: 0.5rem 0;
+      display: flex;
+      justify-content: space-between;
+    }
+    .order-details strong {
+      color: var(--text);
+    }
+    .warning-box {
+      background: rgba(255, 193, 7, 0.1);
+      border: 1px solid #ffc107;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+    .warning-box p {
+      margin: 0;
+      color: #ffc107;
+      font-weight: 500;
+    }
+
     [data-theme="dark"] .btn-cancel:hover {
       background: #475569;
     }
 
-    @media (max-width: 600px) { .products { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) { 
+      .products { grid-template-columns: 1fr; }
+      .modal { padding: 1.5rem; }
+    }
   </style>
 </head>
 <body>
@@ -154,17 +227,42 @@
   <!-- النافذة المنبثقة للإيميل -->
   <div class="modal-overlay" id="emailModal">
     <div class="modal">
-      <h3>📧 إكمال عملية الشراء</h3>
-      <p>يرجى إدخال بريدك الإلكتروني لاستلام المنتج بعد الدفع</p>
+      <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال عملية الشراء</span></h3>
+      <p data-i18n="emailDesc">يرجى إدخال بريدك الإلكتروني لاستلام المنتج بعد الدفع</p>
       
       <div class="form-group">
-        <label for="customerEmail">البريد الإلكتروني *</label>
+        <label for="customerEmail" data-i18n="emailLabel">البريد الإلكتروني *</label>
         <input type="email" id="customerEmail" placeholder="example@email.com" required>
+        <div class="error-message" id="emailError" data-i18n="emailError">يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)</div>
       </div>
       
       <div class="modal-buttons">
-        <button class="btn-cancel" onclick="closeEmailModal()">إلغاء</button>
-        <button class="btn-confirm" onclick="confirmPurchase()">تأكيد الشراء</button>
+        <button class="btn-cancel" onclick="closeEmailModal()" data-i18n="cancel">إلغاء</button>
+        <button class="btn-confirm" onclick="confirmPurchase()" data-i18n="confirm">تأكيد الشراء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- النافذة المنبثقة لنجاح الطلب -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal">
+      <h3 style="color: var(--success);"><i class="ph-bold ph-check-circle"></i> <span data-i18n="successTitle">تم إنشاء طلبك بنجاح!</span></h3>
+      <p data-i18n="successDesc">يرجى الاحتفاظ بمعلومات الطلب أدناه</p>
+      
+      <div class="order-details" id="orderDetails">
+        <!-- سيتم ملؤها بالجافاسكربت -->
+      </div>
+      
+      <div class="warning-box">
+        <p><i class="ph-bold ph-warning"></i> <span data-i18n="warningText">احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني</span></p>
+      </div>
+      
+      <button class="btn-copy" onclick="copyOrderDetails()">
+        <i class="ph-bold ph-copy"></i> <span data-i18n="copyButton">نسخ المعلومات</span>
+      </button>
+      
+      <div class="modal-buttons" style="margin-top: 1rem;">
+        <button class="btn-cancel" onclick="closeSuccessModal()" data-i18n="close">إغلاق</button>
       </div>
     </div>
   </div>
@@ -173,15 +271,59 @@
     const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
     const API_ORDERS_URL = API_URL.replace('/products', '/orders');
 
+    // === النصوص المترجمة ===
     const texts = {
-      ar: { siteName: "Digital Products", footer: "© 2026 Digital Products. جميع الحقوق محفوظة.", buy: "شراء الآن" },
-      en: { siteName: "Digital Products", footer: "© 2026 Digital Products. All rights reserved.", buy: "Buy Now" }
+      ar: {
+        siteName: "منتجات رقمية",
+        footer: "© 2026 Digital Products. جميع الحقوق محفوظة.",
+        buy: "شراء الآن",
+        emailTitle: "إكمال عملية الشراء",
+        emailDesc: "يرجى إدخال بريدك الإلكتروني لاستلام المنتج بعد الدفع",
+        emailLabel: "البريد الإلكتروني *",
+        emailError: "يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)",
+        cancel: "إلغاء",
+        confirm: "تأكيد الشراء",
+        successTitle: "تم إنشاء طلبك بنجاح!",
+        successDesc: "يرجى الاحتفاظ بمعلومات الطلب أدناه",
+        orderId: "رقم الطلب:",
+        product: "المنتج:",
+        email: "البريد:",
+        warningText: "احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني",
+        copyButton: "نسخ المعلومات",
+        copied: "تم النسخ!",
+        close: "إغلاق",
+        processing: "جاري المعالجة..."
+      },
+      en: {
+        siteName: "Digital Products",
+        footer: "© 2026 Digital Products. All rights reserved.",
+        buy: "Buy Now",
+        emailTitle: "Complete Purchase",
+        emailDesc: "Please enter your email to receive the product after payment",
+        emailLabel: "Email Address *",
+        emailError: "Please enter a valid email (English letters only)",
+        cancel: "Cancel",
+        confirm: "Confirm Purchase",
+        successTitle: "Order Created Successfully!",
+        successDesc: "Please save the order details below",
+        orderId: "Order ID:",
+        product: "Product:",
+        email: "Email:",
+        warningText: "Save your order details (Order ID, Email, Product Name) for follow-up and support",
+        copyButton: "Copy Details",
+        copied: "Copied!",
+        close: "Close",
+        processing: "Processing..."
+      }
     };
 
+    // === كشف اللغة والوضع ===
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     
     let selectedProductId = null;
+    let selectedProductName = null;
+    let currentOrderData = null;
 
     function applyLanguage() {
       document.documentElement.lang = lang;
@@ -189,6 +331,16 @@
       document.title = texts[lang].siteName;
       document.getElementById('siteName').textContent = texts[lang].siteName;
       document.getElementById('footerText').textContent = texts[lang].footer;
+      
+      // ترجمة كل العناصر
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (texts[lang][key]) {
+          el.textContent = texts[lang][key];
+        }
+      });
+      
+      renderProducts();
     }
 
     function applyTheme() {
@@ -212,7 +364,7 @@
         
         const products = result.data;
         if (!products || products.length === 0) {
-          grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">لا توجد منتجات متاحة حالياً</p>`;
+          grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات متاحة حالياً' : 'No products available'}</p>`;
           return;
         }
         
@@ -229,7 +381,7 @@
                 <h3>${title}</h3>
                 <div class="price">${priceDisplay}</div>
                 <p class="desc">${lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product'}</p>
-                <button class="buy-btn" onclick="openEmailModal('${p.id}')">
+                <button class="buy-btn" onclick="openEmailModal('${p.id}', '${title.replace(/'/g, "\\'")}')">
                   <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
                 </button>
               </div>
@@ -238,25 +390,59 @@
         });
       } catch (err) {
         console.error('Error loading products:', err);
-        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ فشل تحميل المنتجات. تأكد من الاتصال وحاول لاحقاً.</p>`;
+        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ ${lang === 'ar' ? 'فشل تحميل المنتجات' : 'Failed to load products'}</p>`;
       }
     }
 
-    // === دوال النافذة المنبثقة ===
-    function openEmailModal(productId) {
+    // === دوال النافذة المنبثقة للإيميل ===
+    function openEmailModal(productId, productName) {
       selectedProductId = productId;
+      selectedProductName = productName;
       document.getElementById('emailModal').classList.add('active');
       document.getElementById('customerEmail').focus();
+      clearEmailError();
     }
 
     function closeEmailModal() {
       document.getElementById('emailModal').classList.remove('active');
       selectedProductId = null;
+      selectedProductName = null;
       document.getElementById('customerEmail').value = '';
+      clearEmailError();
+    }
+
+    function clearEmailError() {
+      const input = document.getElementById('customerEmail');
+      const error = document.getElementById('emailError');
+      input.classList.remove('error');
+      error.classList.remove('show');
+    }
+
+    function showEmailError() {
+      const input = document.getElementById('customerEmail');
+      const error = document.getElementById('emailError');
+      input.classList.add('error');
+      error.classList.add('show');
+      setTimeout(() => clearEmailError(), 3000);
     }
 
     function isValidEmail(email) {
-      return /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email);
+      // منع أي حرف غير ASCII
+      if (!/^[\x00-\x7F]+$/.test(email)) return false;
+      // التحقق من التنسيق
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!re.test(email)) return false;
+      // منع Punycode
+      if (email.includes('xn--')) return false;
+      // يجب أن يحتوي على حروف إنجليزية
+      const hasLetters = /[a-zA-Z]/.test(email);
+      if (!hasLetters) return false;
+      // الحد الأدنى للطول
+      const parts = email.split('@');
+      if (parts.length !== 2) return false;
+      if (parts[0].length < 3) return false;
+      if (!parts[1].includes('.')) return false;
+      return true;
     }
 
     async function confirmPurchase() {
@@ -264,13 +450,13 @@
       const email = emailInput.value.trim();
       
       if (!email) {
-        alert('⚠️ يرجى إدخال البريد الإلكتروني');
+        showEmailError();
         emailInput.focus();
         return;
       }
       
       if (!isValidEmail(email)) {
-        alert('⚠️ يرجى إدخال بريد إلكتروني صحيح');
+        showEmailError();
         emailInput.focus();
         return;
       }
@@ -279,7 +465,7 @@
       const originalHTML = btn.innerHTML;
       
       btn.disabled = true;
-      btn.innerHTML = '⏳ جاري المعالجة...';
+      btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
 
       const orderData = {
         guest_email: email,
@@ -298,34 +484,73 @@
 
         if (result.success) {
           closeEmailModal();
-          if (result.data.payment_url) {
-            window.location.href = result.data.payment_url;
-          } else {
-            alert(`✅ تم إنشاء طلبك بنجاح!\nرقم الطلب: ${result.data.order_id}\nالبريد: ${email}\n\n(رابط الدفع غير متاح في وضع التجربة)`);
-          }
+          currentOrderData = {
+            orderId: result.data.order_id,
+            product: selectedProductName,
+            email: email
+          };
+          showSuccessModal(currentOrderData);
         } else {
-          alert(`⚠️ حدث خطأ: ${result.error}`);
+          alert(`${lang === 'ar' ? '⚠️ حدث خطأ: ' : '⚠️ Error: '}${result.error}`);
         }
       } catch (err) {
         console.error('Purchase error:', err);
-        alert('⚠️ فشل الاتصال بالخادم. تأكد من الإنترنت وحاول لاحقاً.');
+        alert(lang === 'ar' ? '⚠️ فشل الاتصال بالخادم' : '⚠️ Failed to connect to server');
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalHTML;
       }
     }
 
-    // إغلاق النافذة عند الضغط خارجها
-    document.getElementById('emailModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeEmailModal();
-      }
+    // === دوال نافذة النجاح ===
+    function showSuccessModal(orderData) {
+      const detailsDiv = document.getElementById('orderDetails');
+      detailsDiv.innerHTML = `
+        <div><strong>${texts[lang].orderId}</strong> <span>${orderData.orderId}</span></div>
+        <div><strong>${texts[lang].product}</strong> <span>${orderData.product}</span></div>
+        <div><strong>${texts[lang].email}</strong> <span>${orderData.email}</span></div>
+      `;
+      document.getElementById('successModal').classList.add('active');
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('successModal').classList.remove('active');
+      currentOrderData = null;
+    }
+
+    function copyOrderDetails() {
+      if (!currentOrderData) return;
+      
+      const textToCopy = `${texts[lang].orderId} ${currentOrderData.orderId}\n${texts[lang].product} ${currentOrderData.product}\n${texts[lang].email} ${currentOrderData.email}`;
+      
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const btn = document.querySelector('.btn-copy');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = `<i class="ph-bold ph-check"></i> ${texts[lang].copied}`;
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+        }, 2000);
+      }).catch(err => {
+        console.error('Copy failed:', err);
+        alert(lang === 'ar' ? '⚠️ فشل النسخ' : '⚠️ Copy failed');
+      });
+    }
+
+    // إغلاق النوافذ عند الضغط خارجها
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+          if (this.id === 'emailModal') closeEmailModal();
+          if (this.id === 'successModal') closeSuccessModal();
+        }
+      });
     });
 
-    // إغلاق النافذة بزر Escape
+    // إغلاق النوافذ بزر Escape
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         closeEmailModal();
+        closeSuccessModal();
       }
     });
 
@@ -333,6 +558,16 @@
     document.getElementById('customerEmail').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
         confirmPurchase();
+      }
+    });
+
+    // التحقق الفوري أثناء الكتابة
+    document.getElementById('customerEmail').addEventListener('input', function(e) {
+      const email = e.target.value.trim();
+      if (email && !isValidEmail(email)) {
+        e.target.classList.add('error');
+      } else {
+        e.target.classList.remove('error');
       }
     });
 
