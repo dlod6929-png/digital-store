@@ -1,607 +1,328 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff6b35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z'/><polyline points='13 16 9 12 5 16'/><line x1='9' y1='12' x2='9' y2='21'/></svg>">
-  <title>منتجات رقمية</title>
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  
-  <style>
-    :root {
-      --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --text-secondary: #64748b;
-      --primary: #ff6b35; --primary-rgb: 255, 107, 53;
-      --border: #e2e8f0; --radius: 16px;
-      --error: #ef4444; --success: #10b981;
-    }
-    [data-theme="dark"] {
-      --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --text-secondary: #94a3b8;
-      --border: #334155;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); line-height: 1.6; padding: 1rem; transition: background 0.4s, color 0.4s; }
+// @ts-nocheck
+// ============================================================
+// Cloudflare Worker - متجر منتجات رقمية (النسخة النهائية - ترجع اسم المنتج)
+// ============================================================
 
-    header { display: flex; justify-content: center; align-items: center; padding: 1rem 1.5rem; background: var(--card); border-radius: var(--radius); margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
-    .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: bold; color: var(--primary); }
-    .logo i { font-size: 1.8rem; }
+const ALLOWED_ORIGINS = [
+  'https://dlod6929-png.github.io',
+  'http://localhost:3000',
+  'http://localhost:5500',
+];
+const MAX_REQUEST_SIZE = 1024 * 1024;
 
-    .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
-    .product-card { background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; }
-    .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+// === دوال مساعدة ===
+function jsonResponse(data, status, corsHeaders) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY', ...corsHeaders }
+  });
+}
+function successResponse(data, cors, status = 200) {
+  return jsonResponse({ success: true, data }, status, cors);
+}
+function errorResponse(message, cors, status = 400) {
+  const safe = status >= 500 ? 'خطأ في الخادم' : 'تعذر معالجة الطلب';
+  return jsonResponse({ success: false, error: safe }, status, cors);
+}
+function getCorsHeaders(origin) {
+  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400',
+  };
+}
+function getClientIP(request) {
+  return request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For')?.split(',')[0] || 'unknown';
+}
+function logError(context, error) {
+  console.error(JSON.stringify({ context, message: error?.message?.substring(0, 200), timestamp: new Date().toISOString() }));
+}
+function constantTimeCompare(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return result === 0;
+}
+function isValidEmail(email) { return /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email); }
+function isValidPaymentMethod(method) { return ['shamcash', 'cwallet', 'ecash', 'syriapay', 'usdt'].includes(method); }
+function isValidUUID(uuid) { return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid); }
+
+// === Rate Limiting ===
+const RATE_LIMITS = { general: { max: 100, window: 3600 }, orderCreation: { max: 10, window: 60 }, download: { max: 20, window: 3600 } };
+async function checkRateLimit(ip, type, env) {
+  if (!env.RATE_LIMIT_STORE) return { allowed: true, remaining: RATE_LIMITS[type].max, resetAt: Date.now() + RATE_LIMITS[type].window * 1000 };
+  const cfg = RATE_LIMITS[type];
+  const key = `rl:${type}:${ip}`;
+  const now = Math.floor(Date.now() / 1000);
+  try {
+    const raw = await env.RATE_LIMIT_STORE.get(key);
+    let info = raw ? JSON.parse(raw) : { count: 0, resetAt: now + cfg.window };
+    if (now >= info.resetAt) info = { count: 0, resetAt: now + cfg.window };
+    if (info.count >= cfg.max) return { allowed: false, remaining: 0, resetAt: info.resetAt };
+    info.count++;
+    await env.RATE_LIMIT_STORE.put(key, JSON.stringify(info), { expirationTtl: cfg.window });
+    return { allowed: true, remaining: cfg.max - info.count, resetAt: info.resetAt };
+  } catch (e) { logError('RateLimit', e); return { allowed: true, remaining: cfg.max, resetAt: now + cfg.window }; }
+}
+
+// === REST Client لـ Supabase ===
+async function supabaseFetch(env, table, method, options = {}) {
+  const { select, insert, update, eq, inFilter, isNull, lt, single } = options;
+  let url = `${env.SUPABASE_URL}/rest/v1/${table}`;
+  const params = new URLSearchParams();
+  if (select) params.append('select', select);
+  if (eq) for (const [k, v] of Object.entries(eq)) params.append(k, `eq.${v}`);
+  if (inFilter) for (const [k, v] of Object.entries(inFilter)) params.append(k, `in.(${v.map(x => `"${x}"`).join(',')})`);
+  if (isNull) for (const [k, v] of Object.entries(isNull)) params.append(k, `is.${v}`);
+  if (lt) for (const [k, v] of Object.entries(lt)) params.append(k, `lt.${v}`);
+  if (params.toString()) url += `?${params.toString()}`;
+  const headers = { 'apikey': env.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' };
+  if (single && method === 'GET') headers['Accept'] = 'application/vnd.pgrst.object+json';
+  const body = insert || update ? JSON.stringify(insert || update) : undefined;
+  try {
+    const res = await fetch(url, { method, headers, body });
+    let data = res.status !== 204 ? await res.json() : null;
+    if (!res.ok) return { data: null, error: { message: res.statusText, status: res.status } };
+    if (single && method === 'GET' && Array.isArray(data)) data = data[0];
+    return { data, error: null };
+  } catch (err) { return { data: null, error: err }; }
+}
+
+// === المنتجات ===
+async function getProducts(env, corsHeaders) {
+  try {
+    const { data, error } = await supabaseFetch(env, 'products', 'GET', { 
+      select: 'id,title_ar,title_en,price,currency,is_active', 
+      eq: { is_active: true }
+    });
+    if (error) {
+      return jsonResponse({ success: false, error: error.message || JSON.stringify(error) }, 500, corsHeaders);
+    }
+    return jsonResponse({ success: true, data: data || [] }, 200, corsHeaders);
+  } catch (e) {
+    logError('getProducts', e);
+    return jsonResponse({ success: false, error: e.message || String(e) }, 500, corsHeaders);
+  }
+}
+
+// === إنشاء طلب (النسخة النهائية - ترجع اسم المنتج) ===
+async function createOrder(request, env, cors) {
+  try {
+    const body = await request.json();
+    const { guest_email, payment_method, items } = body;
     
-    .product-image { height: 180px; background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1), rgba(var(--primary-rgb), 0.05)); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 4rem; border-bottom: 1px solid var(--border); }
-    .product-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
-    .product-card h3 { margin-bottom: 0.5rem; font-size: 1.2rem; }
-    .price { color: var(--primary); font-weight: bold; font-size: 1.4rem; margin: 0.5rem 0; }
-    .desc { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem; flex-grow: 1; }
-    
-    .buy-btn { width: 100%; padding: 0.8rem; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb), 0.3); }
-    .buy-btn:hover { box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3); transform: scale(1.02); }
-    .buy-btn i { font-size: 1.2rem; }
-
-    footer { text-align: center; margin-top: 4rem; padding: 1rem; color: var(--text-secondary); font-size: 0.9rem; }
-
-    /* === النوافذ المنبثقة (Modals) === */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(4px);
+    if (!guest_email || !isValidEmail(guest_email)) {
+      return jsonResponse({ success: false, error: 'إيميل غير صالح' }, 400, cors);
     }
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
+    if (!payment_method || !isValidPaymentMethod(payment_method)) {
+      return jsonResponse({ success: false, error: 'طريقة دفع غير مدعومة' }, 400, cors);
     }
-    .modal {
-      background: var(--card);
-      padding: 2rem;
-      border-radius: var(--radius);
-      max-width: 400px;
-      width: 90%;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-      transform: scale(0.9);
-      transition: transform 0.3s ease;
-      border: 1px solid var(--border);
-    }
-    .modal-overlay.active .modal {
-      transform: scale(1);
-    }
-    .modal h3 {
-      margin-bottom: 1rem;
-      color: var(--text);
-      font-size: 1.3rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .modal p {
-      color: var(--text-secondary);
-      margin-bottom: 1.5rem;
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--text);
-      font-weight: 500;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 0.75rem;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      font-size: 1rem;
-      background: var(--bg);
-      color: var(--text);
-      transition: all 0.3s;
-    }
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-    .form-group input.error {
-      border-color: var(--error);
-      animation: shake 0.5s ease-in-out;
-    }
-    .error-message {
-      color: var(--error);
-      font-size: 0.85rem;
-      margin-top: 0.5rem;
-      display: none;
-    }
-    .error-message.show {
-      display: block;
+    if (!items?.length) {
+      return jsonResponse({ success: false, error: 'لا توجد عناصر في الطلب' }, 400, cors);
     }
     
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-      20%, 40%, 60%, 80% { transform: translateX(5px); }
-    }
-
-    .modal-buttons {
-      display: flex;
-      gap: 0.75rem;
-    }
-    .modal-buttons button {
-      flex: 1;
-      padding: 0.75rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-    .btn-confirm {
-      background: var(--primary);
-      color: white;
-    }
-    .btn-confirm:hover {
-      box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.4);
-    }
-    .btn-cancel {
-      background: var(--border);
-      color: var(--text);
-    }
-    .btn-cancel:hover {
-      background: #cbd5e1;
-    }
-    .btn-copy {
-      background: var(--success);
-      color: white;
-      margin-top: 1rem;
-      width: 100%;
-    }
-    .btn-copy:hover {
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-    }
-    .order-details {
-      background: var(--bg);
-      padding: 1rem;
-      border-radius: 8px;
-      margin: 1rem 0;
-      font-family: monospace;
-      font-size: 0.9rem;
-      border: 1px solid var(--border);
-    }
-    .order-details div {
-      margin: 0.5rem 0;
-      display: flex;
-      justify-content: space-between;
-    }
-    .order-details strong {
-      color: var(--text);
-    }
-    .warning-box {
-      background: rgba(255, 193, 7, 0.1);
-      border: 1px solid #ffc107;
-      border-radius: 8px;
-      padding: 1rem;
-      margin: 1rem 0;
-    }
-    .warning-box p {
-      margin: 0;
-      color: #ffc107;
-      font-weight: 500;
-    }
-
-    [data-theme="dark"] .btn-cancel:hover {
-      background: #475569;
-    }
-
-    @media (max-width: 600px) { 
-      .products { grid-template-columns: 1fr; }
-      .modal { padding: 1.5rem; }
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <div class="logo">
-      <i class="ph-bold ph-package"></i>
-      <span id="siteName">منتجات رقمية</span>
-    </div>
-  </header>
-
-  <main class="products" id="productsGrid"></main>
-
-  <footer>
-    <p id="footerText"> Digital Products 2026 ©  </p>
-  </footer>
-
-  <!-- النافذة المنبثقة للإيميل -->
-  <div class="modal-overlay" id="emailModal">
-    <div class="modal">
-      <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال عملية الشراء</span></h3>
-      <p data-i18n="emailDesc">يرجى إدخال بريدك الإلكتروني لاستلام المنتج بعد الدفع</p>
-      
-      <div class="form-group">
-        <label for="customerEmail" data-i18n="emailLabel">البريد الإلكتروني *</label>
-        <input type="email" id="customerEmail" placeholder="example@email.com" required>
-        <div class="error-message" id="emailError" data-i18n="emailError">يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)</div>
-      </div>
-      
-      <div class="modal-buttons">
-        <button class="btn-cancel" onclick="closeEmailModal()" data-i18n="cancel">إلغاء</button>
-        <button class="btn-confirm" onclick="confirmPurchase()" data-i18n="confirm">تأكيد الشراء</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- النافذة المنبثقة لنجاح الطلب -->
-  <div class="modal-overlay" id="successModal">
-    <div class="modal">
-      <h3 style="color: var(--success);"><i class="ph-bold ph-check-circle"></i> <span data-i18n="successTitle">تم إنشاء طلبك بنجاح!</span></h3>
-      <p data-i18n="successDesc">يرجى الاحتفاظ بمعلومات الطلب أدناه</p>
-      
-      <div class="order-details" id="orderDetails">
-        <!-- سيتم ملؤها بالجافاسكربت -->
-      </div>
-      
-      <div class="warning-box">
-        <p><i class="ph-bold ph-warning"></i> <span data-i18n="warningText">احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني</span></p>
-      </div>
-      
-      <button class="btn-copy" onclick="copyOrderDetails()">
-        <i class="ph-bold ph-copy"></i> <span data-i18n="copyButton">نسخ المعلومات</span>
-      </button>
-      
-      <div class="modal-buttons" style="margin-top: 1rem;">
-        <button class="btn-cancel" onclick="closeSuccessModal()" data-i18n="close">إغلاق</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
-    const API_ORDERS_URL = API_URL.replace('/products', '/orders');
-
-    const texts = {
-      ar: {
-        siteName: "منتجات رقمية",
-        footer: "© 2026 Digital Products. جميع الحقوق محفوظة.",
-        buy: "شراء الآن",
-        emailTitle: "إكمال عملية الشراء",
-        emailDesc: "يرجى إدخال بريدك الإلكتروني لاستلام المنتج بعد الدفع",
-        emailLabel: "البريد الإلكتروني *",
-        emailError: "يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)",
-        cancel: "إلغاء",
-        confirm: "تأكيد الشراء",
-        successTitle: "تم إنشاء طلبك بنجاح!",
-        successDesc: "يرجى الاحتفاظ بمعلومات الطلب أدناه",
-        orderId: "رقم الطلب:",
-        product: "المنتج:",
-        email: "البريد:",
-        warningText: "احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني",
-        copyButton: "نسخ المعلومات",
-        copied: "تم النسخ!",
-        close: "إغلاق",
-        processing: "جاري المعالجة..."
-      },
-      en: {
-        siteName: "Digital Products",
-        footer: "© 2026 Digital Products. All rights reserved.",
-        buy: "Buy Now",
-        emailTitle: "Complete Purchase",
-        emailDesc: "Please enter your email to receive the product after payment",
-        emailLabel: "Email Address *",
-        emailError: "Please enter a valid email (English letters only)",
-        cancel: "Cancel",
-        confirm: "Confirm Purchase",
-        successTitle: "Order Created Successfully!",
-        successDesc: "Please save the order details below",
-        orderId: "Order ID:",
-        product: "Product:",
-        email: "Email:",
-        warningText: "Save your order details (Order ID, Email, Product Name) for follow-up and support",
-        copyButton: "Copy Details",
-        copied: "Copied!",
-        close: "Close",
-        processing: "Processing..."
+    const aggregated = {};
+    for (const item of items) {
+      if (!isValidUUID(item.product_id)) {
+        return jsonResponse({ success: false, error: 'product_id غير صالح' }, 400, cors);
       }
-    };
-
-    const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
-    const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const qty = item.quantity > 0 ? item.quantity : 1;
+      aggregated[item.product_id] = (aggregated[item.product_id] || 0) + qty;
+    }
     
-    let selectedProductId = null;
-    let selectedProductName = null;
-    let currentOrderData = null;
-    let productsCache = [];
-
-    function applyLanguage() {
-      document.documentElement.lang = lang;
-      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      document.title = texts[lang].siteName;
-      document.getElementById('siteName').textContent = texts[lang].siteName;
-      document.getElementById('footerText').textContent = texts[lang].footer;
-      
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (texts[lang][key]) {
-          el.textContent = texts[lang][key];
-        }
+    const productIds = Object.keys(aggregated);
+    
+    // جلب المنتجات (مهم: نجلب title_ar و title_en)
+    const { data: products, error: prodErr } = await supabaseFetch(env, 'products', 'GET', { 
+      select: 'id,price,is_active,title_ar,title_en', // ✅ إضافة الأسماء
+      inFilter: { id: productIds } 
+    });
+    
+    if (prodErr || !products || products.length !== productIds.length) {
+      return jsonResponse({ success: false, error: 'لم يتم العثور على كل المنتجات' }, 400, cors);
+    }
+    
+    let total = 0; 
+    const orderItems = [];
+    for (const [pid, qty] of Object.entries(aggregated)) {
+      const p = products.find(pr => pr.id === pid);
+      if (!p || !p.is_active) {
+        return jsonResponse({ success: false, error: 'المنتج غير فعال' }, 400, cors);
+      }
+      total += p.price * qty;
+      orderItems.push({ product_id: pid, price_at_purchase: p.price, quantity: qty, currency: 'USD' });
+    }
+    
+    console.log('🔄 إنشاء الطلب...');
+    
+    const { error: orderErr } = await supabaseFetch(env, 'orders', 'POST', { 
+      insert: { 
+        guest_email, 
+        total_price: total, 
+        payment_method, 
+        payment_status: 'pending', 
+        order_status: 'processing', 
+        request_source: 'worker' 
+      }
+    });
+    
+    if (orderErr) {
+      console.error('❌ فشل إنشاء الطلب:', orderErr);
+      return jsonResponse({ success: false, error: `فشل إنشاء الطلب: ${JSON.stringify(orderErr)}` }, 500, cors);
+    }
+    
+    console.log('🔄 جلب الطلب المنشأ...');
+    const { data: recentOrders, error: fetchErr } = await supabaseFetch(env, 'orders', 'GET', { 
+      select: 'id',
+      eq: { guest_email },
+    });
+    
+    if (fetchErr || !recentOrders || recentOrders.length === 0) {
+      console.error('❌ لم يتم العثور على الطلب بعد إنشائه');
+      return jsonResponse({ success: false, error: 'تم الإنشاء لكن لم يتم العثور على الطلب' }, 500, cors);
+    }
+    
+    const order = recentOrders[recentOrders.length - 1];
+    const orderId = order.id;
+    
+    if (!orderId) {
+      console.error('❌ الطلب بدون ID');
+      return jsonResponse({ success: false, error: 'الطلب بدون معرف' }, 500, cors);
+    }
+    
+    console.log('✅ تم إنشاء الطلب:', orderId);
+    
+    const itemsWithOrderId = orderItems.map(o => ({ 
+      ...o, 
+      order_id: orderId
+    }));
+    
+    console.log('🔄 إنشاء عناصر الطلب...');
+    
+    const { error: itemsErr } = await supabaseFetch(env, 'order_items', 'POST', { 
+      insert: itemsWithOrderId 
+    });
+    
+    if (itemsErr) {
+      console.error('❌ فشل إنشاء العناصر:', itemsErr);
+      await supabaseFetch(env, 'orders', 'PATCH', { 
+        update: { payment_status: 'failed', order_status: 'cancelled' }, 
+        eq: { id: orderId } 
       });
-      
-      renderProducts();
+      return jsonResponse({ success: false, error: `فشل إنشاء العناصر: ${JSON.stringify(itemsErr)}` }, 500, cors);
     }
-
-    function applyTheme() {
-      document.documentElement.setAttribute('data-theme', theme);
-    }
-
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    
+    console.log('✅ تم إنشاء العناصر بنجاح');
+    
+    // ✅ تجهيز أسماء المنتجات للرد
+    const productNames = orderItems.map(item => {
+      const product = products.find(p => p.id === item.product_id);
+      // نأخذ الاسم العربي أولاً، ثم الإنجليزي، ثم اسم افتراضي
+      return product ? (product.title_ar || product.title_en || 'منتج رقمي') : 'Unknown';
     });
+    
+    // ✅ إرجاع اسم المنتج في الرد (هذا هو الحل!)
+    return jsonResponse({ 
+      success: true, 
+      data: { 
+        order_id: orderId, 
+        product_name: productNames.join(', '), // ✅ اسم المنتج
+        payment_url: null,
+        note: 'تم إنشاء الطلب بنجاح (وضع التجربة)'
+      } 
+    }, 201, cors);
+    
+  } catch (e) {
+    console.error('💥 استثناء:', e);
+    return jsonResponse({ success: false, error: `استثناء: ${e.message}` }, 500, cors);
+  }
+}
 
-    async function renderProducts() {
-      const grid = document.getElementById('productsGrid');
-      grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">جاري تحميل المنتجات...</p>`;
-      
-      try {
-        const response = await fetch(API_URL);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const result = await response.json();
-        if (!result.success) throw new Error(result.error || 'خطأ غير معروف');
-        
-        const products = result.data;
-        productsCache = products;
-        
-        if (!products || products.length === 0) {
-          grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات متاحة حالياً' : 'No products available'}</p>`;
-          return;
-        }
-        
-        grid.innerHTML = '';
-        products.forEach(p => {
-          const title = lang === 'ar' ? p.title_ar : p.title_en;
-          const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
-          const icon = 'ph-package'; 
-          
-          // ✅ استخدام Data Attributes (طريقة أنظف وأضمن)
-          grid.innerHTML += `
-            <div class="product-card">
-              <div class="product-image"><i class="ph-bold ${icon}"></i></div>
-              <div class="product-content">
-                <h3>${title}</h3>
-                <div class="price">${priceDisplay}</div>
-                <p class="desc">${lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product'}</p>
-                <button class="buy-btn" 
-                        data-product-id="${p.id}" 
-                        data-product-name="${title}"
-                        onclick="handleBuyClick(this)">
-                  <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
-                </button>
-              </div>
-            </div>
-          `;
-        });
-      } catch (err) {
-        console.error('Error loading products:', err);
-        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ ${lang === 'ar' ? 'فشل تحميل المنتجات' : 'Failed to load products'}</p>`;
+// === Webhook الدفع ===
+async function handlePaymentWebhook(request, env, cors) {
+  if (!env.SHAMCASH_WEBHOOK_SECRET) return new Response('Server error', { status: 500 });
+  const bodyText = await request.text();
+  const signature = request.headers.get('X-Shamcash-Signature');
+  if (!signature) return new Response('Missing signature', { status: 403 });
+  let body;
+  try {
+    body = JSON.parse(bodyText);
+    if (body.timestamp) { const received = new Date(body.timestamp); const now = new Date(); if (Math.abs(now - received) > 300000) return new Response('Webhook expired', { status: 403 }); }
+  } catch { return new Response('Invalid JSON', { status: 400 }); }
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey('raw', encoder.encode(env.SHAMCASH_WEBHOOK_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const sigBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(bodyText));
+    const expected = Array.from(new Uint8Array(sigBuffer)).map(b => b.toString(16).padStart(2, '0')).join('').toLowerCase();
+    if (!constantTimeCompare(signature.toLowerCase(), expected)) return new Response('Invalid signature', { status: 403 });
+  } catch { return new Response('Signature error', { status: 500 }); }
+  if (!body.order_id || !body.status) return new Response('Missing fields', { status: 400 });
+  const { data: existing } = await supabaseFetch(env, 'orders', 'GET', { select: 'id,payment_status', eq: { id: body.order_id }, single: true });
+  if (!existing) return new Response('Order not found', { status: 404 });
+  if (body.status === 'paid' && existing.payment_status !== 'paid') {
+    await supabaseFetch(env, 'orders', 'PATCH', { update: { payment_status: 'paid', order_status: 'completed' }, eq: { id: body.order_id } });
+    const { data: expirySetting } = await supabaseFetch(env, 'store_settings', 'GET', { select: 'value', eq: { key: 'download_expiry_hours' }, single: true });
+    const expiryHours = expirySetting?.value ?? 72;
+    const expiresAt = new Date(Date.now() + expiryHours * 3600000).toISOString();
+    const now = new Date().toISOString();
+    const { data: orderItems } = await supabaseFetch(env, 'order_items', 'GET', { select: 'id', eq: { order_id: body.order_id } });
+    if (orderItems && orderItems.length) {
+      for (const item of orderItems) {
+        await supabaseFetch(env, 'order_items', 'PATCH', { update: { download_token: crypto.randomUUID(), download_expires_at: expiresAt, token_issued_at: now }, eq: { id: item.id }, isNull: { download_token: 'null' } });
       }
     }
+  }
+  return new Response('OK', { status: 200 });
+}
 
-    // ✅ دالة جديدة للتعامل مع النقر (تأخذ البيانات من الـ button نفسه)
-    function handleBuyClick(button) {
-      const productId = button.getAttribute('data-product-id');
-      const productName = button.getAttribute('data-product-name');
-      
-      console.log('🛒 Product selected:', { id: productId, name: productName });
-      
-      openEmailModal(productId, productName);
-    }
+// === التحميل عبر التوكن (تم إصلاح signedURL) ===
+async function downloadByToken(request, env, token, cors) {
+  const { data: item, error: itemErr } = await supabaseFetch(env, 'order_items', 'GET', { select: 'id,order_id,product_id,download_count,max_downloads,download_expires_at', eq: { download_token: token }, single: true });
+  if (itemErr || !item) return errorResponse('رابط غير صالح', cors, 404);
+  const { data: order } = await supabaseFetch(env, 'orders', 'GET', { select: 'payment_status', eq: { id: item.order_id }, single: true });
+  if (!order || order.payment_status !== 'paid') return errorResponse('غير مصرح', cors, 403);
+  if (item.download_expires_at && new Date(item.download_expires_at) < new Date()) return errorResponse('انتهت الصلاحية', cors, 410);
+  const { data: updated } = await supabaseFetch(env, 'order_items', 'PATCH', { update: { download_count: (item.download_count || 0) + 1 }, eq: { id: item.id }, lt: { download_count: item.max_downloads }, single: true });
+  if (!updated) return errorResponse('تم تجاوز الحد', cors, 429);
+  supabaseFetch(env, 'download_logs', 'POST', { insert: { order_id: item.order_id, product_id: item.product_id, ip_address: getClientIP(request), user_agent: request.headers.get('User-Agent') } });
+  const { data: product } = await supabaseFetch(env, 'products', 'GET', { select: 'file_storage_path', eq: { id: item.product_id }, single: true });
+  if (!product?.file_storage_path) return errorResponse('ملف غير موجود', cors, 404);
+  try {
+    const signRes = await fetch(`${env.SUPABASE_URL}/storage/v1/object/sign/products/${encodeURIComponent(product.file_storage_path)}`, { method: 'POST', headers: { 'apikey': env.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ expiresIn: 300 }) });
+    const signData = await signRes.json();
+    if (!signData.signedURL && !signData.signedUrl) throw new Error('No signedUrl');
+    const rawSignedUrl = signData.signedURL || signData.signedUrl;
+    const signedUrl = rawSignedUrl.startsWith('http') ? rawSignedUrl : `${env.SUPABASE_URL}${rawSignedUrl}`;
+    return Response.redirect(signedUrl, 302);
+  } catch (e) { logError('downloadByToken', e); return errorResponse('فشل إنشاء رابط التحميل', cors, 500); }
+}
 
-    function openEmailModal(productId, productName) {
-      selectedProductId = productId;
-      selectedProductName = productName || (lang === 'ar' ? 'منتج غير معروف' : 'Unknown Product');
-      
-      console.log('✅ Modal opened with:', { id: selectedProductId, name: selectedProductName });
-      
-      document.getElementById('emailModal').classList.add('active');
-      document.getElementById('customerEmail').focus();
-      clearEmailError();
-    }
-
-    function closeEmailModal() {
-      document.getElementById('emailModal').classList.remove('active');
-      selectedProductId = null;
-      selectedProductName = null;
-      document.getElementById('customerEmail').value = '';
-      clearEmailError();
-    }
-
-    function clearEmailError() {
-      const input = document.getElementById('customerEmail');
-      const error = document.getElementById('emailError');
-      input.classList.remove('error');
-      error.classList.remove('show');
-      input.style.borderColor = '';
-    }
-
-    function showEmailError() {
-      const input = document.getElementById('customerEmail');
-      const error = document.getElementById('emailError');
-      input.classList.add('error');
-      error.classList.add('show');
-      setTimeout(() => {
-        input.classList.remove('error');
-        error.classList.remove('show');
-      }, 3000);
-    }
-
-    function isValidEmail(email) {
-      if (!/^[\x00-\x7F]+$/.test(email)) return false;
-      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!re.test(email)) return false;
-      if (email.includes('xn--')) return false;
-      const hasLetters = /[a-zA-Z]/.test(email);
-      if (!hasLetters) return false;
-      const parts = email.split('@');
-      if (parts.length !== 2) return false;
-      if (parts[0].length < 3) return false;
-      if (!parts[1].includes('.')) return false;
-      return true;
-    }
-
-    async function confirmPurchase() {
-      const emailInput = document.getElementById('customerEmail');
-      const email = emailInput.value.trim();
-      
-      if (!email) {
-        showEmailError();
-        emailInput.focus();
-        return;
-      }
-      
-      if (!isValidEmail(email)) {
-        showEmailError();
-        emailInput.focus();
-        return;
-      }
-      
-      const btn = event.currentTarget;
-      const originalHTML = btn.innerHTML;
-      
-      btn.disabled = true;
-      btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
-
-      const orderData = {
-        guest_email: email,
-        payment_method: "shamcash",
-        items: [{ product_id: selectedProductId, quantity: 1 }]
-      };
-
-      console.log('📤 Sending order:', orderData);
-
-      try {
-        const response = await fetch(API_ORDERS_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(orderData)
-        });
-
-        const result = await response.json();
-        console.log('📥 Response:', result);
-
-        if (result.success) {
-          closeEmailModal();
-          currentOrderData = {
-            orderId: result.data.order_id,
-            product: selectedProductName,
-            email: email
-          };
-          console.log('✅ Order data saved:', currentOrderData);
-          showSuccessModal(currentOrderData);
-        } else {
-          alert(`${lang === 'ar' ? '⚠️ حدث خطأ: ' : '⚠️ Error: '}${result.error}`);
-        }
-      } catch (err) {
-        console.error('❌ Purchase error:', err);
-        alert(lang === 'ar' ? '⚠️ فشل الاتصال بالخادم' : '⚠️ Failed to connect to server');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalHTML;
-      }
-    }
-
-    function showSuccessModal(orderData) {
-      const detailsDiv = document.getElementById('orderDetails');
-      detailsDiv.innerHTML = `
-        <div><strong>${texts[lang].orderId}</strong> <span>${orderData.orderId}</span></div>
-        <div><strong>${texts[lang].product}</strong> <span>${orderData.product}</span></div>
-        <div><strong>${texts[lang].email}</strong> <span>${orderData.email}</span></div>
-      `;
-      document.getElementById('successModal').classList.add('active');
-    }
-
-    function closeSuccessModal() {
-      document.getElementById('successModal').classList.remove('active');
-      currentOrderData = null;
-    }
-
-    function copyOrderDetails() {
-      if (!currentOrderData) return;
-      
-      const textToCopy = `${texts[lang].orderId} ${currentOrderData.orderId}\n${texts[lang].product} ${currentOrderData.product}\n${texts[lang].email} ${currentOrderData.email}`;
-      
-      navigator.clipboard.writeText(textToCopy).then(() => {
-        const btn = document.querySelector('.btn-copy');
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = `<i class="ph-bold ph-check"></i> ${texts[lang].copied}`;
-        setTimeout(() => {
-          btn.innerHTML = originalHTML;
-        }, 2000);
-      }).catch(err => {
-        console.error('Copy failed:', err);
-        alert(lang === 'ar' ? '⚠️ فشل النسخ' : '⚠️ Copy failed');
-      });
-    }
-
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-      modal.addEventListener('click', function(e) {
-        if (e.target === this) {
-          if (this.id === 'emailModal') closeEmailModal();
-          if (this.id === 'successModal') closeSuccessModal();
-        }
-      });
-    });
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        closeEmailModal();
-        closeSuccessModal();
-      }
-    });
-
-    document.getElementById('customerEmail').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        confirmPurchase();
-      }
-    });
-
-    const emailInput = document.getElementById('customerEmail');
-
-    emailInput.addEventListener('input', function(e) {
-      const email = e.target.value.trim();
-      if (email && isValidEmail(email)) {
-        e.target.style.borderColor = 'var(--success)';
-        e.target.classList.remove('error');
-      } else {
-        e.target.style.borderColor = '';
-        e.target.classList.remove('error');
-      }
-    });
-
-    emailInput.addEventListener('blur', function(e) {
-      const email = e.target.value.trim();
-      if (email && !isValidEmail(email)) {
-        showEmailError();
-        e.target.style.borderColor = 'var(--error)';
-      } else if (email && isValidEmail(email)) {
-        e.target.style.borderColor = 'var(--success)';
-      }
-    });
-
-    applyLanguage();
-    applyTheme();
-    renderProducts();
-  </script>
-</body>
-</html>
+// === الـ Worker الرئيسي ===
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const origin = request.headers.get('Origin') || '';
+    const corsHeaders = getCorsHeaders(origin);
+    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders });
+    const contentLength = request.headers.get('Content-Length');
+    if (contentLength && parseInt(contentLength) > MAX_REQUEST_SIZE) return errorResponse('حجم الطلب مرفوض', corsHeaders, 413);
+    const ip = getClientIP(request);
+    let rateType = 'general';
+    if (url.pathname === '/api/orders' && request.method === 'POST') rateType = 'orderCreation';
+    if (url.pathname.startsWith('/api/download/')) rateType = 'download';
+    const rate = await checkRateLimit(ip, rateType, env);
+    if (!rate.allowed) return jsonResponse({ success: false, error: 'تم تجاوز الحد' }, 429, { ...corsHeaders, 'Retry-After': '60' });
+    try {
+      if (url.pathname === '/api/products' && request.method === 'GET') return await getProducts(env, corsHeaders);
+      if (url.pathname === '/api/orders' && request.method === 'POST') return await createOrder(request, env, corsHeaders);
+      if (url.pathname === '/api/webhooks/payment' && request.method === 'POST') return await handlePaymentWebhook(request, env, corsHeaders);
+      const match = url.pathname.match(/^\/api\/download\/([0-9a-f-]+)$/);
+      if (match && request.method === 'GET') return await downloadByToken(request, env, match[1], corsHeaders);
+      if (url.pathname === '/api/health') return successResponse({ status: 'healthy' }, corsHeaders);
+      return errorResponse('غير موجود', corsHeaders, 404);
+    } catch (err) { logError('fetch', err); return errorResponse('خطأ في الخادم', corsHeaders, 500); }
+  }
+};
