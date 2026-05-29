@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تأكيد الطلب</title>
-  <!-- أيقونات Phosphor (نفس المستخدمة بالموقع) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff6b35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z'/><polyline points='13 16 9 12 5 16'/><line x1='9' y1='12' x2='9' y2='21'/></svg>">
+  <title>منتجات رقمية</title>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   
   <style>
@@ -19,70 +19,174 @@
       --border: #334155;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-    body { 
-      background: var(--bg); 
-      color: var(--text); 
-      line-height: 1.6; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      min-height: 100vh; 
-      padding: 1rem; 
-    }
+    body { background: var(--bg); color: var(--text); line-height: 1.6; padding: 1rem; transition: background 0.4s, color 0.4s; }
 
-    /* === ستايل القائمة فقط === */
+    header { display: flex; justify-content: center; align-items: center; padding: 1rem 1.5rem; background: var(--card); border-radius: var(--radius); margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+    .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: bold; color: var(--primary); }
+    .logo i { font-size: 1.8rem; }
+
+    .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
+    .product-card { background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; }
+    .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    
+    .product-image { height: 180px; background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1), rgba(var(--primary-rgb), 0.05)); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 4rem; border-bottom: 1px solid var(--border); }
+    .product-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+    .product-card h3 { margin-bottom: 0.5rem; font-size: 1.2rem; }
+    .price { color: var(--primary); font-weight: bold; font-size: 1.4rem; margin: 0.5rem 0; }
+    .desc { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem; flex-grow: 1; }
+    
+    .buy-btn { width: 100%; padding: 0.8rem; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb), 0.3); }
+    .buy-btn:hover { box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3); transform: scale(1.02); }
+    .buy-btn i { font-size: 1.2rem; }
+
+    footer { text-align: center; margin-top: 4rem; padding: 1rem; color: var(--text-secondary); font-size: 0.9rem; }
+
+    /* === النوافذ المنبثقة (Modals) === */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
     .modal {
       background: var(--card);
       padding: 2rem;
       border-radius: var(--radius);
       max-width: 400px;
-      width: 100%;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
       border: 1px solid var(--border);
-      text-align: center;
+    }
+    .modal-overlay.active .modal {
+      transform: scale(1);
     }
     .modal h3 {
       margin-bottom: 1rem;
-      color: var(--success);
+      color: var(--text);
       font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .modal p {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      background: var(--bg);
+      color: var(--text);
+      transition: all 0.3s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .form-group input.error {
+      border-color: var(--error);
+      animation: shake 0.5s ease-in-out;
+    }
+    .error-message {
+      color: var(--error);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+    .error-message.show {
+      display: block;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .modal-buttons button {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
     }
-    .modal > p {
-      color: var(--text-secondary);
-      margin-bottom: 1.5rem;
-      font-size: 0.95rem;
+    .btn-confirm {
+      background: var(--primary);
+      color: white;
     }
-    
+    .btn-confirm:hover {
+      box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.4);
+    }
+    .btn-cancel {
+      background: var(--border);
+      color: var(--text);
+    }
+    .btn-cancel:hover {
+      background: #cbd5e1;
+    }
+    .btn-copy {
+      background: var(--success);
+      color: white;
+      margin-top: 1rem;
+      width: 100%;
+    }
+    .btn-copy:hover {
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
     .order-details {
       background: var(--bg);
       padding: 1rem;
       border-radius: 8px;
       margin: 1rem 0;
-      font-family: 'Courier New', monospace;
+      font-family: monospace;
       font-size: 0.9rem;
       border: 1px solid var(--border);
-      text-align: right;
     }
     .order-details div {
-      margin: 0.6rem 0;
+      margin: 0.5rem 0;
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      gap: 0.5rem;
     }
     .order-details strong {
       color: var(--text);
-      white-space: nowrap;
     }
-    .order-details span {
-      color: var(--text-secondary);
-      word-break: break-all;
-      text-align: left;
-    }
-
     .warning-box {
       background: rgba(255, 193, 7, 0.1);
       border: 1px solid #ffc107;
@@ -92,100 +196,412 @@
     }
     .warning-box p {
       margin: 0;
-      color: #d97706;
+      color: #ffc107;
       font-weight: 500;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: flex-start;
-      gap: 0.5rem;
-      text-align: right;
     }
 
-    .btn-copy {
-      background: var(--success);
-      color: white;
-      margin-top: 1rem;
-      width: 100%;
-      padding: 0.8rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      font-size: 1rem;
+    [data-theme="dark"] .btn-cancel:hover {
+      background: #475569;
     }
-    .btn-copy:hover { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); transform: translateY(-1px); }
-    .btn-copy:active { transform: translateY(0); }
 
-    .btn-close {
-      background: var(--border);
-      color: var(--text);
-      margin-top: 0.75rem;
-      width: 100%;
-      padding: 0.75rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s;
+    @media (max-width: 600px) { 
+      .products { grid-template-columns: 1fr; }
+      .modal { padding: 1.5rem; }
     }
-    .btn-close:hover { background: #cbd5e1; }
-    [data-theme="dark"] .btn-close:hover { background: #475569; }
-
-    /* تأثير النسخ الناجح */
-    .btn-copy.copied { background: #059669; }
   </style>
 </head>
 <body>
+  <header>
+    <div class="logo">
+      <i class="ph-bold ph-package"></i>
+      <span id="siteName">منتجات رقمية</span>
+    </div>
+  </header>
 
-  <div class="modal">
-    <h3><i class="ph-bold ph-check-circle"></i> تم إنشاء طلبك بنجاح!</h3>
-    <p>يرجى الاحتفاظ بمعلومات الطلب أدناه</p>
-    
-    <div class="order-details" id="orderInfo">
-      <!-- البيانات تُملأ تلقائياً أو يدوياً -->
-      <div><strong>رقم الطلب:</strong> <span>f408cc15-d326-4fb9-9a64-13c27d63763f</span></div>
-      <div><strong>المنتج:</strong> <span>قالب سيرة ذاتية احترافي</span></div>
-      <div><strong>البريد:</strong> <span>dlo@mail.com</span></div>
+  <main class="products" id="productsGrid"></main>
+
+  <footer>
+    <p id="footerText"> Digital Products 2026 ©  </p>
+  </footer>
+
+  <!-- النافذة المنبثقة للإيميل -->
+  <div class="modal-overlay" id="emailModal">
+    <div class="modal">
+      <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال عملية الشراء</span></h3>
+      <p data-i18n="emailDesc">يرجى إدخال بريدك الإلكتروني لاستلام المنتج بعد الدفع</p>
+      
+      <div class="form-group">
+        <label for="customerEmail" data-i18n="emailLabel">البريد الإلكتروني *</label>
+        <input type="email" id="customerEmail" placeholder="example@email.com" required>
+        <div class="error-message" id="emailError" data-i18n="emailError">يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)</div>
+      </div>
+      
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="closeEmailModal()" data-i18n="cancel">إلغاء</button>
+        <button class="btn-confirm" onclick="confirmPurchase()" data-i18n="confirm">تأكيد الشراء</button>
+      </div>
     </div>
-    
-    <div class="warning-box">
-      <p><i class="ph-bold ph-warning"></i> احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني</p>
+  </div>
+
+  <!-- النافذة المنبثقة لنجاح الطلب -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal">
+      <h3 style="color: var(--success);"><i class="ph-bold ph-check-circle"></i> <span data-i18n="successTitle">تم إنشاء طلبك بنجاح!</span></h3>
+      <p data-i18n="successDesc">يرجى الاحتفاظ بمعلومات الطلب أدناه</p>
+      
+      <div class="order-details" id="orderDetails">
+        <!-- سيتم ملؤها بالجافاسكربت -->
+      </div>
+      
+      <div class="warning-box">
+        <p><i class="ph-bold ph-warning"></i> <span data-i18n="warningText">احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني</span></p>
+      </div>
+      
+      <button class="btn-copy" onclick="copyOrderDetails()">
+        <i class="ph-bold ph-copy"></i> <span data-i18n="copyButton">نسخ المعلومات</span>
+      </button>
+      
+      <div class="modal-buttons" style="margin-top: 1rem;">
+        <button class="btn-cancel" onclick="closeSuccessModal()" data-i18n="close">إغلاق</button>
+      </div>
     </div>
-    
-    <button class="btn-copy" id="copyBtn" onclick="copyDetails()">
-      <i class="ph-bold ph-copy"></i> نسخ المعلومات
-    </button>
-    <button class="btn-close" onclick="alert('تم إغلاق النافذة (تجريبي)')">إغلاق</button>
   </div>
 
   <script>
-    function copyDetails() {
-      const orderDiv = document.getElementById('orderInfo');
-      // استخراج النص النظيف
-      const lines = Array.from(orderDiv.querySelectorAll('div')).map(div => {
-        return div.innerText.replace('رقم الطلب:', 'Order ID:').replace('المنتج:', 'Product:').replace('البريد:', 'Email:');
+    const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
+    const API_ORDERS_URL = API_URL.replace('/products', '/orders');
+
+    const texts = {
+      ar: {
+        siteName: "منتجات رقمية",
+        footer: "© 2026 Digital Products. جميع الحقوق محفوظة.",
+        buy: "شراء الآن",
+        emailTitle: "إكمال عملية الشراء",
+        emailDesc: "يرجى إدخال بريدك الإلكتروني لاستلام المنتج بعد الدفع",
+        emailLabel: "البريد الإلكتروني *",
+        emailError: "يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)",
+        cancel: "إلغاء",
+        confirm: "تأكيد الشراء",
+        successTitle: "تم إنشاء طلبك بنجاح!",
+        successDesc: "يرجى الاحتفاظ بمعلومات الطلب أدناه",
+        orderId: "رقم الطلب:",
+        product: "المنتج:",
+        email: "البريد:",
+        warningText: "احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني",
+        copyButton: "نسخ المعلومات",
+        copied: "تم النسخ!",
+        close: "إغلاق",
+        processing: "جاري المعالجة..."
+      },
+      en: {
+        siteName: "Digital Products",
+        footer: "© 2026 Digital Products. All rights reserved.",
+        buy: "Buy Now",
+        emailTitle: "Complete Purchase",
+        emailDesc: "Please enter your email to receive the product after payment",
+        emailLabel: "Email Address *",
+        emailError: "Please enter a valid email (English letters only)",
+        cancel: "Cancel",
+        confirm: "Confirm Purchase",
+        successTitle: "Order Created Successfully!",
+        successDesc: "Please save the order details below",
+        orderId: "Order ID:",
+        product: "Product:",
+        email: "Email:",
+        warningText: "Save your order details (Order ID, Email, Product Name) for follow-up and support",
+        copyButton: "Copy Details",
+        copied: "Copied!",
+        close: "Close",
+        processing: "Processing..."
+      }
+    };
+
+    const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
+    const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    
+    let selectedProductId = null;
+    let selectedProductName = null;
+    let currentOrderData = null;
+    let productsCache = [];
+
+    function applyLanguage() {
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      document.title = texts[lang].siteName;
+      document.getElementById('siteName').textContent = texts[lang].siteName;
+      document.getElementById('footerText').textContent = texts[lang].footer;
+      
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (texts[lang][key]) {
+          el.textContent = texts[lang][key];
+        }
       });
-      const textToCopy = lines.join('\n');
+      
+      renderProducts();
+    }
+
+    function applyTheme() {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    });
+
+    async function renderProducts() {
+      const grid = document.getElementById('productsGrid');
+      grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">جاري تحميل المنتجات...</p>`;
+      
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || 'خطأ غير معروف');
+        
+        const products = result.data;
+        productsCache = products;
+        
+        if (!products || products.length === 0) {
+          grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات متاحة حالياً' : 'No products available'}</p>`;
+          return;
+        }
+        
+        grid.innerHTML = '';
+        products.forEach(p => {
+          const title = lang === 'ar' ? p.title_ar : p.title_en;
+          const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
+          const icon = 'ph-package'; 
+          
+          // ✅ استخدام Data Attributes (طريقة أنظف وأضمن)
+          grid.innerHTML += `
+            <div class="product-card">
+              <div class="product-image"><i class="ph-bold ${icon}"></i></div>
+              <div class="product-content">
+                <h3>${title}</h3>
+                <div class="price">${priceDisplay}</div>
+                <p class="desc">${lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product'}</p>
+                <button class="buy-btn" 
+                        data-product-id="${p.id}" 
+                        data-product-name="${title}"
+                        onclick="handleBuyClick(this)">
+                  <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
+                </button>
+              </div>
+            </div>
+          `;
+        });
+      } catch (err) {
+        console.error('Error loading products:', err);
+        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ ${lang === 'ar' ? 'فشل تحميل المنتجات' : 'Failed to load products'}</p>`;
+      }
+    }
+
+    // ✅ دالة جديدة للتعامل مع النقر (تأخذ البيانات من الـ button نفسه)
+    function handleBuyClick(button) {
+      const productId = button.getAttribute('data-product-id');
+      const productName = button.getAttribute('data-product-name');
+      
+      console.log('🛒 Product selected:', { id: productId, name: productName });
+      
+      openEmailModal(productId, productName);
+    }
+
+    function openEmailModal(productId, productName) {
+      selectedProductId = productId;
+      selectedProductName = productName || (lang === 'ar' ? 'منتج غير معروف' : 'Unknown Product');
+      
+      console.log('✅ Modal opened with:', { id: selectedProductId, name: selectedProductName });
+      
+      document.getElementById('emailModal').classList.add('active');
+      document.getElementById('customerEmail').focus();
+      clearEmailError();
+    }
+
+    function closeEmailModal() {
+      document.getElementById('emailModal').classList.remove('active');
+      selectedProductId = null;
+      selectedProductName = null;
+      document.getElementById('customerEmail').value = '';
+      clearEmailError();
+    }
+
+    function clearEmailError() {
+      const input = document.getElementById('customerEmail');
+      const error = document.getElementById('emailError');
+      input.classList.remove('error');
+      error.classList.remove('show');
+      input.style.borderColor = '';
+    }
+
+    function showEmailError() {
+      const input = document.getElementById('customerEmail');
+      const error = document.getElementById('emailError');
+      input.classList.add('error');
+      error.classList.add('show');
+      setTimeout(() => {
+        input.classList.remove('error');
+        error.classList.remove('show');
+      }, 3000);
+    }
+
+    function isValidEmail(email) {
+      if (!/^[\x00-\x7F]+$/.test(email)) return false;
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!re.test(email)) return false;
+      if (email.includes('xn--')) return false;
+      const hasLetters = /[a-zA-Z]/.test(email);
+      if (!hasLetters) return false;
+      const parts = email.split('@');
+      if (parts.length !== 2) return false;
+      if (parts[0].length < 3) return false;
+      if (!parts[1].includes('.')) return false;
+      return true;
+    }
+
+    async function confirmPurchase() {
+      const emailInput = document.getElementById('customerEmail');
+      const email = emailInput.value.trim();
+      
+      if (!email) {
+        showEmailError();
+        emailInput.focus();
+        return;
+      }
+      
+      if (!isValidEmail(email)) {
+        showEmailError();
+        emailInput.focus();
+        return;
+      }
+      
+      const btn = event.currentTarget;
+      const originalHTML = btn.innerHTML;
+      
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
+
+      const orderData = {
+        guest_email: email,
+        payment_method: "shamcash",
+        items: [{ product_id: selectedProductId, quantity: 1 }]
+      };
+
+      console.log('📤 Sending order:', orderData);
+
+      try {
+        const response = await fetch(API_ORDERS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData)
+        });
+
+        const result = await response.json();
+        console.log('📥 Response:', result);
+
+        if (result.success) {
+          closeEmailModal();
+          currentOrderData = {
+            orderId: result.data.order_id,
+            product: selectedProductName,
+            email: email
+          };
+          console.log('✅ Order data saved:', currentOrderData);
+          showSuccessModal(currentOrderData);
+        } else {
+          alert(`${lang === 'ar' ? '⚠️ حدث خطأ: ' : '⚠️ Error: '}${result.error}`);
+        }
+      } catch (err) {
+        console.error('❌ Purchase error:', err);
+        alert(lang === 'ar' ? '⚠️ فشل الاتصال بالخادم' : '⚠️ Failed to connect to server');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+      }
+    }
+
+    function showSuccessModal(orderData) {
+      const detailsDiv = document.getElementById('orderDetails');
+      detailsDiv.innerHTML = `
+        <div><strong>${texts[lang].orderId}</strong> <span>${orderData.orderId}</span></div>
+        <div><strong>${texts[lang].product}</strong> <span>${orderData.product}</span></div>
+        <div><strong>${texts[lang].email}</strong> <span>${orderData.email}</span></div>
+      `;
+      document.getElementById('successModal').classList.add('active');
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('successModal').classList.remove('active');
+      currentOrderData = null;
+    }
+
+    function copyOrderDetails() {
+      if (!currentOrderData) return;
+      
+      const textToCopy = `${texts[lang].orderId} ${currentOrderData.orderId}\n${texts[lang].product} ${currentOrderData.product}\n${texts[lang].email} ${currentOrderData.email}`;
       
       navigator.clipboard.writeText(textToCopy).then(() => {
-        const btn = document.getElementById('copyBtn');
-        btn.classList.add('copied');
-        btn.innerHTML = '<i class="ph-bold ph-check"></i> تم النسخ!';
+        const btn = document.querySelector('.btn-copy');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = `<i class="ph-bold ph-check"></i> ${texts[lang].copied}`;
         setTimeout(() => {
-          btn.classList.remove('copied');
-          btn.innerHTML = '<i class="ph-bold ph-copy"></i> نسخ المعلومات';
+          btn.innerHTML = originalHTML;
         }, 2000);
       }).catch(err => {
-        console.error('فشل النسخ:', err);
-        alert('فشل النسخ، يرجى النسخ يدوياً');
+        console.error('Copy failed:', err);
+        alert(lang === 'ar' ? '⚠️ فشل النسخ' : '⚠️ Copy failed');
       });
     }
-  </script>
 
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+          if (this.id === 'emailModal') closeEmailModal();
+          if (this.id === 'successModal') closeSuccessModal();
+        }
+      });
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeEmailModal();
+        closeSuccessModal();
+      }
+    });
+
+    document.getElementById('customerEmail').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        confirmPurchase();
+      }
+    });
+
+    const emailInput = document.getElementById('customerEmail');
+
+    emailInput.addEventListener('input', function(e) {
+      const email = e.target.value.trim();
+      if (email && isValidEmail(email)) {
+        e.target.style.borderColor = 'var(--success)';
+        e.target.classList.remove('error');
+      } else {
+        e.target.style.borderColor = '';
+        e.target.classList.remove('error');
+      }
+    });
+
+    emailInput.addEventListener('blur', function(e) {
+      const email = e.target.value.trim();
+      if (email && !isValidEmail(email)) {
+        showEmailError();
+        e.target.style.borderColor = 'var(--error)';
+      } else if (email && isValidEmail(email)) {
+        e.target.style.borderColor = 'var(--success)';
+      }
+    });
+
+    applyLanguage();
+    applyTheme();
+    renderProducts();
+  </script>
 </body>
 </html>
