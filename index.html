@@ -321,9 +321,11 @@
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     
+    // === المتغيرات العامة ===
     let selectedProductId = null;
     let selectedProductName = null;
     let currentOrderData = null;
+    let productsCache = [];
 
     function applyLanguage() {
       document.documentElement.lang = lang;
@@ -332,7 +334,6 @@
       document.getElementById('siteName').textContent = texts[lang].siteName;
       document.getElementById('footerText').textContent = texts[lang].footer;
       
-      // ترجمة كل العناصر
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (texts[lang][key]) {
@@ -363,6 +364,8 @@
         if (!result.success) throw new Error(result.error || 'خطأ غير معروف');
         
         const products = result.data;
+        productsCache = products; // ✅ حفظ المنتجات في الكاش
+        
         if (!products || products.length === 0) {
           grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات متاحة حالياً' : 'No products available'}</p>`;
           return;
@@ -374,6 +377,7 @@
           const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
           const icon = 'ph-package'; 
           
+          // ✅ تمرير الـ ID فقط، والاسم نبحث عنه من الكاش
           grid.innerHTML += `
             <div class="product-card">
               <div class="product-image"><i class="ph-bold ${icon}"></i></div>
@@ -381,7 +385,7 @@
                 <h3>${title}</h3>
                 <div class="price">${priceDisplay}</div>
                 <p class="desc">${lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product'}</p>
-                <button class="buy-btn" onclick="openEmailModal('${p.id}', '${title.replace(/'/g, "\\'")}')">
+                <button class="buy-btn" onclick="openEmailModal('${p.id}')">
                   <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
                 </button>
               </div>
@@ -395,9 +399,17 @@
     }
 
     // === دوال النافذة المنبثقة للإيميل ===
-    function openEmailModal(productId, productName) {
+    function openEmailModal(productId) {
       selectedProductId = productId;
-      selectedProductName = productName;
+      
+      // ✅ البحث عن اسم المنتج من الكاش (الحل الجذري لمشكلة null)
+      const product = productsCache.find(p => p.id === productId);
+      if (product) {
+        selectedProductName = lang === 'ar' ? product.title_ar : product.title_en;
+      } else {
+        selectedProductName = lang === 'ar' ? 'منتج غير معروف' : 'Unknown Product';
+      }
+      
       document.getElementById('emailModal').classList.add('active');
       document.getElementById('customerEmail').focus();
       clearEmailError();
@@ -416,6 +428,7 @@
       const error = document.getElementById('emailError');
       input.classList.remove('error');
       error.classList.remove('show');
+      input.style.borderColor = ''; // إعادة اللون الأصلي
     }
 
     function showEmailError() {
@@ -423,21 +436,19 @@
       const error = document.getElementById('emailError');
       input.classList.add('error');
       error.classList.add('show');
-      setTimeout(() => clearEmailError(), 3000);
+      setTimeout(() => {
+        input.classList.remove('error');
+        error.classList.remove('show');
+      }, 3000);
     }
 
     function isValidEmail(email) {
-      // منع أي حرف غير ASCII
-      if (!/^[\x00-\x7F]+$/.test(email)) return false;
-      // التحقق من التنسيق
+      if (!/^[\x00-\x7F]+$/.test(email)) return false; // منع غير ASCII
       const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!re.test(email)) return false;
-      // منع Punycode
-      if (email.includes('xn--')) return false;
-      // يجب أن يحتوي على حروف إنجليزية
+      if (email.includes('xn--')) return false; // منع Punycode
       const hasLetters = /[a-zA-Z]/.test(email);
       if (!hasLetters) return false;
-      // الحد الأدنى للطول
       const parts = email.split('@');
       if (parts.length !== 2) return false;
       if (parts[0].length < 3) return false;
@@ -461,7 +472,7 @@
         return;
       }
       
-      const btn = event.target;
+      const btn = event.currentTarget;
       const originalHTML = btn.innerHTML;
       
       btn.disabled = true;
@@ -486,7 +497,7 @@
           closeEmailModal();
           currentOrderData = {
             orderId: result.data.order_id,
-            product: selectedProductName,
+            product: selectedProductName, // ✅ الآن الاسم محفوظ صحيح
             email: email
           };
           showSuccessModal(currentOrderData);
@@ -561,37 +572,31 @@
       }
     });
 
-// === التحقق من الإيميل (تصحيح المشكلة) ===
-const emailInput = document.getElementById('customerEmail');
+    // === التحقق من الإيميل (النسخة المحسّنة) ===
+    const emailInput = document.getElementById('customerEmail');
 
-// إزالة الخطأ أثناء الكتابة (مش أثناء الكتابة)
-emailInput.addEventListener('input', function(e) {
-  const email = e.target.value.trim();
-  // بس نزيل الأحمر أثناء الكتابة، وما بنفحص إلا إذا كان فارغ
-  if (email) {
-    e.target.classList.remove('error');
-    // إذا الإيميل كامل وصحيح، نضيف الأخضر
-    if (isValidEmail(email)) {
-      e.target.style.borderColor = 'var(--success)';
-    } else {
-      e.target.style.borderColor = ''; // نرجع اللون الأصلي
-    }
-  } else {
-    e.target.classList.remove('error');
-    e.target.style.borderColor = '';
-  }
-});
+    // أثناء الكتابة: أخضر إذا صحيح، عادي إذا غير مكتمل
+    emailInput.addEventListener('input', function(e) {
+      const email = e.target.value.trim();
+      if (email && isValidEmail(email)) {
+        e.target.style.borderColor = 'var(--success)';
+        e.target.classList.remove('error');
+      } else {
+        e.target.style.borderColor = '';
+        e.target.classList.remove('error');
+      }
+    });
 
-// التحقق لما تخلص تكتب (لما تطلع من الخانة)
-emailInput.addEventListener('blur', function(e) {
-  const email = e.target.value.trim();
-  if (email && !isValidEmail(email)) {
-    showEmailError();
-    e.target.style.borderColor = 'var(--error)';
-  } else if (email && isValidEmail(email)) {
-    e.target.style.borderColor = 'var(--success)';
-  }
-});
+    // عند الخروج من الخانة: أحمر فقط إذا غلط
+    emailInput.addEventListener('blur', function(e) {
+      const email = e.target.value.trim();
+      if (email && !isValidEmail(email)) {
+        showEmailError();
+        e.target.style.borderColor = 'var(--error)';
+      } else if (email && isValidEmail(email)) {
+        e.target.style.borderColor = 'var(--success)';
+      }
+    });
 
     applyLanguage();
     applyTheme();
