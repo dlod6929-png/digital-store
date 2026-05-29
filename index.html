@@ -41,88 +41,31 @@
 
     footer { text-align: center; margin-top: 4rem; padding: 1rem; color: var(--text-secondary); font-size: 0.9rem; }
 
-    /* === النوافذ المنبثقة (Modals) === */
     .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(4px);
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center;
+      z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease; backdrop-filter: blur(4px);
     }
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
     .modal {
-      background: var(--card);
-      padding: 2rem;
-      border-radius: var(--radius);
-      max-width: 400px;
-      width: 90%;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-      transform: scale(0.9);
-      transition: transform 0.3s ease;
-      border: 1px solid var(--border);
+      background: var(--card); padding: 2rem; border-radius: var(--radius);
+      max-width: 400px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      transform: scale(0.9); transition: transform 0.3s ease; border: 1px solid var(--border);
     }
-    .modal-overlay.active .modal {
-      transform: scale(1);
-    }
-    .modal h3 {
-      margin-bottom: 1rem;
-      color: var(--text);
-      font-size: 1.3rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .modal p {
-      color: var(--text-secondary);
-      margin-bottom: 1.5rem;
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--text);
-      font-weight: 500;
-    }
+    .modal-overlay.active .modal { transform: scale(1); }
+    .modal h3 { margin-bottom: 1rem; color: var(--text); font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem; }
+    .modal p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.6; }
+    
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500; }
     .form-group input, .form-group select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      font-size: 1rem;
-      background: var(--bg);
-      color: var(--text);
-      transition: all 0.3s;
+      width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;
+      font-size: 1rem; background: var(--bg); color: var(--text); transition: all 0.3s;
     }
-    .form-group input:focus, .form-group select:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-    .form-group input.error {
-      border-color: var(--error);
-      animation: shake 0.5s ease-in-out;
-    }
-    .error-message {
-      color: var(--error);
-      font-size: 0.85rem;
-      margin-top: 0.5rem;
-      display: none;
-    }
-    .error-message.show {
-      display: block;
-    }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+    .form-group input.error { border-color: var(--error); animation: shake 0.5s ease-in-out; }
+    .error-message { color: var(--error); font-size: 0.85rem; margin-top: 0.5rem; display: none; }
+    .error-message.show { display: block; }
     
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
@@ -130,96 +73,41 @@
       20%, 40%, 60%, 80% { transform: translateX(5px); }
     }
 
-    .modal-buttons {
-      display: flex;
-      gap: 0.75rem;
-    }
+    .modal-buttons { display: flex; gap: 0.75rem; }
     .modal-buttons button {
-      flex: 1;
-      padding: 0.75rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
+      flex: 1; padding: 0.75rem; border: none; border-radius: 8px; cursor: pointer;
+      font-weight: bold; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
     }
-    .btn-confirm {
-      background: var(--primary);
-      color: white;
-    }
-    .btn-confirm:hover {
-      box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.4);
-    }
-    .btn-cancel {
-      background: var(--border);
-      color: var(--text);
-    }
-    .btn-cancel:hover {
-      background: #cbd5e1;
-    }
-    .btn-copy {
-      background: var(--success);
-      color: white;
-      margin-top: 1rem;
-      width: 100%;
-    }
-    .btn-copy:hover {
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-    }
+    .btn-confirm { background: var(--primary); color: white; }
+    .btn-confirm:hover { box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.4); }
+    .btn-cancel { background: var(--border); color: var(--text); }
+    .btn-cancel:hover { background: #cbd5e1; }
+    .btn-copy { background: var(--success); color: white; margin-top: 1rem; width: 100%; }
+    .btn-copy:hover { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
+    
     .order-details {
-      background: var(--bg);
-      padding: 1rem;
-      border-radius: 8px;
-      margin: 1rem 0;
-      font-family: monospace;
-      font-size: 0.9rem;
-      border: 1px solid var(--border);
+      background: var(--bg); padding: 1rem; border-radius: 8px;
+      margin: 1rem 0; font-family: monospace; font-size: 0.9rem; border: 1px solid var(--border);
     }
-    .order-details div {
-      margin: 0.5rem 0;
-      display: flex;
-      justify-content: space-between;
-    }
-    .order-details strong {
-      color: var(--text);
-    }
+    .order-details div { margin: 0.5rem 0; display: flex; justify-content: space-between; }
+    .order-details strong { color: var(--text); }
+    
     .warning-box {
-      background: rgba(255, 193, 7, 0.1);
-      border: 1px solid #ffc107;
-      border-radius: 8px;
-      padding: 1rem;
-      margin: 1rem 0;
+      background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107;
+      border-radius: 8px; padding: 1rem; margin: 1rem 0;
     }
-    .warning-box p {
-      margin: 0;
-      color: #ffc107;
-      font-weight: 500;
-    }
+    .warning-box p { margin: 0; color: #d97706; font-weight: 500; }
+    
     .payment-info-box {
-      background: var(--bg);
-      padding: 1rem;
-      border-radius: 8px;
-      margin: 1rem 0;
-      border: 2px solid var(--primary);
-      word-break: break-all;
+      background: var(--bg); padding: 1rem; border-radius: 8px;
+      margin: 1rem 0; border: 2px solid var(--primary); word-break: break-all;
     }
     .payment-info-box code {
-      display: block;
-      padding: 0.5rem;
-      background: var(--card);
-      border-radius: 4px;
-      margin-top: 0.5rem;
-      font-size: 0.85rem;
+      display: block; padding: 0.5rem; background: var(--card);
+      border-radius: 4px; margin-top: 0.5rem; font-size: 0.85rem;
     }
 
-    [data-theme="dark"] .btn-cancel:hover {
-      background: #475569;
-    }
-
+    [data-theme="dark"] .btn-cancel:hover { background: #475569; }
     @media (max-width: 600px) { 
       .products { grid-template-columns: 1fr; }
       .modal { padding: 1.5rem; }
@@ -252,7 +140,6 @@
         <div class="error-message" id="emailError" data-i18n="emailError">يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)</div>
       </div>
 
-      <!-- === حقل اختيار طريقة الدفع === -->
       <div class="form-group">
         <label for="paymentMethodSelect" data-i18n="paymentMethod">طريقة الدفع</label>
         <select id="paymentMethodSelect">
@@ -275,11 +162,7 @@
       <h3 style="color: var(--success);"><i class="ph-bold ph-check-circle"></i> <span data-i18n="successTitle">تم إنشاء طلبك بنجاح!</span></h3>
       <p data-i18n="successDesc">يرجى إتمام الدفع باستخدام إحدى الطرق التالية</p>
       
-      <div class="order-details" id="orderDetails">
-        <!-- سيتم ملؤها بالجافاسكربت -->
-      </div>
-      
-      <!-- === صندوق معلومات الدفع (يظهر ديناميكياً) === -->
+      <div class="order-details" id="orderDetails"></div>
       <div id="paymentInfoContainer"></div>
       
       <div class="warning-box">
@@ -300,7 +183,6 @@
     const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
     const API_ORDERS_URL = API_URL.replace('/products', '/orders');
 
-    // === إعدادات المتجر ===
     const CONFIG = {
       CWALLET_ADDRESS: '0x1Eb3fD26e2C0dD144A4361AbA852e951eFD51e63',
       CWALLET_ID: '65126688',
@@ -318,9 +200,9 @@
         payViaCwalletId: "معرف CWallet (أسرع)", payViaDirectLink: "رابط دفع مباشر",
         cancel: "إلغاء", confirm: "تأكيد الشراء", successTitle: "تم إنشاء طلبك بنجاح!",
         successDesc: "يرجى إتمام الدفع باستخدام إحدى الطرق التالية",
-        orderId: "رقم الطلب:", product: "المنتج:", email: "البريد:",
+        orderId: "رقم الطلب:", product: "المنتج:", email: "البريد:", amount: "المبلغ:",
         paymentLink: "رابط الدفع:", walletAddress: "عنوان المحفظة:", cwalletId: "معرف CWallet:",
-        amount: "المبلغ:", copyLink: "نسخ الرابط", copied: "تم النسخ!",
+        copyLink: "نسخ الرابط", copied: "تم النسخ!",
         warningText: "احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني",
         copyButton: "نسخ المعلومات", close: "إغلاق", processing: "جاري المعالجة..."
       },
@@ -332,9 +214,9 @@
         payViaCwalletId: "CWallet ID (Faster)", payViaDirectLink: "Direct Payment Link",
         cancel: "Cancel", confirm: "Confirm Purchase", successTitle: "Order Created Successfully!",
         successDesc: "Please complete payment using one of the following methods",
-        orderId: "Order ID:", product: "Product:", email: "Email:",
+        orderId: "Order ID:", product: "Product:", email: "Email:", amount: "Amount:",
         paymentLink: "Payment Link:", walletAddress: "Wallet Address:", cwalletId: "CWallet ID:",
-        amount: "Amount:", copyLink: "Copy Link", copied: "Copied!",
+        copyLink: "Copy Link", copied: "Copied!",
         warningText: "Save order details (Order ID, Email, Product) for follow-up and support",
         copyButton: "Copy Details", close: "Close", processing: "Processing..."
       }
@@ -343,7 +225,6 @@
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     
-    // ✅ أضفنا selectedProductPrice هنا
     let selectedProductId = null;
     let selectedProductName = null;
     let selectedProductPrice = null;
@@ -395,7 +276,6 @@
           const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
           const icon = 'ph-package'; 
           
-          // ✅ أضفنا data-product-price هنا
           grid.innerHTML += `
             <div class="product-card">
               <div class="product-image"><i class="ph-bold ${icon}"></i></div>
@@ -420,11 +300,10 @@
       }
     }
 
-    // ✅ دالة handleBuyClick المعدلة: تقرأ السعر مباشرة من الزر
     function handleBuyClick(button) {
       selectedProductId = button.dataset.id;
       selectedProductName = button.dataset.name;
-      selectedProductPrice = button.dataset.price; // ✅ نقرأ السعر مباشرة
+      selectedProductPrice = parseFloat(button.dataset.price);
       
       console.log('🛒 Product:', selectedProductName, '| Price:', selectedProductPrice);
       
@@ -472,6 +351,17 @@
       
       if (!email || !isValidEmail(email)) { showEmailError(); emailInput.focus(); return; }
       
+      // ✅ تأكد من وجود السعر والمنتج
+      if (!selectedProductPrice || selectedProductPrice <= 0) {
+        alert('⚠️ خطأ: لم يتم تحديد سعر المنتج. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
+        return;
+      }
+      
+      if (!selectedProductName) {
+        alert('⚠️ خطأ: لم يتم تحديد المنتج. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
+        return;
+      }
+      
       const btn = event.currentTarget;
       const originalHTML = btn.innerHTML;
       btn.disabled = true;
@@ -496,7 +386,6 @@
           closeEmailModal();
           
           // ✅ نستخدم selectedProductPrice مباشرة (مضمون 100%)
-          const price = selectedProductPrice || 0;
           const paymentMethod = document.getElementById('paymentMethodSelect').value;
           
           currentOrderData = {
@@ -504,10 +393,10 @@
             product: selectedProductName,
             email: email,
             paymentMethod: paymentMethod,
-            amount: price
+            amount: selectedProductPrice
           };
 
-          showPaymentInfo(paymentMethod, price);
+          showPaymentInfo(paymentMethod, selectedProductPrice);
           showSuccessModal(currentOrderData);
           
         } else {
