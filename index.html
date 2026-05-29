@@ -300,83 +300,53 @@
     const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
     const API_ORDERS_URL = API_URL.replace('/products', '/orders');
 
-    // === إعدادات المتجر (عدل بياناتك هنا) ===
+    // === إعدادات المتجر ===
     const CONFIG = {
-      CWALLET_ADDRESS: '0x1Eb3fD26e2C0dD144A4361AbA852e951eFD51e63', // ⚠️ عنوان محفظتك (للطريقة الأولى)
-      CWALLET_ID: '65126688',                       // ⚠️ معرفك في سي واليت (للطريقة الثانية - أرقام فقط)
-      DIRECT_PAYMENT_LINK: 'https://cwallet.com/receive/7ce25e34dce4052ac98c2018f60da4c1', // ⚠️ رابط الدفع المباشر
+      CWALLET_ADDRESS: '0x1Eb3fD26e2C0dD144A4361AbA852e951eFD51e63',
+      CWALLET_ID: '65126688',
+      DIRECT_PAYMENT_LINK: 'https://cwallet.com/receive/7ce25e34dce4052ac98c2018f60da4c1',
       CWALLET_NETWORK: 'polygon',
       CWALLET_CURRENCY: 'USDT'
     };
 
     const texts = {
       ar: {
-        siteName: "منتجات رقمية",
-        footer: "© 2026 Digital Products. جميع الحقوق محفوظة.",
-        buy: "شراء الآن",
-        emailTitle: "إكمال عملية الشراء",
-        emailDesc: "يرجى إدخال بريدك الإلكتروني واختيار طريقة الدفع",
-        emailLabel: "البريد الإلكتروني *",
-        emailError: "يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)",
-        paymentMethod: "طريقة الدفع",
-        payViaAddress: "عنوان محفظة خارجي (أي محفظة)",
-        payViaCwalletId: "معرف CWallet (أسرع)",
-        payViaDirectLink: "رابط دفع مباشر",
-        cancel: "إلغاء",
-        confirm: "تأكيد الشراء",
-        successTitle: "تم إنشاء طلبك بنجاح!",
+        siteName: "منتجات رقمية", footer: "© 2026 Digital Products. جميع الحقوق محفوظة.", buy: "شراء الآن",
+        emailTitle: "إكمال عملية الشراء", emailDesc: "يرجى إدخال بريدك الإلكتروني واختيار طريقة الدفع",
+        emailLabel: "البريد الإلكتروني *", emailError: "يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)",
+        paymentMethod: "طريقة الدفع", payViaAddress: "عنوان محفظة خارجي (أي محفظة)",
+        payViaCwalletId: "معرف CWallet (أسرع)", payViaDirectLink: "رابط دفع مباشر",
+        cancel: "إلغاء", confirm: "تأكيد الشراء", successTitle: "تم إنشاء طلبك بنجاح!",
         successDesc: "يرجى إتمام الدفع باستخدام إحدى الطرق التالية",
-        orderId: "رقم الطلب:",
-        product: "المنتج:",
-        email: "البريد:",
-        paymentLink: "رابط الدفع:",
-        walletAddress: "عنوان المحفظة:",
-        cwalletId: "معرف CWallet:",
-        amount: "المبلغ:",
-        copyLink: "نسخ الرابط",
-        copied: "تم النسخ!",
+        orderId: "رقم الطلب:", product: "المنتج:", email: "البريد:",
+        paymentLink: "رابط الدفع:", walletAddress: "عنوان المحفظة:", cwalletId: "معرف CWallet:",
+        amount: "المبلغ:", copyLink: "نسخ الرابط", copied: "تم النسخ!",
         warningText: "احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني",
-        copyButton: "نسخ المعلومات",
-        close: "إغلاق",
-        processing: "جاري المعالجة..."
+        copyButton: "نسخ المعلومات", close: "إغلاق", processing: "جاري المعالجة..."
       },
       en: {
-        siteName: "Digital Products",
-        footer: "© 2026 Digital Products. All rights reserved.",
-        buy: "Buy Now",
-        emailTitle: "Complete Purchase",
-        emailDesc: "Please enter your email and choose payment method",
-        emailLabel: "Email Address *",
-        emailError: "Please enter a valid email (English letters only)",
-        paymentMethod: "Payment Method",
-        payViaAddress: "External Wallet Address (Any Wallet)",
-        payViaCwalletId: "CWallet ID (Faster)",
-        payViaDirectLink: "Direct Payment Link",
-        cancel: "Cancel",
-        confirm: "Confirm Purchase",
-        successTitle: "Order Created Successfully!",
+        siteName: "Digital Products", footer: "© 2026 Digital Products. All rights reserved.", buy: "Buy Now",
+        emailTitle: "Complete Purchase", emailDesc: "Please enter your email and choose payment method",
+        emailLabel: "Email Address *", emailError: "Please enter a valid email (English letters only)",
+        paymentMethod: "Payment Method", payViaAddress: "External Wallet Address (Any Wallet)",
+        payViaCwalletId: "CWallet ID (Faster)", payViaDirectLink: "Direct Payment Link",
+        cancel: "Cancel", confirm: "Confirm Purchase", successTitle: "Order Created Successfully!",
         successDesc: "Please complete payment using one of the following methods",
-        orderId: "Order ID:",
-        product: "Product:",
-        email: "Email:",
-        paymentLink: "Payment Link:",
-        walletAddress: "Wallet Address:",
-        cwalletId: "CWallet ID:",
-        amount: "Amount:",
-        copyLink: "Copy Link",
-        copied: "Copied!",
+        orderId: "Order ID:", product: "Product:", email: "Email:",
+        paymentLink: "Payment Link:", walletAddress: "Wallet Address:", cwalletId: "CWallet ID:",
+        amount: "Amount:", copyLink: "Copy Link", copied: "Copied!",
         warningText: "Save order details (Order ID, Email, Product) for follow-up and support",
-        copyButton: "Copy Details",
-        close: "Close",
-        processing: "Processing..."
+        copyButton: "Copy Details", close: "Close", processing: "Processing..."
       }
     };
 
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     
+    // ✅ أضفنا selectedProductPrice هنا
     let selectedProductId = null;
     let selectedProductName = null;
+    let selectedProductPrice = null;
     let currentOrderData = null;
     let productsCache = [];
     let currentPaymentUrl = '';
@@ -390,18 +360,12 @@
       
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (texts[lang][key]) {
-          el.textContent = texts[lang][key];
-        }
+        if (texts[lang][key]) el.textContent = texts[lang][key];
       });
-      
       renderProducts();
     }
 
-    function applyTheme() {
-      document.documentElement.setAttribute('data-theme', theme);
-    }
-
+    function applyTheme() { document.documentElement.setAttribute('data-theme', theme); }
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
       document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
     });
@@ -431,6 +395,7 @@
           const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
           const icon = 'ph-package'; 
           
+          // ✅ أضفنا data-product-price هنا
           grid.innerHTML += `
             <div class="product-card">
               <div class="product-image"><i class="ph-bold ${icon}"></i></div>
@@ -441,6 +406,7 @@
                 <button class="buy-btn" 
                         data-product-id="${p.id}" 
                         data-product-name="${title}"
+                        data-product-price="${p.price}"
                         onclick="handleBuyClick(this)">
                   <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
                 </button>
@@ -454,31 +420,20 @@
       }
     }
 
-function handleBuyClick(button) {
-  const productId = button.getAttribute('data-product-id');
-  const productName = button.getAttribute('data-product-name');
-  
-  selectedProductId = productId;
-  selectedProductName = productName;
-  
-  // ✅ جلب السعر مباشرة من الكاش
-  const product = productsCache.find(p => p.id === productId);
-  const price = product ? product.price : 0;
-  
-  console.log('🛒 Product selected:', { 
-    id: productId, 
-    name: productName,
-    price: price 
-  });
-  
-  openEmailModal(productId, productName);
-}
+    // ✅ دالة handleBuyClick المعدلة: تقرأ السعر مباشرة من الزر
+    function handleBuyClick(button) {
+      selectedProductId = button.dataset.id;
+      selectedProductName = button.dataset.name;
+      selectedProductPrice = button.dataset.price; // ✅ نقرأ السعر مباشرة
+      
+      console.log('🛒 Product:', selectedProductName, '| Price:', selectedProductPrice);
+      
+      openEmailModal(selectedProductId, selectedProductName);
+    }
 
     function openEmailModal(productId, productName) {
       selectedProductId = productId;
       selectedProductName = productName || (lang === 'ar' ? 'منتج غير معروف' : 'Unknown Product');
-      
-      console.log('✅ Modal opened with:', { id: selectedProductId, name: selectedProductName });
       
       document.getElementById('emailModal').classList.add('active');
       document.getElementById('customerEmail').focus();
@@ -487,64 +442,38 @@ function handleBuyClick(button) {
 
     function closeEmailModal() {
       document.getElementById('emailModal').classList.remove('active');
-      selectedProductId = null;
-      selectedProductName = null;
+      selectedProductId = selectedProductName = selectedProductPrice = null;
       document.getElementById('customerEmail').value = '';
       clearEmailError();
     }
 
     function clearEmailError() {
       const input = document.getElementById('customerEmail');
-      const error = document.getElementById('emailError');
       input.classList.remove('error');
-      error.classList.remove('show');
+      document.getElementById('emailError').classList.remove('show');
       input.style.borderColor = '';
     }
 
     function showEmailError() {
       const input = document.getElementById('customerEmail');
-      const error = document.getElementById('emailError');
       input.classList.add('error');
-      error.classList.add('show');
-      setTimeout(() => {
-        input.classList.remove('error');
-        error.classList.remove('show');
-      }, 3000);
+      document.getElementById('emailError').classList.add('show');
+      setTimeout(clearEmailError, 3000);
     }
 
     function isValidEmail(email) {
-      if (!/^[\x00-\x7F]+$/.test(email)) return false;
-      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!re.test(email)) return false;
-      if (email.includes('xn--')) return false;
-      const hasLetters = /[a-zA-Z]/.test(email);
-      if (!hasLetters) return false;
-      const parts = email.split('@');
-      if (parts.length !== 2) return false;
-      if (parts[0].length < 3) return false;
-      if (!parts[1].includes('.')) return false;
-      return true;
+      return /^[\x00-\x7F]+$/.test(email) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && 
+             !email.includes('xn--') && /[a-zA-Z]/.test(email) && email.split('@')[0].length >= 3;
     }
 
     async function confirmPurchase() {
       const emailInput = document.getElementById('customerEmail');
       const email = emailInput.value.trim();
       
-      if (!email) {
-        showEmailError();
-        emailInput.focus();
-        return;
-      }
-      
-      if (!isValidEmail(email)) {
-        showEmailError();
-        emailInput.focus();
-        return;
-      }
+      if (!email || !isValidEmail(email)) { showEmailError(); emailInput.focus(); return; }
       
       const btn = event.currentTarget;
       const originalHTML = btn.innerHTML;
-      
       btn.disabled = true;
       btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
 
@@ -554,8 +483,6 @@ function handleBuyClick(button) {
         items: [{ product_id: selectedProductId, quantity: 1 }]
       };
 
-      console.log('📤 Sending order:', orderData);
-
       try {
         const response = await fetch(API_ORDERS_URL, {
           method: 'POST',
@@ -564,14 +491,12 @@ function handleBuyClick(button) {
         });
 
         const result = await response.json();
-        console.log('📥 Response:', result);
 
         if (result.success) {
           closeEmailModal();
           
-          // === تجهيز معلومات الدفع بناءً على الطريقة المختارة ===
-          const product = productsCache.find(p => p.id === selectedProductId);
-          const price = product ? product.price : 0;
+          // ✅ نستخدم selectedProductPrice مباشرة (مضمون 100%)
+          const price = selectedProductPrice || 0;
           const paymentMethod = document.getElementById('paymentMethodSelect').value;
           
           currentOrderData = {
@@ -582,7 +507,6 @@ function handleBuyClick(button) {
             amount: price
           };
 
-          // عرض معلومات الدفع في نافذة النجاح
           showPaymentInfo(paymentMethod, price);
           showSuccessModal(currentOrderData);
           
@@ -605,50 +529,36 @@ function handleBuyClick(button) {
       let html = '<div class="payment-info-box">';
       
       if (method === 'direct_link') {
-        // الطريقة الثالثة: الرابط المباشر
         currentPaymentUrl = CONFIG.DIRECT_PAYMENT_LINK;
-        html += `
-          <strong>${t.paymentLink}</strong>
-          <code id="paymentLinkCode">${CONFIG.DIRECT_PAYMENT_LINK}</code>
+        html += `<strong>${t.paymentLink}</strong><code id="paymentLinkCode">${CONFIG.DIRECT_PAYMENT_LINK}</code>
           <button class="btn-copy" onclick="copyPaymentLink()" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
             <i class="ph-bold ph-copy"></i> ${t.copyLink}
-          </button>
-        `;
+          </button>`;
       } else if (method === 'cwallet_id') {
-        // الطريقة الثانية: معرف CWallet
         if (!CONFIG.CWALLET_ID || CONFIG.CWALLET_ID === '123456789') {
-          html += `<p style="color:var(--error);">⚠️ معرف CWallet غير مضبوط في الإعدادات</p>`;
+          html += `<p style="color:var(--error);">⚠️ معرف CWallet غير مضبوط</p>`;
         } else {
           currentPaymentUrl = `https://cwallet.com/request?amount=${amount}&currency=${CONFIG.CWALLET_CURRENCY}&network=${CONFIG.CWALLET_NETWORK}&cwallet_id=${CONFIG.CWALLET_ID}`;
-          html += `
-            <strong>${t.cwalletId}:</strong> ${CONFIG.CWALLET_ID}<br>
+          html += `<strong>${t.cwalletId}:</strong> ${CONFIG.CWALLET_ID}<br>
             <strong>${t.amount}:</strong> ${amount} ${CONFIG.CWALLET_CURRENCY}<br>
-            <strong>${t.paymentLink}:</strong>
-            <code id="paymentLinkCode">${currentPaymentUrl}</code>
+            <strong>${t.paymentLink}:</strong><code id="paymentLinkCode">${currentPaymentUrl}</code>
             <button class="btn-copy" onclick="copyPaymentLink()" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
               <i class="ph-bold ph-copy"></i> ${t.copyLink}
-            </button>
-          `;
+            </button>`;
         }
       } else {
-        // الطريقة الأولى: عنوان المحفظة
         if (!CONFIG.CWALLET_ADDRESS || CONFIG.CWALLET_ADDRESS === '0xYourWalletAddressHere...') {
-          html += `<p style="color:var(--error);">⚠️ عنوان المحفظة غير مضبوط في الإعدادات</p>`;
+          html += `<p style="color:var(--error);">⚠️ عنوان المحفظة غير مضبوط</p>`;
         } else {
           currentPaymentUrl = `https://cwallet.com/request?amount=${amount}&currency=${CONFIG.CWALLET_CURRENCY}&network=${CONFIG.CWALLET_NETWORK}&address=${CONFIG.CWALLET_ADDRESS}`;
-          html += `
-            <strong>${t.walletAddress}:</strong><br>
-            <code style="font-size:0.75rem;">${CONFIG.CWALLET_ADDRESS}</code><br>
+          html += `<strong>${t.walletAddress}:</strong><br><code style="font-size:0.75rem;">${CONFIG.CWALLET_ADDRESS}</code><br>
             <strong>${t.amount}:</strong> ${amount} ${CONFIG.CWALLET_CURRENCY}<br>
-            <strong>${t.paymentLink}:</strong>
-            <code id="paymentLinkCode">${currentPaymentUrl}</code>
+            <strong>${t.paymentLink}:</strong><code id="paymentLinkCode">${currentPaymentUrl}</code>
             <button class="btn-copy" onclick="copyPaymentLink()" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
               <i class="ph-bold ph-copy"></i> ${t.copyLink}
-            </button>
-          `;
+            </button>`;
         }
       }
-      
       html += '</div>';
       container.innerHTML = html;
     }
@@ -658,24 +568,20 @@ function handleBuyClick(button) {
       if (linkCode) {
         navigator.clipboard.writeText(linkCode.textContent).then(() => {
           const btn = event.target.closest('.btn-copy');
-          const originalHTML = btn.innerHTML;
+          const old = btn.innerHTML;
           btn.innerHTML = `<i class="ph-bold ph-check"></i> ${texts[lang].copied}`;
-          setTimeout(() => {
-            btn.innerHTML = originalHTML;
-          }, 2000);
+          setTimeout(() => btn.innerHTML = old, 2000);
         });
       }
     }
 
     function showSuccessModal(orderData) {
-      const detailsDiv = document.getElementById('orderDetails');
       const t = texts[lang];
-      detailsDiv.innerHTML = `
+      document.getElementById('orderDetails').innerHTML = `
         <div><strong>${t.orderId}</strong> <span>${orderData.orderId}</span></div>
         <div><strong>${t.product}</strong> <span>${orderData.product}</span></div>
         <div><strong>${t.email}</strong> <span>${orderData.email}</span></div>
-        <div><strong>${t.amount}</strong> <span>${orderData.amount} ${CONFIG.CWALLET_CURRENCY}</span></div>
-      `;
+        <div><strong>${t.amount}</strong> <span>${orderData.amount} ${CONFIG.CWALLET_CURRENCY}</span></div>`;
       document.getElementById('successModal').classList.add('active');
     }
 
@@ -688,74 +594,33 @@ function handleBuyClick(button) {
 
     function copyOrderDetails() {
       if (!currentOrderData) return;
-      
       const t = texts[lang];
-      const textToCopy = `${t.orderId} ${currentOrderData.orderId}\n${t.product} ${currentOrderData.product}\n${t.email} ${currentOrderData.email}\n${t.amount} ${currentOrderData.amount} ${CONFIG.CWALLET_CURRENCY}`;
-      
-      navigator.clipboard.writeText(textToCopy).then(() => {
+      const txt = `${t.orderId} ${currentOrderData.orderId}\n${t.product} ${currentOrderData.product}\n${t.email} ${currentOrderData.email}\n${t.amount} ${currentOrderData.amount} ${CONFIG.CWALLET_CURRENCY}`;
+      navigator.clipboard.writeText(txt).then(() => {
         const btn = document.querySelector('#successModal .btn-copy');
-        const originalHTML = btn.innerHTML;
+        const old = btn.innerHTML;
         btn.innerHTML = `<i class="ph-bold ph-check"></i> ${t.copied}`;
-        setTimeout(() => {
-          btn.innerHTML = originalHTML;
-        }, 2000);
-      }).catch(err => {
-        console.error('Copy failed:', err);
-        alert(lang === 'ar' ? '⚠️ فشل النسخ' : '⚠️ Copy failed');
+        setTimeout(() => btn.innerHTML = old, 2000);
       });
     }
 
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-      modal.addEventListener('click', function(e) {
-        if (e.target === this) {
-          if (this.id === 'emailModal') closeEmailModal();
-          if (this.id === 'successModal') closeSuccessModal();
-        }
-      });
+    document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => {
+      if (e.target === m) m.id === 'emailModal' ? closeEmailModal() : closeSuccessModal();
+    }));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeEmailModal(); closeSuccessModal(); } });
+    document.getElementById('customerEmail').addEventListener('keypress', e => { if (e.key === 'Enter') confirmPurchase(); });
+
+    const emailEl = document.getElementById('customerEmail');
+    emailEl.addEventListener('input', function() {
+      this.style.borderColor = this.value.trim() && isValidEmail(this.value.trim()) ? 'var(--success)' : '';
+      this.classList.remove('error');
+    });
+    emailEl.addEventListener('blur', function() {
+      if (this.value.trim() && !isValidEmail(this.value.trim())) showEmailError();
     });
 
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        closeEmailModal();
-        closeSuccessModal();
-      }
-    });
-
-    document.getElementById('customerEmail').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        confirmPurchase();
-      }
-    });
-
-    const emailInputEl = document.getElementById('customerEmail');
-
-    emailInputEl.addEventListener('input', function(e) {
-      const email = e.target.value.trim();
-      if (email && isValidEmail(email)) {
-        e.target.style.borderColor = 'var(--success)';
-        e.target.classList.remove('error');
-      } else {
-        e.target.style.borderColor = '';
-        e.target.classList.remove('error');
-      }
-    });
-
-    emailInputEl.addEventListener('blur', function(e) {
-      const email = e.target.value.trim();
-      if (email && !isValidEmail(email)) {
-        showEmailError();
-        e.target.style.borderColor = 'var(--error)';
-      } else if (email && isValidEmail(email)) {
-        e.target.style.borderColor = 'var(--success)';
-      }
-    });
-
-    applyLanguage();
-    applyTheme();
-    renderProducts();
+    applyLanguage(); applyTheme(); renderProducts();
   </script>
-  
-  <!-- سكريبت Cwallet -->
   <script async src="https://cwallet.com/opencx.js"></script>
 </body>
 </html>
