@@ -561,15 +561,37 @@
       }
     });
 
-    // التحقق الفوري أثناء الكتابة
-    document.getElementById('customerEmail').addEventListener('input', function(e) {
-      const email = e.target.value.trim();
-      if (email && !isValidEmail(email)) {
-        e.target.classList.add('error');
-      } else {
-        e.target.classList.remove('error');
-      }
-    });
+// === التحقق من الإيميل (تصحيح المشكلة) ===
+const emailInput = document.getElementById('customerEmail');
+
+// إزالة الخطأ أثناء الكتابة (مش أثناء الكتابة)
+emailInput.addEventListener('input', function(e) {
+  const email = e.target.value.trim();
+  // بس نزيل الأحمر أثناء الكتابة، وما بنفحص إلا إذا كان فارغ
+  if (email) {
+    e.target.classList.remove('error');
+    // إذا الإيميل كامل وصحيح، نضيف الأخضر
+    if (isValidEmail(email)) {
+      e.target.style.borderColor = 'var(--success)';
+    } else {
+      e.target.style.borderColor = ''; // نرجع اللون الأصلي
+    }
+  } else {
+    e.target.classList.remove('error');
+    e.target.style.borderColor = '';
+  }
+});
+
+// التحقق لما تخلص تكتب (لما تطلع من الخانة)
+emailInput.addEventListener('blur', function(e) {
+  const email = e.target.value.trim();
+  if (email && !isValidEmail(email)) {
+    showEmailError();
+    e.target.style.borderColor = 'var(--error)';
+  } else if (email && isValidEmail(email)) {
+    e.target.style.borderColor = 'var(--success)';
+  }
+});
 
     applyLanguage();
     applyTheme();
