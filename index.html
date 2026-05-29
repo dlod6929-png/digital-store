@@ -56,16 +56,22 @@
     </div>
   </header>
 
-  <main class="products" id="productsGrid"></main>
+  <main class="products" id="productsGrid">
+    <!-- سيتم تحميل المنتجات هنا ديناميكياً -->
+  </main>
 
   <footer>
     <p id="footerText"> Digital Products 2026 ©  </p>
   </footer>
 
   <script>
+    // === إعدادات الربط مع الخادم ===
+    // ⚠️ تأكد أن هذا الرابط مطابق تماماً لرابط الـ Worker الخاص بك
+    const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
+
     // === إعدادات النصوص ===
     const texts = {
-      ar: { siteName: "Digital Products", footer: "© 2026 Digital Products. buy: "شراء الآن" },
+      ar: { siteName: "Digital Products", footer: "© 2026 Digital Products. جميع الحقوق محفوظة.", buy: "شراء الآن" },
       en: { siteName: "Digital Products", footer: "© 2026 Digital Products. All rights reserved.", buy: "Buy Now" }
     };
 
@@ -79,10 +85,9 @@
     function applyLanguage() {
       document.documentElement.lang = lang;
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      document.title = texts[lang].siteName; // تحديث اسم التبويب
+      document.title = texts[lang].siteName;
       document.getElementById('siteName').textContent = texts[lang].siteName;
       document.getElementById('footerText').textContent = texts[lang].footer;
-      renderProducts(); // إعادة رسم المنتجات لتحديث النصوص
     }
 
     function applyTheme() {
@@ -95,45 +100,77 @@
       document.documentElement.setAttribute('data-theme', newTheme);
     });
 
-    // === بيانات المنتجات التجريبية ===
-    const products = [
-      { id: '1', title_ar: 'قالب سيرة ذاتية احترافي', title_en: 'Professional CV Template', price: '$5', desc_ar: 'قالب Word قابل للتعديل بالكامل وتصميم عصري', desc_en: 'Fully editable Word template with modern design', icon: 'ph-file-doc' },
-      { id: '2', title_ar: 'حزمة أيقونات واجهة المستخدم', title_en: 'UI Icons Pack', price: '$12', desc_ar: '+500 أيقونة SVG و PNG عالية الدقة', desc_en: '+500 high-quality SVG & PNG icons', icon: 'ph-shapes' },
-      { id: '3', title_ar: 'كتاب إتقان البرمجة', title_en: 'Mastering Programming eBook', price: '$8', desc_ar: 'دليلك الشامل لتعلم أساسيات البرمجة', desc_en: 'Your comprehensive guide to learning programming basics', icon: 'ph-book-open-text' }
-    ];
-
-    // === عرض المنتجات ===
-    function renderProducts() {
+    // === جلب وعرض المنتجات من الـ API ===
+    async function renderProducts() {
       const grid = document.getElementById('productsGrid');
-      grid.innerHTML = ''; // مسح المحتوى الحالي
       
-      products.forEach(p => {
-        grid.innerHTML += `
-          <div class="product-card">
-            <div class="product-image">
-              <i class="ph-bold ${p.icon}"></i>
+      // عرض حالة التحميل
+      grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">جاري تحميل المنتجات...</p>`;
+      
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const result = await response.json();
+        
+        if (!result.success) throw new Error(result.error || 'خطأ غير معروف من الخادم');
+        
+        const products = result.data;
+        
+        // إذا لم تكن هناك منتجات
+        if (!products || products.length === 0) {
+          grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">لا توجد منتجات متاحة حالياً</p>`;
+          return;
+        }
+        
+        // مسح رسالة التحميل وعرض المنتجات
+        grid.innerHTML = '';
+        
+        products.forEach(p => {
+          // اختيار العنوان والوصف حسب اللغة
+          const title = lang === 'ar' ? p.title_ar : p.title_en;
+          // ملاحظة: الوصف غير موجود في جدول المنتجات الحالي، نضع نص افتراضي
+          const description = lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product';
+          
+          // تنسيق السعر (رقم + عملة)
+          const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
+          
+          // أيقونة افتراضية (لأن المنتجات من الـ API ما فيها icon)
+          const icon = 'ph-package'; 
+          
+          grid.innerHTML += `
+            <div class="product-card">
+              <div class="product-image">
+                <i class="ph-bold ${icon}"></i>
+              </div>
+              <div class="product-content">
+                <h3>${title}</h3>
+                <div class="price">${priceDisplay}</div>
+                <p class="desc">${description}</p>
+                <button class="buy-btn" onclick="handleBuy('${p.id}')">
+                  <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
+                </button>
+              </div>
             </div>
-            <div class="product-content">
-              <h3>${lang === 'ar' ? p.title_ar : p.title_en}</h3>
-              <div class="price">${p.price}</div>
-              <p class="desc">${lang === 'ar' ? p.desc_ar : p.desc_en}</p>
-              <button class="buy-btn" onclick="handleBuy('${p.id}')">
-                <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
-              </button>
-            </div>
-          </div>
-        `;
-      });
+          `;
+        });
+        
+      } catch (err) {
+        console.error('Error loading products:', err);
+        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ فشل تحميل المنتجات. تأكد من اتصال الإنترنت أو حاول لاحقاً.</p>`;
+      }
     }
 
     // دالة مؤقتة لزر الشراء
     function handleBuy(productId) {
-      alert(`Product ID: ${productId}\nThis will connect to the Cloudflare Worker later!`);
+      // هنا سيتم لاحقاً إرسال طلب للشراء إلى الـ Worker
+      alert(`Product ID: ${productId}\nسيتم ربط عملية الشراء قريباً!`);
     }
 
     // === التشغيل لأول مرة ===
     applyLanguage();
     applyTheme();
+    renderProducts(); // استدعاء دالة جلب المنتجات عند تحميل الصفحة
   </script>
 </body>
 </html>
