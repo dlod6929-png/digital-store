@@ -151,7 +151,7 @@
       
       <div class="modal-buttons">
         <button class="btn-cancel" onclick="closeEmailModal()" data-i18n="cancel">إلغاء</button>
-        <button class="btn-confirm" onclick="confirmPurchase()" data-i18n="confirm">تأكيد الشراء</button>
+        <button class="btn-confirm" onclick="confirmPurchase(event)" data-i18n="confirm">تأكيد الشراء</button>
       </div>
     </div>
   </div>
@@ -300,21 +300,21 @@
       }
     }
 
-function handleBuyClick(button) {
-  selectedProductId = button.dataset.productId;      // ✅ صحيح
-  selectedProductName = button.dataset.productName;  // ✅ صحيح
-  selectedProductPrice = parseFloat(button.dataset.productPrice); // ✅ صحيح
-  
-  console.log('🛒 Product:', selectedProductName, '| Price:', selectedProductPrice);
-  
-  if (!selectedProductPrice || isNaN(selectedProductPrice)) {
-    console.error('❌ Price not found or invalid:', button.dataset.productPrice);
-    alert('⚠️ خطأ في سعر المنتج. يرجى تحديث الصفحة.');
-    return;
-  }
-  
-  openEmailModal(selectedProductId, selectedProductName);
-}
+    function handleBuyClick(button) {
+      selectedProductId = button.dataset.productId;
+      selectedProductName = button.dataset.productName;
+      selectedProductPrice = parseFloat(button.dataset.productPrice);
+      
+      console.log('🛒 Product:', selectedProductName, '| Price:', selectedProductPrice);
+      
+      if (!selectedProductPrice || isNaN(selectedProductPrice)) {
+        console.error('❌ Price not found or invalid:', button.dataset.productPrice);
+        alert('⚠️ خطأ في سعر المنتج. يرجى تحديث الصفحة.');
+        return;
+      }
+      
+      openEmailModal(selectedProductId, selectedProductName);
+    }
 
     function openEmailModal(productId, productName) {
       selectedProductId = productId;
@@ -327,9 +327,9 @@ function handleBuyClick(button) {
 
     function closeEmailModal() {
       document.getElementById('emailModal').classList.remove('active');
-      selectedProductId = selectedProductName = selectedProductPrice = null;
       document.getElementById('customerEmail').value = '';
       clearEmailError();
+      // ✅ لا نصفر المتغيرات هنا، نستخدمها في confirmPurchase
     }
 
     function clearEmailError() {
@@ -351,15 +351,16 @@ function handleBuyClick(button) {
              !email.includes('xn--') && /[a-zA-Z]/.test(email) && email.split('@')[0].length >= 3;
     }
 
-    async function confirmPurchase() {
+    async function confirmPurchase(event) {
       const emailInput = document.getElementById('customerEmail');
       const email = emailInput.value.trim();
       
       if (!email || !isValidEmail(email)) { showEmailError(); emailInput.focus(); return; }
       
-      // ✅ تأكد من وجود السعر والمنتج
-      if (!selectedProductPrice || selectedProductPrice <= 0) {
+      const price = selectedProductPrice;
+      if (!price || price <= 0 || isNaN(price)) {
         alert('⚠️ خطأ: لم يتم تحديد سعر المنتج. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
+        console.error('Price issue:', { price, selectedProductPrice });
         return;
       }
       
@@ -373,6 +374,8 @@ function handleBuyClick(button) {
       btn.disabled = true;
       btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
 
+      const paymentMethod = document.getElementById('paymentMethodSelect').value;
+      
       const orderData = {
         guest_email: email,
         payment_method: "cwallet",
@@ -387,26 +390,27 @@ function handleBuyClick(button) {
         });
 
         const result = await response.json();
+        console.log('📥 Response:', result);
 
-        if (result.success) {
+        if (result.success && result.data?.order_id) {
           closeEmailModal();
-          
-          // ✅ نستخدم selectedProductPrice مباشرة (مضمون 100%)
-          const paymentMethod = document.getElementById('paymentMethodSelect').value;
           
           currentOrderData = {
             orderId: result.data.order_id,
             product: selectedProductName,
             email: email,
             paymentMethod: paymentMethod,
-            amount: selectedProductPrice
+            amount: price
           };
 
-          showPaymentInfo(paymentMethod, selectedProductPrice);
+          showPaymentInfo(paymentMethod, price);
           showSuccessModal(currentOrderData);
           
+          // ✅ نصفر المتغيرات بعد النجاح
+          selectedProductId = selectedProductName = selectedProductPrice = null;
+          
         } else {
-          alert(`${lang === 'ar' ? '⚠️ حدث خطأ: ' : '⚠️ Error: '}${result.error}`);
+          alert(`${lang === 'ar' ? '⚠️ حدث خطأ: ' : '⚠️ Error: '}${result.error || 'فشل إنشاء الطلب'}`);
         }
       } catch (err) {
         console.error('❌ Purchase error:', err);
@@ -426,7 +430,7 @@ function handleBuyClick(button) {
       if (method === 'direct_link') {
         currentPaymentUrl = CONFIG.DIRECT_PAYMENT_LINK;
         html += `<strong>${t.paymentLink}</strong><code id="paymentLinkCode">${CONFIG.DIRECT_PAYMENT_LINK}</code>
-          <button class="btn-copy" onclick="copyPaymentLink()" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
+          <button class="btn-copy" onclick="copyPaymentLink(this)" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
             <i class="ph-bold ph-copy"></i> ${t.copyLink}
           </button>`;
       } else if (method === 'cwallet_id') {
@@ -437,7 +441,7 @@ function handleBuyClick(button) {
           html += `<strong>${t.cwalletId}:</strong> ${CONFIG.CWALLET_ID}<br>
             <strong>${t.amount}:</strong> ${amount} ${CONFIG.CWALLET_CURRENCY}<br>
             <strong>${t.paymentLink}:</strong><code id="paymentLinkCode">${currentPaymentUrl}</code>
-            <button class="btn-copy" onclick="copyPaymentLink()" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
+            <button class="btn-copy" onclick="copyPaymentLink(this)" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
               <i class="ph-bold ph-copy"></i> ${t.copyLink}
             </button>`;
         }
@@ -449,7 +453,7 @@ function handleBuyClick(button) {
           html += `<strong>${t.walletAddress}:</strong><br><code style="font-size:0.75rem;">${CONFIG.CWALLET_ADDRESS}</code><br>
             <strong>${t.amount}:</strong> ${amount} ${CONFIG.CWALLET_CURRENCY}<br>
             <strong>${t.paymentLink}:</strong><code id="paymentLinkCode">${currentPaymentUrl}</code>
-            <button class="btn-copy" onclick="copyPaymentLink()" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
+            <button class="btn-copy" onclick="copyPaymentLink(this)" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
               <i class="ph-bold ph-copy"></i> ${t.copyLink}
             </button>`;
         }
@@ -458,11 +462,10 @@ function handleBuyClick(button) {
       container.innerHTML = html;
     }
 
-    function copyPaymentLink() {
+    function copyPaymentLink(btn) {
       const linkCode = document.getElementById('paymentLinkCode');
       if (linkCode) {
         navigator.clipboard.writeText(linkCode.textContent).then(() => {
-          const btn = event.target.closest('.btn-copy');
           const old = btn.innerHTML;
           btn.innerHTML = `<i class="ph-bold ph-check"></i> ${texts[lang].copied}`;
           setTimeout(() => btn.innerHTML = old, 2000);
@@ -503,7 +506,7 @@ function handleBuyClick(button) {
       if (e.target === m) m.id === 'emailModal' ? closeEmailModal() : closeSuccessModal();
     }));
     document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeEmailModal(); closeSuccessModal(); } });
-    document.getElementById('customerEmail').addEventListener('keypress', e => { if (e.key === 'Enter') confirmPurchase(); });
+    document.getElementById('customerEmail').addEventListener('keypress', e => { if (e.key === 'Enter') confirmPurchase(e); });
 
     const emailEl = document.getElementById('customerEmail');
     emailEl.addEventListener('input', function() {
