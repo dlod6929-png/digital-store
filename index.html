@@ -454,14 +454,25 @@
       }
     }
 
-    function handleBuyClick(button) {
-      const productId = button.getAttribute('data-product-id');
-      const productName = button.getAttribute('data-product-name');
-      
-      console.log('🛒 Product selected:', { id: productId, name: productName });
-      
-      openEmailModal(productId, productName);
-    }
+function handleBuyClick(button) {
+  const productId = button.getAttribute('data-product-id');
+  const productName = button.getAttribute('data-product-name');
+  
+  selectedProductId = productId;
+  selectedProductName = productName;
+  
+  // ✅ جلب السعر مباشرة من الكاش
+  const product = productsCache.find(p => p.id === productId);
+  const price = product ? product.price : 0;
+  
+  console.log('🛒 Product selected:', { 
+    id: productId, 
+    name: productName,
+    price: price 
+  });
+  
+  openEmailModal(productId, productName);
+}
 
     function openEmailModal(productId, productName) {
       selectedProductId = productId;
