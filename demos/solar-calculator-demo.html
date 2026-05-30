@@ -116,17 +116,6 @@
         .helper-note { opacity: 0.7; font-size: 0.75rem; margin-top: 5px; display: block; line-height: 1.5; }
         .info-box { background: var(--input-bg); padding: 12px; border-radius: 10px; text-align: center; border: 1px dashed var(--input-border); grid-column: 1 / -1; font-size: 0.85rem; color: var(--text-color); opacity: 0.8; }
 
-        /* أكورديون مخصص لقسم المهندسين */
-        .custom-details { margin-top: 6px; border: 1px solid var(--input-border); border-radius: 6px; overflow: hidden; }
-        .locked-summary { display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--neon-orange); font-weight: bold; list-style: none; padding: 6px 10px; background: var(--input-bg); transition: background 0.3s; }
-        .locked-summary:hover { background: var(--input-border); }
-        .locked-summary .arrow { display: inline-block; transition: transform 0.3s ease; font-size: 0.9rem; }
-        .locked-summary .arrow.open { transform: rotate(90deg); }
-        .locked-summary .lock-icon { font-size: 0.85rem; }
-        .eng-details-wrapper { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; opacity: 0; background: var(--input-bg); }
-        .eng-details-wrapper.open { max-height: 300px; opacity: 1; }
-        .eng-details { padding: 10px; font-size: 0.8rem; line-height: 1.6; border-top: 1px solid var(--input-border); }
-        .eng-details strong { color: var(--neon-orange); }
 
         .motor-watt-locked .input-group input { position: relative; padding-right: 30px; }
         .motor-watt-locked .input-group input::after { content: "🔒"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 1rem; pointer-events: none; }
@@ -193,16 +182,7 @@
                 <select id="hasMotor" onchange="onMotorTypeChange()"></select>
                 <small class="helper-note">
                     <span id="motorNoteText"></span>
-                    <div class="custom-details" id="motorDetails">
-                        <div class="locked-summary" id="motorNoteSummary">
-                            <span class="arrow" id="motorArrow">▼</span>
-                            <span class="lock-icon">🔒</span>
-                            <span id="motorNoteSummaryText"></span>
-                        </div>
-                        <div class="eng-details-wrapper" id="motorDetailsWrapper">
-                            <div class="eng-details" id="motorNoteDetails"></div>
-                        </div>
-                    </div>
+                   
                 </small>
             </div>
 
@@ -289,9 +269,7 @@
             ph_night: "معدل المنازل 50%",
             autonomyNote: "💡 أيام الاحتياط تحسب على الاستهلاك اليومي الكامل (ليل+نهار).",
             chargeRateNote: "⚡ C/10 للرصاص (آمن)، C/5 قياسي لليثيوم، C/2 شحن سريع لليثيوم الحديث.",
-            motorNoteText: "✅ قيم آمنة تناسب معظم الإنفرترات التجارية.",
-            motorNoteSummaryLocked: "للمهندسين: تفاصيل الحساب",
-            motorNoteSummaryUnlocked: "للمهندسين: تفاصيل الحساب",
+           
             motorNoteDetails: "🔒 متاح في النسخة الكاملة",
             motorWattNote: "⚡ أدخل القدرة التشغيلية (Running Watts). الكود سيضربها تلقائياً بالمعامل لحساب الإنفرتر.",
             motorWattNoteLocked: "🔒 متاح في النسخة الكاملة",
@@ -361,9 +339,7 @@
             ph_night: "Avg homes 50%",
             autonomyNote: "💡 Backup days are calculated based on full daily consumption (day + night).",
             chargeRateNote: "⚡ C/10 for Lead-Acid (safe), C/5 standard for Lithium, C/2 fast charge for modern Lithium.",
-            motorNoteText: "✅ Safe values suitable for most commercial inverters.",
-            motorNoteSummaryLocked: "For Engineers: Calculation details",
-            motorNoteSummaryUnlocked: "For Engineers: Calculation details",
+          
             motorNoteDetails: "🔒 Available in full version",
             motorWattNote: "⚡ Enter Running Watts. The code will multiply it by the selected factor to calculate inverter surge.",
             motorWattNoteLocked: "🔒 Available in full version",
@@ -465,8 +441,6 @@
         document.getElementById('powerLabel').innerText = t.powerLabel;
         document.getElementById('inverterLabel').innerText = t.inverterLabel;
         document.getElementById('batteryLabel').innerText = t.batteryLabel;
-        document.getElementById('motorNoteText').innerText = t.motorNoteText;
-        document.getElementById('motorNoteDetails').innerHTML = t.motorNoteDetails;
         document.getElementById('nightConsLabel').innerText = t.nightConsLabel;
         document.getElementById('totalWatt').placeholder = t.ph_zero;
         document.getElementById('totalHours').placeholder = t.ph_zero;
@@ -490,9 +464,6 @@
 
         updateChargeRateDefault();
         onMotorTypeChange();
-        document.getElementById('motorArrow').classList.remove('open');
-        document.getElementById('motorDetailsWrapper').classList.remove('open');
-        document.getElementById('motorNoteSummaryText').innerText = t.motorNoteSummaryLocked;
     }
 
     function switchTab(num) {
@@ -687,28 +658,8 @@
         document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    function toggleEngineerDetails() {
-        const wrapper = document.getElementById('motorDetailsWrapper');
-        const arrow = document.getElementById('motorArrow');
-        const summaryText = document.getElementById('motorNoteSummaryText');
-        const t = translations[currentLang];
-        const isOpen = wrapper.classList.contains('open');
-        
-        if (isOpen) {
-            wrapper.classList.remove('open');
-            arrow.classList.remove('open');
-            summaryText.innerText = t.motorNoteSummaryLocked;
-        } else {
-            wrapper.classList.add('open');
-            arrow.classList.add('open');
-            summaryText.innerText = t.motorNoteSummaryUnlocked;
-        }
-    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const summary = document.getElementById('motorNoteSummary');
-        summary.addEventListener('click', toggleEngineerDetails);
-    });
+ 
 
     initLanguage();
     toggleBatteryOptions();
