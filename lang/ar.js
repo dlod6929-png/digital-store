@@ -1,7 +1,7 @@
 const texts_ar = {
   siteName: "Digital Products",
   loadingProducts: "جاري تحميل المنتجات...",
-  footer: "© 2026 Digital Products. جميع الحقوق محفوظة.",
+  footer: "© 2026 Digital Products.",
   buy: "شراء الآن",
   tryDemo: "🎁 جرب مجاناً",
   emailTitle: "إكمال عملية الشراء",
