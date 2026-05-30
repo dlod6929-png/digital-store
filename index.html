@@ -19,7 +19,24 @@
       --border: #334155;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); line-height: 1.6; padding: 1rem; transition: background 0.4s, color 0.4s; }
+    
+    body {
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 1rem;
+      transition: background 0.4s, color 0.4s;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .main-container {
+      flex: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
 
     header { display: flex; justify-content: center; align-items: center; padding: 1rem 1.5rem; background: var(--card); border-radius: var(--radius); margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
     .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: bold; color: var(--primary); }
@@ -41,7 +58,7 @@
       box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.3);
     }
 
-    .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
+    .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
     .product-card { background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; }
     .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
     
@@ -65,9 +82,16 @@
     }
     .demo-btn:hover { background: var(--primary); color: white; }
 
-    footer { text-align: center; margin-top: 4rem; padding: 1rem; color: var(--text-secondary); font-size: 0.9rem; }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+    }
 
-    /* النوافذ المنبثقة */
+    /* باقي الأنماط للنوافذ المنبثقة (كما هي) */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center;
@@ -150,6 +174,7 @@
   </style>
 </head>
 <body>
+<div class="main-container">
   <header>
     <div class="logo">
       <i class="ph-bold ph-package"></i>
@@ -157,380 +182,317 @@
     </div>
   </header>
 
-  <!-- تبويبات الفئات (سيتم تعبئتها تلقائياً من الـ Worker) -->
+  <!-- تبويبات الفئات -->
   <div class="category-tabs" id="categoryTabs"></div>
 
   <main class="products" id="productsGrid"></main>
+</div> <!-- نهاية main-container -->
 
-  <footer>
-    <p id="footerText"> Digital Products 2026 ©  </p>
-  </footer>
+<footer>
+  <p id="footerText">© 2026 Digital Products. All rights reserved.</p>
+</footer>
 
-  <!-- نافذة إدخال البريد الإلكتروني -->
-  <div class="modal-overlay" id="emailModal">
-    <div class="modal">
-      <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال عملية الشراء</span></h3>
-      <p data-i18n="emailDesc">يرجى إدخال بريدك الإلكتروني</p>
-      <div class="form-group">
-        <label for="customerEmail" data-i18n="emailLabel">البريد الإلكتروني *</label>
-        <input type="email" id="customerEmail" placeholder="example@email.com" required>
-        <div class="error-message" id="emailError" data-i18n="emailError">يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)</div>
-      </div>
-      <div class="modal-buttons">
-        <button class="btn-cancel" onclick="closeEmailModal()" data-i18n="cancel">إلغاء</button>
-        <button class="btn-confirm" onclick="confirmPurchase(event)" data-i18n="confirm">تأكيد الشراء</button>
-      </div>
+<!-- باقي النوافذ المنبثقة (نفس الكود السابق) -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal">
+    <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال عملية الشراء</span></h3>
+    <p data-i18n="emailDesc">يرجى إدخال بريدك الإلكتروني</p>
+    <div class="form-group">
+      <label for="customerEmail" data-i18n="emailLabel">البريد الإلكتروني *</label>
+      <input type="email" id="customerEmail" placeholder="example@email.com" required>
+      <div class="error-message" id="emailError" data-i18n="emailError">يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)</div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-cancel" onclick="closeEmailModal()" data-i18n="cancel">إلغاء</button>
+      <button class="btn-confirm" onclick="confirmPurchase(event)" data-i18n="confirm">تأكيد الشراء</button>
     </div>
   </div>
+</div>
 
-  <!-- نافذة نجاح الطلب -->
-  <div class="modal-overlay" id="successModal">
-    <div class="modal">
-      <h3 style="color: var(--success);"><i class="ph-bold ph-check-circle"></i> <span data-i18n="successTitle">تم إنشاء طلبك بنجاح!</span></h3>
-      <p data-i18n="successDesc">سيتم التواصل معك قريباً لإتمام عملية الشراء</p>
-      <div class="order-details" id="orderDetails"></div>
-      <div class="warning-box">
-        <p><i class="ph-bold ph-warning"></i> <span data-i18n="warningText">احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني</span></p>
-      </div>
-      <button class="btn-copy" onclick="copyOrderDetails()"><i class="ph-bold ph-copy"></i> <span data-i18n="copyButton">نسخ المعلومات</span></button>
-      <div class="modal-buttons" style="margin-top: 1rem;">
-        <button class="btn-cancel" onclick="closeSuccessModal()" data-i18n="close">إغلاق</button>
-      </div>
+<div class="modal-overlay" id="successModal">
+  <div class="modal">
+    <h3 style="color: var(--success);"><i class="ph-bold ph-check-circle"></i> <span data-i18n="successTitle">تم إنشاء طلبك بنجاح!</span></h3>
+    <p data-i18n="successDesc">سيتم التواصل معك قريباً لإتمام عملية الشراء</p>
+    <div class="order-details" id="orderDetails"></div>
+    <div class="warning-box">
+      <p><i class="ph-bold ph-warning"></i> <span data-i18n="warningText">احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني</span></p>
+    </div>
+    <button class="btn-copy" onclick="copyOrderDetails()"><i class="ph-bold ph-copy"></i> <span data-i18n="copyButton">نسخ المعلومات</span></button>
+    <div class="modal-buttons" style="margin-top: 1rem;">
+      <button class="btn-cancel" onclick="closeSuccessModal()" data-i18n="close">إغلاق</button>
     </div>
   </div>
+</div>
 
-  <!-- نافذة تجربة المنتج (ديمو) -->
-  <div class="modal-overlay demo-modal" id="demoModal">
-    <div class="modal">
-      <div class="demo-header">
-        <h3 id="demoTitle">تجربة المنتج</h3>
-        <button class="btn-close" onclick="closeDemoModal()">✕</button>
-      </div>
-      <iframe class="demo-frame" id="demoFrame" src="about:blank" title="Demo Preview"></iframe>
-      <div class="demo-footer">
-        <button class="btn-cancel" onclick="closeDemoModal()" data-i18n="close">إغلاق</button>
-        <button class="btn-buy-full" onclick="buyFromDemo()"><i class="ph-bold ph-unlock"></i> <span data-i18n="buyFull">شراء النسخة الكاملة</span></button>
-      </div>
+<div class="modal-overlay demo-modal" id="demoModal">
+  <div class="modal">
+    <div class="demo-header">
+      <h3 id="demoTitle">تجربة المنتج</h3>
+      <button class="btn-close" onclick="closeDemoModal()">✕</button>
+    </div>
+    <iframe class="demo-frame" id="demoFrame" src="about:blank" title="Demo Preview"></iframe>
+    <div class="demo-footer">
+      <button class="btn-cancel" onclick="closeDemoModal()" data-i18n="close">إغلاق</button>
+      <button class="btn-buy-full" onclick="buyFromDemo()"><i class="ph-bold ph-unlock"></i> <span data-i18n="buyFull">شراء النسخة الكاملة</span></button>
     </div>
   </div>
+</div>
 
-  <script>
-    // -------------------- الترجمة --------------------
-    const texts = {
-      ar: {
-        siteName: "منتجات رقمية", footer: "© 2026 Digital Products. جميع الحقوق محفوظة.", buy: "شراء الآن", tryDemo: "🎁 جرب مجاناً",
-        emailTitle: "إكمال عملية الشراء", emailDesc: "يرجى إدخال بريدك الإلكتروني",
-        emailLabel: "البريد الإلكتروني *", emailError: "يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)",
-        cancel: "إلغاء", confirm: "تأكيد الشراء", successTitle: "تم إنشاء طلبك بنجاح!",
-        successDesc: "سيتم التواصل معك قريباً لإتمام عملية الشراء",
-        orderId: "رقم الطلب:", product: "المنتج:", email: "البريد:",
-        copied: "تم النسخ!", buyFull: "🔓 شراء النسخة الكاملة",
-        warningText: "احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني",
-        copyButton: "نسخ المعلومات", close: "إغلاق", processing: "جاري المعالجة..."
-      },
-      en: {
-        siteName: "Digital Products", footer: "© 2026 Digital Products. All rights reserved.", buy: "Buy Now", tryDemo: "🎁 Try Free",
-        emailTitle: "Complete Purchase", emailDesc: "Please enter your email",
-        emailLabel: "Email Address *", emailError: "Please enter a valid email (English letters only)",
-        cancel: "Cancel", confirm: "Confirm Purchase", successTitle: "Order Created Successfully!",
-        successDesc: "You will be contacted shortly to complete the payment",
-        orderId: "Order ID:", product: "Product:", email: "Email:",
-        copied: "Copied!", buyFull: "🔓 Buy Full Version",
-        warningText: "Save order details (Order ID, Email, Product) for follow-up and support",
-        copyButton: "Copy Details", close: "Close", processing: "Processing..."
-      }
-    };
-
-    const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
-    const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    
-    // -------------------- إعدادات Worker --------------------
-    const WORKER_API = 'https://digitalstore.dlod6929.workers.dev/api';
-    const API_CATEGORIES = `${WORKER_API}/categories`;
-    const API_PRODUCTS = `${WORKER_API}/products`;
-    const API_ORDERS = `${WORKER_API}/orders`;
-    const DEMOS_FOLDER = 'demos/';
-
-    let selectedProductId = null;
-    let selectedProductName = null;
-    let selectedProductPrice = null;
-    let currentOrderData = null;
-
-    // -------------------- تطبيق اللغة والثيم --------------------
-    function applyLanguage() {
-      document.documentElement.lang = lang;
-      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      document.title = texts[lang].siteName;
-      document.getElementById('siteName').textContent = texts[lang].siteName;
-      document.getElementById('footerText').textContent = texts[lang].footer;
-      document.getElementById('demoTitle').textContent = lang === 'ar' ? 'تجربة المنتج' : 'Product Demo';
-      
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (texts[lang][key]) el.textContent = texts[lang][key];
-      });
+<script>
+  // -------------------- الترجمة --------------------
+  const texts = {
+    ar: {
+      siteName: "منتجات رقمية", footer: "© 2026 Digital Products. جميع الحقوق محفوظة.", buy: "شراء الآن", tryDemo: "🎁 جرب مجاناً",
+      emailTitle: "إكمال عملية الشراء", emailDesc: "يرجى إدخال بريدك الإلكتروني",
+      emailLabel: "البريد الإلكتروني *", emailError: "يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)",
+      cancel: "إلغاء", confirm: "تأكيد الشراء", successTitle: "تم إنشاء طلبك بنجاح!",
+      successDesc: "سيتم التواصل معك قريباً لإتمام عملية الشراء",
+      orderId: "رقم الطلب:", product: "المنتج:", email: "البريد:",
+      copied: "تم النسخ!", buyFull: "🔓 شراء النسخة الكاملة",
+      warningText: "احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني",
+      copyButton: "نسخ المعلومات", close: "إغلاق", processing: "جاري المعالجة..."
+    },
+    en: {
+      siteName: "Digital Products", footer: "© 2026 Digital Products. All rights reserved.", buy: "Buy Now", tryDemo: "🎁 Try Free",
+      emailTitle: "Complete Purchase", emailDesc: "Please enter your email",
+      emailLabel: "Email Address *", emailError: "Please enter a valid email (English letters only)",
+      cancel: "Cancel", confirm: "Confirm Purchase", successTitle: "Order Created Successfully!",
+      successDesc: "You will be contacted shortly to complete the payment",
+      orderId: "Order ID:", product: "Product:", email: "Email:",
+      copied: "Copied!", buyFull: "🔓 Buy Full Version",
+      warningText: "Save order details (Order ID, Email, Product) for follow-up and support",
+      copyButton: "Copy Details", close: "Close", processing: "Processing..."
     }
+  };
 
-    function applyTheme() { document.documentElement.setAttribute('data-theme', theme); }
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+  const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
+  const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  
+  const WORKER_API = 'https://digitalstore.dlod6929.workers.dev/api';
+  const API_CATEGORIES = `${WORKER_API}/categories`;
+  const API_PRODUCTS = `${WORKER_API}/products`;
+  const API_ORDERS = `${WORKER_API}/orders`;
+  const DEMOS_FOLDER = 'demos/';
+
+  let selectedProductId = null, selectedProductName = null, selectedProductPrice = null, currentOrderData = null;
+  let currentCategoryId = null; // UUID كامل
+
+  function applyLanguage() {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.title = texts[lang].siteName;
+    document.getElementById('siteName').textContent = texts[lang].siteName;
+    document.getElementById('footerText').textContent = texts[lang].footer;
+    document.getElementById('demoTitle').textContent = lang === 'ar' ? 'تجربة المنتج' : 'Product Demo';
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (texts[lang][key]) el.textContent = texts[lang][key];
     });
+  }
 
-    // -------------------- جلب الفئات وعرضها --------------------
-    let currentCategoryId = null; // المعرف الكامل للفئة (UUID)
+  function applyTheme() { document.documentElement.setAttribute('data-theme', theme); }
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+  });
 
-    async function loadCategories() {
-      try {
-        const response = await fetch(API_CATEGORIES);
-        const result = await response.json();
-        if (!result.success) throw new Error(result.error);
-        const categories = result.data;
-        const container = document.getElementById('categoryTabs');
-        container.innerHTML = `<button class="cat-btn ${currentCategoryId === null ? 'active' : ''}" data-cat="">${lang === 'ar' ? 'الكل' : 'All'}</button>`;
-        categories.forEach(cat => {
-          const name = lang === 'ar' ? cat.name_ar : cat.name_en;
-          container.innerHTML += `<button class="cat-btn ${currentCategoryId === cat.id ? 'active' : ''}" data-cat="${cat.id}">${name}</button>`;
+  async function loadCategories() {
+    try {
+      const res = await fetch(API_CATEGORIES);
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error);
+      const categories = result.data;
+      const container = document.getElementById('categoryTabs');
+      container.innerHTML = `<button class="cat-btn ${currentCategoryId === null ? 'active' : ''}" data-cat="">${lang === 'ar' ? 'الكل' : 'All'}</button>`;
+      categories.forEach(cat => {
+        const name = lang === 'ar' ? cat.name_ar : cat.name_en;
+        container.innerHTML += `<button class="cat-btn ${currentCategoryId === cat.id ? 'active' : ''}" data-cat="${cat.id}">${name}</button>`;
+      });
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentCategoryId = btn.getAttribute('data-cat') || null;
+          loadProducts();
+          document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
         });
-        // ربط الأحداث
-        document.querySelectorAll('.cat-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            currentCategoryId = btn.getAttribute('data-cat') || null;
-            loadProducts();   // جلب المنتجات حسب الفئة المختارة
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-          });
-        });
-      } catch (err) {
-        console.error('Error loading categories:', err);
-        document.getElementById('categoryTabs').innerHTML = `<p style="color:red;">${lang === 'ar' ? 'خطأ في تحميل الفئات' : 'Error loading categories'}</p>`;
-      }
+      });
+    } catch (err) {
+      console.error(err);
+      document.getElementById('categoryTabs').innerHTML = `<p style="color:red;">${lang === 'ar' ? 'خطأ في تحميل الفئات' : 'Error loading categories'}</p>`;
     }
+  }
 
-    // -------------------- جلب المنتجات (مع أو بدون تصفية حسب الفئة) --------------------
-    async function loadProducts() {
-      const grid = document.getElementById('productsGrid');
-      grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'جاري تحميل المنتجات...' : 'Loading products...'}</p>`;
-      try {
-        let url = API_PRODUCTS;
-        if (currentCategoryId) {
-          url += `?category_id=${encodeURIComponent(currentCategoryId)}`;
-        }
-        const response = await fetch(url);
-        const result = await response.json();
-        if (!result.success) throw new Error(result.error);
-        const products = result.data;
-        if (!products || products.length === 0) {
-          grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات في هذه الفئة' : 'No products in this category'}</p>`;
-          return;
-        }
-        grid.innerHTML = '';
-        products.forEach(p => {
-          const title = lang === 'ar' ? p.title_ar : p.title_en;
-          const desc = (lang === 'ar' ? p.desc_ar : p.desc_en) || (lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product');
-          const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
-          const hasDemo = p.demo_url && p.demo_url.trim() !== '';
-          grid.innerHTML += `
-            <div class="product-card">
-              <div class="product-image"><i class="ph-bold ph-package"></i></div>
-              <div class="product-content">
-                <h3>${escapeHtml(title)}</h3>
-                <div class="price">${escapeHtml(priceDisplay)}</div>
-                <p class="desc">${escapeHtml(desc)}</p>
-                <button class="buy-btn" data-product-id="${p.id}" data-product-name="${escapeHtml(title)}" data-product-price="${p.price}" onclick="handleBuyClick(this)">
-                  <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
-                </button>
-                ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER}${escapeHtml(p.demo_url)}', '${escapeHtml(title)}')"><i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}</button>` : ''}
-              </div>
+  async function loadProducts() {
+    const grid = document.getElementById('productsGrid');
+    grid.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">${lang === 'ar' ? 'جاري تحميل المنتجات...' : 'Loading...'}</p>`;
+    try {
+      let url = API_PRODUCTS;
+      if (currentCategoryId) url += `?category_id=${encodeURIComponent(currentCategoryId)}`;
+      const res = await fetch(url);
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error);
+      const products = result.data;
+      if (!products.length) {
+        grid.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات' : 'No products'}</p>`;
+        return;
+      }
+      grid.innerHTML = '';
+      products.forEach(p => {
+        const title = lang === 'ar' ? p.title_ar : p.title_en;
+        const desc = (lang === 'ar' ? p.desc_ar : p.desc_en) || (lang === 'ar' ? 'منتج رقمي متميز' : 'Premium product');
+        const price = `${p.price} ${p.currency || 'USD'}`;
+        const hasDemo = p.demo_url && p.demo_url.trim();
+        grid.innerHTML += `
+          <div class="product-card">
+            <div class="product-image"><i class="ph-bold ph-package"></i></div>
+            <div class="product-content">
+              <h3>${escapeHtml(title)}</h3>
+              <div class="price">${escapeHtml(price)}</div>
+              <p class="desc">${escapeHtml(desc)}</p>
+              <button class="buy-btn" data-product-id="${p.id}" data-product-name="${escapeHtml(title)}" data-product-price="${p.price}" onclick="handleBuyClick(this)"><i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}</button>
+              ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER}${escapeHtml(p.demo_url)}', '${escapeHtml(title)}')"><i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}</button>` : ''}
             </div>
-          `;
-        });
-      } catch (err) {
-        console.error('Error loading products:', err);
-        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ ${lang === 'ar' ? 'فشل تحميل المنتجات' : 'Failed to load products'}</p>`;
-      }
-    }
-
-    // دالة مساعدة لتنقية HTML
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
+          </div>
+        `;
       });
+    } catch (err) {
+      console.error(err);
+      grid.innerHTML = `<p style="text-align:center; color:red;">⚠️ ${lang === 'ar' ? 'فشل تحميل المنتجات' : 'Failed to load products'}</p>`;
     }
+  }
 
-    // -------------------- دوال الديمو والشراء (مثل الكود الأصلي) --------------------
-    function openDemo(demoUrl, productName) {
-      document.getElementById('demoFrame').src = demoUrl;
-      document.getElementById('demoModal').classList.add('active');
-    }
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
 
-    function closeDemoModal() {
-      document.getElementById('demoModal').classList.remove('active');
-      document.getElementById('demoFrame').src = 'about:blank';
-    }
-
-    function buyFromDemo() {
-      closeDemoModal();
-      if (selectedProductName && selectedProductPrice) {
-        openEmailModal(selectedProductId, selectedProductName);
-      }
-    }
-
-    function handleBuyClick(button) {
-      selectedProductId = button.dataset.productId;
-      selectedProductName = button.dataset.productName;
-      selectedProductPrice = parseFloat(button.dataset.productPrice);
-      
-      if (!selectedProductPrice || isNaN(selectedProductPrice)) {
-        alert('⚠️ خطأ في سعر المنتج. يرجى تحديث الصفحة.');
-        return;
-      }
-      openEmailModal(selectedProductId, selectedProductName);
-    }
-
-    function openEmailModal(productId, productName) {
-      selectedProductId = productId;
-      selectedProductName = productName || (lang === 'ar' ? 'منتج' : 'Product');
-      document.getElementById('emailModal').classList.add('active');
-      document.getElementById('customerEmail').focus();
-      clearEmailError();
-    }
-
-    function closeEmailModal() {
-      document.getElementById('emailModal').classList.remove('active');
-      document.getElementById('customerEmail').value = '';
-      clearEmailError();
-    }
-
-    function clearEmailError() {
-      const input = document.getElementById('customerEmail');
-      input.classList.remove('error');
-      document.getElementById('emailError').classList.remove('show');
-      input.style.borderColor = '';
-    }
-
-    function showEmailError() {
-      const input = document.getElementById('customerEmail');
-      input.classList.add('error');
-      document.getElementById('emailError').classList.add('show');
-      setTimeout(clearEmailError, 3000);
-    }
-
-    function isValidEmail(email) {
-      return /^[\x00-\x7F]+$/.test(email) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && 
-             !email.includes('xn--') && /[a-zA-Z]/.test(email) && email.split('@')[0].length >= 3;
-    }
-
-    async function confirmPurchase(event) {
-      const emailInput = document.getElementById('customerEmail');
-      const email = emailInput.value.trim();
-      if (!email || !isValidEmail(email)) { showEmailError(); emailInput.focus(); return; }
-      
-      const price = selectedProductPrice;
-      if (!price || price <= 0 || isNaN(price)) {
-        alert('⚠️ خطأ في سعر المنتج. يرجى تحديث الصفحة.');
-        return;
-      }
-      if (!selectedProductName) {
-        alert('⚠️ خطأ في المنتج.');
-        return;
-      }
-      
-      const btn = event.currentTarget;
-      const originalHTML = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
-
-      const orderData = {
-        guest_email: email,
-        payment_method: "manual",
-        items: [{ product_id: selectedProductId, quantity: 1 }]
-      };
-
-      try {
-        const response = await fetch(API_ORDERS, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(orderData)
-        });
-        const result = await response.json();
-        
-        if (result.success && result.data?.order_id) {
-          closeEmailModal();
-          currentOrderData = {
-            orderId: result.data.order_id,
-            product: selectedProductName,
-            email: email,
-            amount: price
-          };
-          showSuccessModal(currentOrderData);
-          selectedProductId = selectedProductName = selectedProductPrice = null;
-        } else {
-          alert(`${lang === 'ar' ? '⚠️ حدث خطأ: ' : '⚠️ Error: '}${result.error || 'فشل إنشاء الطلب'}`);
-        }
-      } catch (err) {
-        console.error('Purchase error:', err);
-        alert(lang === 'ar' ? '⚠️ فشل الاتصال بالخادم' : '⚠️ Connection failed');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalHTML;
-      }
-    }
-
-    function showSuccessModal(orderData) {
-      const t = texts[lang];
-      document.getElementById('orderDetails').innerHTML = `
-        <div><strong>${t.orderId}</strong> <span>${orderData.orderId}</span></div>
-        <div><strong>${t.product}</strong> <span>${orderData.product}</span></div>
-        <div><strong>${t.email}</strong> <span>${orderData.email}</span></div>`;
-      document.getElementById('successModal').classList.add('active');
-    }
-
-    function closeSuccessModal() {
-      document.getElementById('successModal').classList.remove('active');
-      currentOrderData = null;
-    }
-
-    function copyOrderDetails() {
-      if (!currentOrderData) return;
-      const t = texts[lang];
-      const txt = `${t.orderId} ${currentOrderData.orderId}\n${t.product} ${currentOrderData.product}\n${t.email} ${currentOrderData.email}`;
-      navigator.clipboard.writeText(txt).then(() => {
-        const btn = document.querySelector('#successModal .btn-copy');
-        const old = btn.innerHTML;
-        btn.innerHTML = `<i class="ph-bold ph-check"></i> ${t.copied}`;
-        setTimeout(() => btn.innerHTML = old, 2000);
+  // -------------------- دوال الشراء والديمو (نفس الكود السابق) --------------------
+  function openDemo(demoUrl, productName) {
+    document.getElementById('demoFrame').src = demoUrl;
+    document.getElementById('demoModal').classList.add('active');
+  }
+  function closeDemoModal() {
+    document.getElementById('demoModal').classList.remove('active');
+    document.getElementById('demoFrame').src = 'about:blank';
+  }
+  function buyFromDemo() {
+    closeDemoModal();
+    if (selectedProductName && selectedProductPrice) openEmailModal(selectedProductId, selectedProductName);
+  }
+  function handleBuyClick(button) {
+    selectedProductId = button.dataset.productId;
+    selectedProductName = button.dataset.productName;
+    selectedProductPrice = parseFloat(button.dataset.productPrice);
+    if (!selectedProductPrice || isNaN(selectedProductPrice)) { alert('⚠️ خطأ في سعر المنتج'); return; }
+    openEmailModal(selectedProductId, selectedProductName);
+  }
+  function openEmailModal(productId, productName) {
+    selectedProductId = productId;
+    selectedProductName = productName || (lang === 'ar' ? 'منتج' : 'Product');
+    document.getElementById('emailModal').classList.add('active');
+    document.getElementById('customerEmail').focus();
+    clearEmailError();
+  }
+  function closeEmailModal() {
+    document.getElementById('emailModal').classList.remove('active');
+    document.getElementById('customerEmail').value = '';
+    clearEmailError();
+  }
+  function clearEmailError() {
+    const input = document.getElementById('customerEmail');
+    input.classList.remove('error');
+    document.getElementById('emailError').classList.remove('show');
+    input.style.borderColor = '';
+  }
+  function showEmailError() {
+    const input = document.getElementById('customerEmail');
+    input.classList.add('error');
+    document.getElementById('emailError').classList.add('show');
+    setTimeout(clearEmailError, 3000);
+  }
+  function isValidEmail(email) {
+    return /^[\x00-\x7F]+$/.test(email) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !email.includes('xn--') && /[a-zA-Z]/.test(email) && email.split('@')[0].length >= 3;
+  }
+  async function confirmPurchase(event) {
+    const email = document.getElementById('customerEmail').value.trim();
+    if (!email || !isValidEmail(email)) { showEmailError(); return; }
+    if (!selectedProductPrice || isNaN(selectedProductPrice)) { alert('⚠️ خطأ في سعر المنتج'); return; }
+    const btn = event.currentTarget;
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
+    try {
+      const res = await fetch(API_ORDERS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guest_email: email, payment_method: "manual", items: [{ product_id: selectedProductId, quantity: 1 }] })
       });
-    }
-
-    // إغلاق النوافذ بالضغط خارجها أو ESC
-    document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => {
-      if (e.target === m) {
-        if (m.id === 'emailModal') closeEmailModal();
-        else if (m.id === 'successModal') closeSuccessModal();
-        else if (m.id === 'demoModal') closeDemoModal();
+      const result = await res.json();
+      if (result.success && result.data?.order_id) {
+        closeEmailModal();
+        currentOrderData = { orderId: result.data.order_id, product: selectedProductName, email: email, amount: selectedProductPrice };
+        showSuccessModal(currentOrderData);
+        selectedProductId = selectedProductName = selectedProductPrice = null;
+      } else {
+        alert(`${lang === 'ar' ? '⚠️ خطأ: ' : '⚠️ Error: '}${result.error || 'فشل إنشاء الطلب'}`);
       }
-    }));
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeEmailModal(); closeSuccessModal(); closeDemoModal(); } });
-    document.getElementById('customerEmail').addEventListener('keypress', e => { if (e.key === 'Enter') confirmPurchase(e); });
-
-    const emailEl = document.getElementById('customerEmail');
-    emailEl.addEventListener('input', function() {
-      this.style.borderColor = this.value.trim() && isValidEmail(this.value.trim()) ? 'var(--success)' : '';
-      this.classList.remove('error');
+    } catch (err) {
+      alert(lang === 'ar' ? '⚠️ فشل الاتصال بالخادم' : '⚠️ Connection failed');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  }
+  function showSuccessModal(orderData) {
+    const t = texts[lang];
+    document.getElementById('orderDetails').innerHTML = `
+      <div><strong>${t.orderId}</strong> <span>${orderData.orderId}</span></div>
+      <div><strong>${t.product}</strong> <span>${orderData.product}</span></div>
+      <div><strong>${t.email}</strong> <span>${orderData.email}</span></div>`;
+    document.getElementById('successModal').classList.add('active');
+  }
+  function closeSuccessModal() {
+    document.getElementById('successModal').classList.remove('active');
+    currentOrderData = null;
+  }
+  function copyOrderDetails() {
+    if (!currentOrderData) return;
+    const t = texts[lang];
+    const txt = `${t.orderId} ${currentOrderData.orderId}\n${t.product} ${currentOrderData.product}\n${t.email} ${currentOrderData.email}`;
+    navigator.clipboard.writeText(txt).then(() => {
+      const btn = document.querySelector('#successModal .btn-copy');
+      const old = btn.innerHTML;
+      btn.innerHTML = `<i class="ph-bold ph-check"></i> ${t.copied}`;
+      setTimeout(() => btn.innerHTML = old, 2000);
     });
-    emailEl.addEventListener('blur', function() {
-      if (this.value.trim() && !isValidEmail(this.value.trim())) showEmailError();
-    });
+  }
 
-    // -------------------- بدء التطبيق --------------------
-    applyLanguage();
-    applyTheme();
-    loadCategories();
-    loadProducts();   // تحميل المنتجات لأول مرة (بدون تصفية)
-  </script>
+  document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => {
+    if (e.target === m) {
+      if (m.id === 'emailModal') closeEmailModal();
+      else if (m.id === 'successModal') closeSuccessModal();
+      else if (m.id === 'demoModal') closeDemoModal();
+    }
+  }));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeEmailModal(); closeSuccessModal(); closeDemoModal(); } });
+  document.getElementById('customerEmail').addEventListener('keypress', e => { if (e.key === 'Enter') confirmPurchase(e); });
+  const emailEl = document.getElementById('customerEmail');
+  emailEl.addEventListener('input', function() {
+    this.style.borderColor = this.value.trim() && isValidEmail(this.value.trim()) ? 'var(--success)' : '';
+    this.classList.remove('error');
+  });
+  emailEl.addEventListener('blur', function() {
+    if (this.value.trim() && !isValidEmail(this.value.trim())) showEmailError();
+  });
+
+  applyLanguage();
+  applyTheme();
+  loadCategories();
+  loadProducts();
+</script>
 </body>
 </html>
