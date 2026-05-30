@@ -151,6 +151,8 @@
       .demo-modal .modal { width: 100%; height: 100%; border-radius: 0; }
     }
   </style>
+  <script src="lang/ar.js"></script>
+  <script src="lang/en.js"></script>
 </head>
 <body>
   <header>
@@ -246,36 +248,16 @@
       CWALLET_CURRENCY: 'USDT'
     };
 
-    const texts = {
-      ar: {
-        siteName: "منتجات رقمية", footer: "© 2026 Digital Products. جميع الحقوق محفوظة.", buy: "شراء الآن", tryDemo: "🎁 جرب مجاناً",
-        emailTitle: "إكمال عملية الشراء", emailDesc: "يرجى إدخال بريدك الإلكتروني واختيار طريقة الدفع",
-        emailLabel: "البريد الإلكتروني *", emailError: "يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)",
-        paymentMethod: "طريقة الدفع", payViaAddress: "عنوان محفظة خارجي (أي محفظة)",
-        payViaCwalletId: "معرف CWallet (أسرع)", payViaDirectLink: "رابط دفع مباشر",
-        cancel: "إلغاء", confirm: "تأكيد الشراء", successTitle: "تم إنشاء طلبك بنجاح!",
-        successDesc: "يرجى إتمام الدفع باستخدام إحدى الطرق التالية",
-        orderId: "رقم الطلب:", product: "المنتج:", email: "البريد:", amount: "المبلغ:",
-        paymentLink: "رابط الدفع:", walletAddress: "عنوان المحفظة:", cwalletId: "معرف CWallet:",
-        copyLink: "نسخ الرابط", copied: "تم النسخ!", buyFull: "🔓 شراء النسخة الكاملة",
-        warningText: "احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني",
-        copyButton: "نسخ المعلومات", close: "إغلاق", processing: "جاري المعالجة..."
-      },
-      en: {
-        siteName: "Digital Products", footer: "© 2026 Digital Products. All rights reserved.", buy: "Buy Now", tryDemo: "🎁 Try Free",
-        emailTitle: "Complete Purchase", emailDesc: "Please enter your email and choose payment method",
-        emailLabel: "Email Address *", emailError: "Please enter a valid email (English letters only)",
-        paymentMethod: "Payment Method", payViaAddress: "External Wallet Address (Any Wallet)",
-        payViaCwalletId: "CWallet ID (Faster)", payViaDirectLink: "Direct Payment Link",
-        cancel: "Cancel", confirm: "Confirm Purchase", successTitle: "Order Created Successfully!",
-        successDesc: "Please complete payment using one of the following methods",
-        orderId: "Order ID:", product: "Product:", email: "Email:", amount: "Amount:",
-        paymentLink: "Payment Link:", walletAddress: "Wallet Address:", cwalletId: "CWallet ID:",
-        copyLink: "Copy Link", copied: "Copied!", buyFull: "🔓 Buy Full Version",
-        warningText: "Save order details (Order ID, Email, Product) for follow-up and support",
-        copyButton: "Copy Details", close: "Close", processing: "Processing..."
-      }
-    };
+    // سيتم تحميل النصوص من ملفات اللغات الخارجية
+let texts = {};
+
+function loadLanguage(langCode) {
+  if (langCode === 'ar') {
+    texts = texts_ar;
+  } else {
+    texts = texts_en;
+  }
+}
 
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
