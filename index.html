@@ -364,18 +364,12 @@
       selectedProductId = button.dataset.productId;
       selectedProductName = button.dataset.productName;
       selectedProductPrice = parseFloat(button.dataset.productPrice);
-      selectedProductDemoUrl = button.dataset.productDemo || null;
       
       console.log('🛒 Product:', selectedProductName, '| Price:', selectedProductPrice, '| Demo:', selectedProductDemoUrl);
       
       if (!selectedProductPrice || isNaN(selectedProductPrice)) {
         console.error('❌ Price not found or invalid:', button.dataset.productPrice);
         alert('⚠️ خطأ في سعر المنتج. يرجى تحديث الصفحة.');
-        return;
-      }
-      
-      if (selectedProductDemoUrl) {
-        openDemo(selectedProductDemoUrl, selectedProductName);
         return;
       }
       
