@@ -31,23 +31,61 @@
     
     .product-image { height: 180px; background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1), rgba(var(--primary-rgb), 0.05)); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 4rem; border-bottom: 1px solid var(--border); }
     .product-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
-    .product-card h3 { margin-bottom: 0.5rem; font-size: 1.2rem; }
-    .price { color: var(--primary); font-weight: bold; font-size: 1.4rem; margin: 0.5rem 0; }
+    
+    /* ✅ تنسيق جديد لعنوان المنتج والسعر */
+    .product-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+      gap: 0.5rem;
+    }
+    .product-header h3 {
+      margin: 0;
+      flex: 1;
+      min-width: 0;
+      word-wrap: break-word;
+      font-size: 1.2rem;
+    }
+    .product-header .price {
+      margin: 0;
+      white-space: nowrap;
+      flex-shrink: 0;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.4rem;
+    }
+    
     .desc { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem; flex-grow: 1; }
     
-    .buy-btn {  width: 100%;  padding: 0.8rem;  background: transparent;  color: var(--primary);  border: 2px solid var(--primary);  border-radius: 12px;  cursor: pointer;  font-size: 1rem;  font-weight: bold;  display: flex;  align-items: center;  justify-content: center;  gap: 0.5rem;  transition: all 0.3s ease;}
-    .buy-btn:hover {  background: var(--primary);  color: white;  box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3);  transform: scale(1.02);}
-    .buy-btn i { font-size: 1.2rem; }
-
-    .demo-btn {
-      width: 100%; padding: 0.6rem; margin-top: 0.5rem;
+    .buy-btn {
+      width: 100%; padding: 0.8rem;
       background: transparent; color: var(--primary);
       border: 2px solid var(--primary); border-radius: 12px;
-      cursor: pointer; font-size: 0.9rem; font-weight: bold;
+      cursor: pointer; font-size: 1rem; font-weight: bold;
       display: flex; align-items: center; justify-content: center; gap: 0.5rem;
       transition: all 0.3s ease;
     }
-    .demo-btn:hover { background: var(--primary); color: white; }
+    .buy-btn:hover {
+      background: var(--primary); color: white;
+      box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3);
+      transform: scale(1.02);
+    }
+    .buy-btn i { font-size: 1.2rem; }
+
+    .demo-btn {
+      width: 100%; padding: 0.8rem; margin-top: 0.5rem;
+      background: transparent; color: var(--primary);
+      border: 2px solid var(--primary); border-radius: 12px;
+      cursor: pointer; font-size: 1rem; font-weight: bold;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    .demo-btn:hover {
+      background: var(--primary); color: white;
+      box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3);
+      transform: scale(1.02);
+    }
 
     footer { text-align: center; margin-top: 4rem; padding: 1rem; color: var(--text-secondary); font-size: 0.9rem; }
 
@@ -68,11 +106,11 @@
     
     .form-group { margin-bottom: 1.5rem; }
     .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500; }
-    .form-group input, .form-group select {
+    .form-group input {
       width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;
       font-size: 1rem; background: var(--bg); color: var(--text); transition: all 0.3s;
     }
-    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+    .form-group input:focus { outline: none; border-color: var(--primary); }
     .form-group input.error { border-color: var(--error); animation: shake 0.5s ease-in-out; }
     .error-message { color: var(--error); font-size: 0.85rem; margin-top: 0.5rem; display: none; }
     .error-message.show { display: block; }
@@ -165,24 +203,16 @@
     <p id="footerText"> Digital Products 2026 ©  </p>
   </footer>
 
+  <!-- نافذة إدخال الإيميل -->
   <div class="modal-overlay" id="emailModal">
     <div class="modal">
       <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال عملية الشراء</span></h3>
-      <p data-i18n="emailDesc">يرجى إدخال بريدك الإلكتروني واختيار طريقة الدفع</p>
+      <p data-i18n="emailDesc">يرجى إدخال بريدك الإلكتروني لإتمام الطلب</p>
       
       <div class="form-group">
         <label for="customerEmail" data-i18n="emailLabel">البريد الإلكتروني *</label>
         <input type="email" id="customerEmail" placeholder="example@email.com" required>
         <div class="error-message" id="emailError" data-i18n="emailError">يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)</div>
-      </div>
-
-      <div class="form-group">
-        <label for="paymentMethodSelect" data-i18n="paymentMethod">طريقة الدفع</label>
-        <select id="paymentMethodSelect">
-          <option value="address" data-i18n="payViaAddress">عنوان محفظة خارجي (أي محفظة)</option>
-          <option value="cwallet_id" data-i18n="payViaCwalletId">معرف CWallet (أسرع)</option>
-          <option value="direct_link" data-i18n="payViaDirectLink">رابط دفع مباشر</option>
-        </select>
       </div>
       
       <div class="modal-buttons">
@@ -192,10 +222,11 @@
     </div>
   </div>
 
+  <!-- نافذة النجاح -->
   <div class="modal-overlay" id="successModal">
     <div class="modal">
       <h3 style="color: var(--success);"><i class="ph-bold ph-check-circle"></i> <span data-i18n="successTitle">تم إنشاء طلبك بنجاح!</span></h3>
-      <p data-i18n="successDesc">يرجى إتمام الدفع باستخدام إحدى الطرق التالية</p>
+      <p data-i18n="successDesc">يرجى إتمام الدفع عبر الرابط التالي</p>
       
       <div class="order-details" id="orderDetails"></div>
       <div id="paymentInfoContainer"></div>
@@ -214,6 +245,7 @@
     </div>
   </div>
 
+  <!-- نافذة الديمو -->
   <div class="modal-overlay demo-modal" id="demoModal">
     <div class="modal">
       <div class="demo-header">
@@ -234,12 +266,11 @@
     const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
     const API_ORDERS_URL = API_URL.replace('/products', '/orders');
     const DEMOS_FOLDER = 'demos/';
+    
+    // ✅ إعدادات مبسطة (تم حذف كل ما يتعلق بـ CWallet)
     const CONFIG = {
-      CWALLET_ADDRESS: '0x1Eb3fD26e2C0dD144A4361AbA852e951eFD51e63',
-      CWALLET_ID: '65126688',
       DIRECT_PAYMENT_LINK: 'https://cwallet.com/receive/7ce25e34dce4052ac98c2018f60da4c1',
-      CWALLET_NETWORK: 'polygon',
-      CWALLET_CURRENCY: 'USDT'
+      CURRENCY: 'USDT'
     };
 
     let texts = {};
@@ -255,7 +286,6 @@
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     
-    // ✅ استدعاء دالة تحميل اللغة
     loadLanguage(lang);
     
     let selectedProductId = null;
@@ -288,7 +318,8 @@
 
     async function renderProducts() {
       const grid = document.getElementById('productsGrid');
-      grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${texts.loadingProducts}</p>`;      
+      grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${texts.loadingProducts}</p>`;
+      
       try {
         const response = await fetch(API_URL);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -307,7 +338,7 @@
         grid.innerHTML = '';
         products.forEach(p => {
           const title = lang === 'ar' ? p.title_ar : p.title_en;
-          const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
+          const priceDisplay = `${p.price} ${p.currency || CONFIG.CURRENCY}`;
           const icon = 'ph-package';
           const hasDemo = p.demo_url && p.demo_url.trim() !== '';
           
@@ -315,14 +346,16 @@
             <div class="product-card">
               <div class="product-image"><i class="ph-bold ${icon}"></i></div>
               <div class="product-content">
-                <h3>${title}</h3>
-                <div class="price">${priceDisplay}</div>
+                <!-- ✅ عنوان المنتج والسعر في صف واحد -->
+                <div class="product-header">
+                  <h3>${title}</h3>
+                  <div class="price">${priceDisplay}</div>
+                </div>
                 <p class="desc">${lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product'}</p>
                 <button class="buy-btn" 
                         data-product-id="${p.id}" 
                         data-product-name="${title}"
                         data-product-price="${p.price}"
-                        data-product-demo="${hasDemo ? (DEMOS_FOLDER + p.demo_url) : ''}"
                         onclick="handleBuyClick(this)">
                   <i class="ph-bold ph-shopping-cart-simple"></i> ${texts.buy}
                 </button>
@@ -365,7 +398,7 @@
       selectedProductName = button.dataset.productName;
       selectedProductPrice = parseFloat(button.dataset.productPrice);
       
-      console.log('🛒 Product:', selectedProductName, '| Price:', selectedProductPrice, '| Demo:', selectedProductDemoUrl);
+      console.log('🛒 Product:', selectedProductName, '| Price:', selectedProductPrice);
       
       if (!selectedProductPrice || isNaN(selectedProductPrice)) {
         console.error('❌ Price not found or invalid:', button.dataset.productPrice);
@@ -373,6 +406,7 @@
         return;
       }
       
+      // ✅ فتح الدفع مباشرة (بدون ديمو)
       openEmailModal(selectedProductId, selectedProductName);
     }
 
@@ -432,11 +466,10 @@
       btn.disabled = true;
       btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts.processing}`;
 
-      const paymentMethod = document.getElementById('paymentMethodSelect').value;
-      
+      // ✅ طريقة الدفع ثابتة: رابط مباشر فقط
       const orderData = {
         guest_email: email,
-        payment_method: "cwallet",
+        payment_method: "direct_link",
         items: [{ product_id: selectedProductId, quantity: 1 }]
       };
 
@@ -457,11 +490,10 @@
             orderId: result.data.order_id,
             product: selectedProductName,
             email: email,
-            paymentMethod: paymentMethod,
             amount: price
           };
 
-          showPaymentInfo(paymentMethod, price);
+          showPaymentInfo(price);
           showSuccessModal(currentOrderData);
           
           selectedProductId = selectedProductName = selectedProductPrice = selectedProductDemoUrl = null;
@@ -478,43 +510,19 @@
       }
     }
 
-    function showPaymentInfo(method, amount) {
+    // ✅ دالة مبسطة لعرض رابط الدفع المباشر فقط
+    function showPaymentInfo(amount) {
       const container = document.getElementById('paymentInfoContainer');
       
-      let html = '<div class="payment-info-box">';
-      
-      if (method === 'direct_link') {
-        currentPaymentUrl = CONFIG.DIRECT_PAYMENT_LINK;
-        html += `<strong>${texts.paymentLink}</strong><code id="paymentLinkCode">${CONFIG.DIRECT_PAYMENT_LINK}</code>
+      const html = `
+        <div class="payment-info-box">
+          <strong>${texts.paymentLink}</strong>
+          <code id="paymentLinkCode">${CONFIG.DIRECT_PAYMENT_LINK}</code>
           <button class="btn-copy" onclick="copyPaymentLink(this)" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
             <i class="ph-bold ph-copy"></i> ${texts.copyLink}
-          </button>`;
-      } else if (method === 'cwallet_id') {
-        if (!CONFIG.CWALLET_ID || CONFIG.CWALLET_ID === '123456789') {
-          html += `<p style="color:var(--error);">⚠️ معرف CWallet غير مضبوط</p>`;
-        } else {
-          currentPaymentUrl = `https://cwallet.com/request?amount=${amount}&currency=${CONFIG.CWALLET_CURRENCY}&network=${CONFIG.CWALLET_NETWORK}&cwallet_id=${CONFIG.CWALLET_ID}`;
-          html += `<strong>${texts.cwalletId}:</strong> ${CONFIG.CWALLET_ID}<br>
-            <strong>${texts.amount}:</strong> ${amount} ${CONFIG.CWALLET_CURRENCY}<br>
-            <strong>${texts.paymentLink}:</strong><code id="paymentLinkCode">${currentPaymentUrl}</code>
-            <button class="btn-copy" onclick="copyPaymentLink(this)" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
-              <i class="ph-bold ph-copy"></i> ${texts.copyLink}
-            </button>`;
-        }
-      } else {
-        if (!CONFIG.CWALLET_ADDRESS || CONFIG.CWALLET_ADDRESS === '0xYourWalletAddressHere...') {
-          html += `<p style="color:var(--error);">⚠️ عنوان المحفظة غير مضبوط</p>`;
-        } else {
-          currentPaymentUrl = `https://cwallet.com/request?amount=${amount}&currency=${CONFIG.CWALLET_CURRENCY}&network=${CONFIG.CWALLET_NETWORK}&address=${CONFIG.CWALLET_ADDRESS}`;
-          html += `<strong>${texts.walletAddress}:</strong><br><code style="font-size:0.75rem;">${CONFIG.CWALLET_ADDRESS}</code><br>
-            <strong>${texts.amount}:</strong> ${amount} ${CONFIG.CWALLET_CURRENCY}<br>
-            <strong>${texts.paymentLink}:</strong><code id="paymentLinkCode">${currentPaymentUrl}</code>
-            <button class="btn-copy" onclick="copyPaymentLink(this)" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
-              <i class="ph-bold ph-copy"></i> ${texts.copyLink}
-            </button>`;
-        }
-      }
-      html += '</div>';
+          </button>
+        </div>
+      `;
       container.innerHTML = html;
     }
 
@@ -534,7 +542,7 @@
         <div><strong>${texts.orderId}</strong> <span>${orderData.orderId}</span></div>
         <div><strong>${texts.product}</strong> <span>${orderData.product}</span></div>
         <div><strong>${texts.email}</strong> <span>${orderData.email}</span></div>
-        <div><strong>${texts.amount}</strong> <span>${orderData.amount} ${CONFIG.CWALLET_CURRENCY}</span></div>`;
+        <div><strong>${texts.amount}</strong> <span>${orderData.amount} ${CONFIG.CURRENCY}</span></div>`;
       document.getElementById('successModal').classList.add('active');
     }
 
@@ -547,7 +555,7 @@
 
     function copyOrderDetails() {
       if (!currentOrderData) return;
-      const txt = `${texts.orderId} ${currentOrderData.orderId}\n${texts.product} ${currentOrderData.product}\n${texts.email} ${currentOrderData.email}\n${texts.amount} ${currentOrderData.amount} ${CONFIG.CWALLET_CURRENCY}`;
+      const txt = `${texts.orderId} ${currentOrderData.orderId}\n${texts.product} ${currentOrderData.product}\n${texts.email} ${currentOrderData.email}\n${texts.amount} ${currentOrderData.amount} ${CONFIG.CURRENCY}`;
       navigator.clipboard.writeText(txt).then(() => {
         const btn = document.querySelector('#successModal .btn-copy');
         const old = btn.innerHTML;
