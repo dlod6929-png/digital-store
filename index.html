@@ -372,18 +372,23 @@
         const price = `${p.price} ${p.currency || 'USD'}`;
         const hasDemo = p.demo_url && p.demo_url.trim();
         const cleanDemoUrl = hasDemo ? (p.demo_url.startsWith('/') ? p.demo_url.substring(1) : p.demo_url) : '';
-        grid.innerHTML += `
-          <div class="product-card">
-            <div class="product-image"><i class="ph-bold ph-package"></i></div>
-            <div class="product-content">
-              <h3>${escapeHtml(title)}</h3>
-              <div class="price">${escapeHtml(price)}</div>
-              <p class="desc">${escapeHtml(desc)}</p>
-              <button class="buy-btn" data-product-id="${p.id}" data-product-name="${escapeHtml(title)}" data-product-price="${p.price}" onclick="handleBuyClick(this)"><i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}</button>
-              ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER}${escapeHtml(cleanDemoUrl)}', '${escapeHtml(title)}', '${p.id}', ${p.price})"><i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}</button>` : ''}
-            </div>
-          </div>
-        `;
+// عرض الصورة إذا كانت موجودة، أو الأيقونة إذا لم تكن
+const productImage = p.image_url 
+  ? `<img src="${p.image_url}" alt="${escapeHtml(title)}" style="width:100%;height:180px;object-fit:cover;border-bottom:1px solid var(--border);">`
+  : `<div class="product-image"><i class="ph-bold ph-package"></i></div>`;
+
+grid.innerHTML += `
+  <div class="product-card">
+    ${productImage}
+    <div class="product-content">
+      <h3>${escapeHtml(title)}</h3>
+      <div class="price">${escapeHtml(price)}</div>
+      <p class="desc">${escapeHtml(desc)}</p>
+      <button class="buy-btn" data-product-id="${p.id}" data-product-name="${escapeHtml(title)}" data-product-price="${p.price}" onclick="handleBuyClick(this)"><i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}</button>
+      ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER}${escapeHtml(cleanDemoUrl)}', '${escapeHtml(title)}', '${p.id}', ${p.price})"><i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}</button>` : ''}
+    </div>
+  </div>
+`;
       });
     } catch (err) {
       console.error(err);
