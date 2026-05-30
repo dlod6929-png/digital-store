@@ -446,7 +446,7 @@
       // ✅ إصلاح: نرسل payment_method: "manual" عشان يقبل الـ Worker الطلب
       const orderData = {
         guest_email: email,
-        payment_method: "direct_link",  // ✅ قيمة ثابتة مقبولة من الخادم
+        payment_method: "manual",  // ✅ قيمة ثابتة مقبولة من الخادم
         items: [{ product_id: selectedProductId, quantity: 1 }]
       };
 
