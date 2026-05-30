@@ -21,9 +21,25 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
     body { background: var(--bg); color: var(--text); line-height: 1.6; padding: 1rem; transition: background 0.4s, color 0.4s; }
 
-    header { display: flex; justify-content: center; align-items: center; padding: 1rem 1.5rem; background: var(--card); border-radius: var(--radius); margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+    header { display: flex; justify-content: center; align-items: center; padding: 1rem 1.5rem; background: var(--card); border-radius: var(--radius); margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
     .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: bold; color: var(--primary); }
     .logo i { font-size: 1.8rem; }
+
+    /* تبويبات الفئات */
+    .category-tabs {
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+    .cat-btn {
+      padding: 0.5rem 1rem; background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; cursor: pointer; font-size: 0.9rem; font-weight: 500;
+      color: var(--text-secondary); transition: all 0.3s ease;
+    }
+    .cat-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .cat-btn.active {
+      background: var(--primary); color: white; border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.3);
+    }
 
     .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
     .product-card { background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; }
@@ -33,13 +49,12 @@
     .product-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
     .product-card h3 { margin-bottom: 0.5rem; font-size: 1.2rem; }
     .price { color: var(--primary); font-weight: bold; font-size: 1.4rem; margin: 0.5rem 0; }
-    .desc { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem; flex-grow: 1; }
+    .desc { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem; flex-grow: 1; min-height: 40px; }
     
     .buy-btn { width: 100%; padding: 0.8rem; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb), 0.3); }
     .buy-btn:hover { box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3); transform: scale(1.02); }
     .buy-btn i { font-size: 1.2rem; }
 
-    /* === زر التجربة === */
     .demo-btn {
       width: 100%; padding: 0.6rem; margin-top: 0.5rem;
       background: transparent; color: var(--primary);
@@ -52,7 +67,7 @@
 
     footer { text-align: center; margin-top: 4rem; padding: 1rem; color: var(--text-secondary); font-size: 0.9rem; }
 
-    /* === النوافذ المنبثقة === */
+    /* النوافذ المنبثقة */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center;
@@ -70,10 +85,7 @@
     
     .form-group { margin-bottom: 1.5rem; }
     .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500; }
-    .form-group input {
-      width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;
-      font-size: 1rem; background: var(--bg); color: var(--text); transition: all 0.3s;
-    }
+    .form-group input { width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; background: var(--bg); color: var(--text); transition: all 0.3s; }
     .form-group input:focus { outline: none; border-color: var(--primary); }
     .form-group input.error { border-color: var(--error); animation: shake 0.5s ease-in-out; }
     .error-message { color: var(--error); font-size: 0.85rem; margin-top: 0.5rem; display: none; }
@@ -109,8 +121,7 @@
       border-radius: 8px; padding: 1rem; margin: 1rem 0;
     }
     .warning-box p { margin: 0; color: #d97706; font-weight: 500; }
-    
-    /* === نافذة الديمو === */
+
     .demo-modal .modal { max-width: 90%; width: 95%; height: 90%; padding: 0; display: flex; flex-direction: column; }
     .demo-header {
       display: flex; justify-content: space-between; align-items: center;
@@ -118,13 +129,8 @@
       background: var(--card); border-radius: var(--radius) var(--radius) 0 0;
     }
     .demo-header h3 { margin: 0; font-size: 1.1rem; }
-    .demo-header .btn-close {
-      background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text);
-    }
-    .demo-frame {
-      flex: 1; border: none; border-radius: 0 0 var(--radius) var(--radius);
-      background: #fff;
-    }
+    .demo-header .btn-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text); }
+    .demo-frame { flex: 1; border: none; border-radius: 0 0 var(--radius) var(--radius); background: #fff; }
     .demo-footer {
       padding: 1rem 1.5rem; border-top: 1px solid var(--border);
       background: var(--card); display: flex; gap: 1rem; justify-content: flex-end;
@@ -151,24 +157,25 @@
     </div>
   </header>
 
+  <!-- تبويبات الفئات (سيتم تعبئتها تلقائياً) -->
+  <div class="category-tabs" id="categoryTabs"></div>
+
   <main class="products" id="productsGrid"></main>
 
   <footer>
     <p id="footerText"> Digital Products 2026 ©  </p>
   </footer>
 
-  <!-- === نافذة الإيميل (بدون خيارات الدفع) === -->
+  <!-- نافذة إدخال البريد الإلكتروني -->
   <div class="modal-overlay" id="emailModal">
     <div class="modal">
       <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال عملية الشراء</span></h3>
       <p data-i18n="emailDesc">يرجى إدخال بريدك الإلكتروني</p>
-      
       <div class="form-group">
         <label for="customerEmail" data-i18n="emailLabel">البريد الإلكتروني *</label>
         <input type="email" id="customerEmail" placeholder="example@email.com" required>
         <div class="error-message" id="emailError" data-i18n="emailError">يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)</div>
       </div>
-      
       <div class="modal-buttons">
         <button class="btn-cancel" onclick="closeEmailModal()" data-i18n="cancel">إلغاء</button>
         <button class="btn-confirm" onclick="confirmPurchase(event)" data-i18n="confirm">تأكيد الشراء</button>
@@ -176,29 +183,23 @@
     </div>
   </div>
 
-  <!-- === نافذة النجاح (بدون معلومات دفع) === -->
+  <!-- نافذة نجاح الطلب -->
   <div class="modal-overlay" id="successModal">
     <div class="modal">
       <h3 style="color: var(--success);"><i class="ph-bold ph-check-circle"></i> <span data-i18n="successTitle">تم إنشاء طلبك بنجاح!</span></h3>
       <p data-i18n="successDesc">سيتم التواصل معك قريباً لإتمام عملية الشراء</p>
-      
       <div class="order-details" id="orderDetails"></div>
-      
       <div class="warning-box">
         <p><i class="ph-bold ph-warning"></i> <span data-i18n="warningText">احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني</span></p>
       </div>
-      
-      <button class="btn-copy" onclick="copyOrderDetails()">
-        <i class="ph-bold ph-copy"></i> <span data-i18n="copyButton">نسخ المعلومات</span>
-      </button>
-      
+      <button class="btn-copy" onclick="copyOrderDetails()"><i class="ph-bold ph-copy"></i> <span data-i18n="copyButton">نسخ المعلومات</span></button>
       <div class="modal-buttons" style="margin-top: 1rem;">
         <button class="btn-cancel" onclick="closeSuccessModal()" data-i18n="close">إغلاق</button>
       </div>
     </div>
   </div>
 
-  <!-- === نافذة الديمو === -->
+  <!-- نافذة تجربة المنتج (ديمو) -->
   <div class="modal-overlay demo-modal" id="demoModal">
     <div class="modal">
       <div class="demo-header">
@@ -208,18 +209,13 @@
       <iframe class="demo-frame" id="demoFrame" src="about:blank" title="Demo Preview"></iframe>
       <div class="demo-footer">
         <button class="btn-cancel" onclick="closeDemoModal()" data-i18n="close">إغلاق</button>
-        <button class="btn-buy-full" onclick="buyFromDemo()">
-          <i class="ph-bold ph-unlock"></i> <span data-i18n="buyFull">شراء النسخة الكاملة</span>
-        </button>
+        <button class="btn-buy-full" onclick="buyFromDemo()"><i class="ph-bold ph-unlock"></i> <span data-i18n="buyFull">شراء النسخة الكاملة</span></button>
       </div>
     </div>
   </div>
 
   <script>
-    const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
-    const API_ORDERS_URL = API_URL.replace('/products', '/orders');
-    const DEMOS_FOLDER = 'demos/';
-
+    // -------------------- الترجمة --------------------
     const texts = {
       ar: {
         siteName: "منتجات رقمية", footer: "© 2026 Digital Products. جميع الحقوق محفوظة.", buy: "شراء الآن", tryDemo: "🎁 جرب مجاناً",
@@ -248,12 +244,42 @@
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     
+    // -------------------- المتغيرات العامة --------------------
+    const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
+    const API_ORDERS_URL = API_URL.replace('/products', '/orders');
+    const DEMOS_FOLDER = 'demos/';
+
     let selectedProductId = null;
     let selectedProductName = null;
     let selectedProductPrice = null;
     let currentOrderData = null;
     let productsCache = [];
+    let currentCategory = 'all'; // الفئة النشطة حالياً
 
+    // خريطة أسماء الفئات (يمكنك تعديلها حسب معرفات الفئات في Supabase)
+    // مثال: 
+    //   "5079db3f-..."  : { ar: "مهندسي الطاقة", en: "Engineers" }
+    //   "e973f13f-..."  : { ar: "منتجات تجريبية", en: "Demo Products" }
+    // يمكنك إضافة أي عدد من الفئات
+    const CATEGORY_NAMES = {
+      // معرف الفئة كاملاً (UUID) أو أول 8 أحرف منه (حسب ما يظهر في منتجاتك)
+      '5079db3f': { ar: 'مهندسي الطاقة', en: 'Engineers' },
+      'e973f13f': { ar: 'منتجات تجريبية', en: 'Demo Products' },
+      '4e7e0ee0': { ar: 'قوالب وتصاميم', en: 'Templates' }
+    };
+
+    // دالة للحصول على اسم الفئة حسب المعرف
+    function getCategoryName(catId) {
+      if (!catId) return null;
+      // نتحقق من التطابق مع أول 8 أحرف (لأن UUID طويل)
+      const prefix = catId.substring(0, 8);
+      if (CATEGORY_NAMES[prefix]) {
+        return lang === 'ar' ? CATEGORY_NAMES[prefix].ar : CATEGORY_NAMES[prefix].en;
+      }
+      return null;
+    }
+
+    // -------------------- تطبيق اللغة والثيم --------------------
     function applyLanguage() {
       document.documentElement.lang = lang;
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
@@ -266,7 +292,6 @@
         const key = el.getAttribute('data-i18n');
         if (texts[lang][key]) el.textContent = texts[lang][key];
       });
-      renderProducts();
     }
 
     function applyTheme() { document.documentElement.setAttribute('data-theme', theme); }
@@ -274,64 +299,102 @@
       document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
     });
 
+    // -------------------- بناء تبويبات الفئات --------------------
+    function renderCategories() {
+      const container = document.getElementById('categoryTabs');
+      if (!container) return;
+      
+      // استخراج الفئات الفريدة من المنتجات
+      const cats = new Set();
+      productsCache.forEach(p => {
+        if (p.category_id) {
+          // نستخدم أول 8 أحرف كمعرف فئة عملي
+          const prefix = p.category_id.substring(0, 8);
+          cats.add(prefix);
+        }
+      });
+      
+      // إضافة زر "الكل"
+      let html = `<button class="cat-btn ${currentCategory === 'all' ? 'active' : ''}" data-cat="all">${lang === 'ar' ? 'الكل' : 'All'}</button>`;
+      
+      // إضافة أزرار الفئات
+      cats.forEach(prefix => {
+        const catName = CATEGORY_NAMES[prefix] ? (lang === 'ar' ? CATEGORY_NAMES[prefix].ar : CATEGORY_NAMES[prefix].en) : prefix;
+        html += `<button class="cat-btn ${currentCategory === prefix ? 'active' : ''}" data-cat="${prefix}">${catName}</button>`;
+      });
+      
+      container.innerHTML = html;
+      
+      // ربط الأحداث
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          currentCategory = btn.getAttribute('data-cat');
+          renderCategories(); // إعادة بناء التبويبات (لتحديث الـ active)
+          renderProducts();   // إعادة عرض المنتجات حسب الفئة
+        });
+      });
+    }
+
+    // -------------------- عرض المنتجات مع التصفية حسب الفئة --------------------
     async function renderProducts() {
       const grid = document.getElementById('productsGrid');
-      grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">جاري تحميل المنتجات...</p>`;
+      grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'جاري تحميل المنتجات...' : 'Loading products...'}</p>`;
       
       try {
         const response = await fetch(API_URL);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
         const result = await response.json();
         if (!result.success) throw new Error(result.error || 'خطأ غير معروف');
         
-        const products = result.data;
-        productsCache = products;
+        productsCache = result.data;
         
-        if (!products || products.length === 0) {
-          grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات متاحة حالياً' : 'No products available'}</p>`;
+        // تصفية المنتجات حسب الفئة النشطة
+        let filtered = productsCache;
+        if (currentCategory !== 'all') {
+          filtered = productsCache.filter(p => p.category_id && p.category_id.substring(0, 8) === currentCategory);
+        }
+        
+        if (!filtered || filtered.length === 0) {
+          grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات في هذه الفئة' : 'No products in this category'}</p>`;
           return;
         }
         
         grid.innerHTML = '';
-        products.forEach(p => {
+        filtered.forEach(p => {
           const title = lang === 'ar' ? p.title_ar : p.title_en;
+          const desc = (lang === 'ar' ? p.desc_ar : p.desc_en) || (lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product');
           const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
-          const icon = 'ph-package';
           const hasDemo = p.demo_url && p.demo_url.trim() !== '';
           
           grid.innerHTML += `
             <div class="product-card">
-              <div class="product-image"><i class="ph-bold ${icon}"></i></div>
+              <div class="product-image"><i class="ph-bold ph-package"></i></div>
               <div class="product-content">
                 <h3>${title}</h3>
                 <div class="price">${priceDisplay}</div>
-                <p class="desc">${lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product'}</p>
-                <button class="buy-btn" 
-                        data-product-id="${p.id}" 
-                        data-product-name="${title}"
-                        data-product-price="${p.price}"
-                        onclick="handleBuyClick(this)">
+                <p class="desc">${desc}</p>
+                <button class="buy-btn" data-product-id="${p.id}" data-product-name="${title}" data-product-price="${p.price}" onclick="handleBuyClick(this)">
                   <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
                 </button>
-                ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER + p.demo_url}', '${title}')">
-                  <i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}
-                </button>` : ''}
+                ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER + p.demo_url}', '${title}')"><i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}</button>` : ''}
               </div>
             </div>
           `;
         });
+        
+        // بناء تبويبات الفئات بعد تحميل المنتجات (لأول مرة)
+        renderCategories();
+        
       } catch (err) {
         console.error('Error loading products:', err);
         grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ ${lang === 'ar' ? 'فشل تحميل المنتجات' : 'Failed to load products'}</p>`;
       }
     }
 
-    // فتح الديمو (زر منفصل)
+    // -------------------- دوال الديمو والشراء --------------------
     function openDemo(demoUrl, productName) {
       document.getElementById('demoFrame').src = demoUrl;
       document.getElementById('demoModal').classList.add('active');
-      console.log('🎬 Demo opened:', demoUrl);
     }
 
     function closeDemoModal() {
@@ -339,7 +402,6 @@
       document.getElementById('demoFrame').src = 'about:blank';
     }
 
-    // الشراء من داخل الديمو (يغلق الديمو ويفتح نافذة الشراء)
     function buyFromDemo() {
       closeDemoModal();
       if (selectedProductName && selectedProductPrice) {
@@ -347,28 +409,21 @@
       }
     }
 
-    // زر الشراء المباشر (لا يفتح الديمو أبداً)
     function handleBuyClick(button) {
       selectedProductId = button.dataset.productId;
       selectedProductName = button.dataset.productName;
       selectedProductPrice = parseFloat(button.dataset.productPrice);
       
-      console.log('🛒 Product:', selectedProductName, '| Price:', selectedProductPrice);
-      
       if (!selectedProductPrice || isNaN(selectedProductPrice)) {
-        console.error('❌ Price not found or invalid:', button.dataset.productPrice);
         alert('⚠️ خطأ في سعر المنتج. يرجى تحديث الصفحة.');
         return;
       }
-      
-      // الانتقال مباشرة إلى نافذة البريد الإلكتروني (بدون ديمو)
       openEmailModal(selectedProductId, selectedProductName);
     }
 
     function openEmailModal(productId, productName) {
       selectedProductId = productId;
-      selectedProductName = productName || (lang === 'ar' ? 'منتج غير معروف' : 'Unknown Product');
-      
+      selectedProductName = productName || (lang === 'ar' ? 'منتج' : 'Product');
       document.getElementById('emailModal').classList.add('active');
       document.getElementById('customerEmail').focus();
       clearEmailError();
@@ -402,18 +457,15 @@
     async function confirmPurchase(event) {
       const emailInput = document.getElementById('customerEmail');
       const email = emailInput.value.trim();
-      
       if (!email || !isValidEmail(email)) { showEmailError(); emailInput.focus(); return; }
       
       const price = selectedProductPrice;
       if (!price || price <= 0 || isNaN(price)) {
-        alert('⚠️ خطأ: لم يتم تحديد سعر المنتج. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
-        console.error('Price issue:', { price, selectedProductPrice });
+        alert('⚠️ خطأ في سعر المنتج. يرجى تحديث الصفحة.');
         return;
       }
-      
       if (!selectedProductName) {
-        alert('⚠️ خطأ: لم يتم تحديد المنتج. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
+        alert('⚠️ خطأ في المنتج.');
         return;
       }
       
@@ -422,7 +474,6 @@
       btn.disabled = true;
       btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
 
-      // طريقة دفع بسيطة يقبلها الـ Worker (مثلاً "manual" أو "direct_link")
       const orderData = {
         guest_email: email,
         payment_method: "manual",
@@ -435,30 +486,24 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(orderData)
         });
-
         const result = await response.json();
-        console.log('📥 Response:', result);
-
+        
         if (result.success && result.data?.order_id) {
           closeEmailModal();
-          
           currentOrderData = {
             orderId: result.data.order_id,
             product: selectedProductName,
             email: email,
             amount: price
           };
-
           showSuccessModal(currentOrderData);
-          
           selectedProductId = selectedProductName = selectedProductPrice = null;
-          
         } else {
           alert(`${lang === 'ar' ? '⚠️ حدث خطأ: ' : '⚠️ Error: '}${result.error || 'فشل إنشاء الطلب'}`);
         }
       } catch (err) {
-        console.error('❌ Purchase error:', err);
-        alert(lang === 'ar' ? '⚠️ فشل الاتصال بالخادم' : '⚠️ Failed to connect to server');
+        console.error('Purchase error:', err);
+        alert(lang === 'ar' ? '⚠️ فشل الاتصال بالخادم' : '⚠️ Connection failed');
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalHTML;
@@ -491,7 +536,7 @@
       });
     }
 
-    // إغلاق النوافذ عند النقر خارجها أو بالـ Escape
+    // إغلاق النوافذ بالضغط خارجها أو ESC
     document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => {
       if (e.target === m) {
         if (m.id === 'emailModal') closeEmailModal();
@@ -511,8 +556,10 @@
       if (this.value.trim() && !isValidEmail(this.value.trim())) showEmailError();
     });
 
-    applyLanguage(); applyTheme(); renderProducts();
+    // -------------------- بدء التطبيق --------------------
+    applyLanguage();
+    applyTheme();
+    renderProducts(); // سيتم أيضاً استدعاء renderCategories داخله بعد تحميل المنتجات
   </script>
-  <!-- تم إزالة سكربت cwallet لأنه لم يعد مستخدماً -->
 </body>
 </html>
