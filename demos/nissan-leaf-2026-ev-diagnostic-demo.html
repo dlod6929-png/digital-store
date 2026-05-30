@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+  <title>إيفي تشخيص - نيسان ليف 2026</title>
+  <meta name="theme-color" content="#242526" />
+  <meta name="description" content="تشخيص متكامل للسيارات الكهربائية - بلهجتك الشامية" />
+  <style>
+    :root {
+      --bg-page: #f0f2f5; --bg-card: #ffffff; --text-primary: #1e293b;
+      --text-secondary: #64748b; --border-light: #e4e6eb; --primary: #2563eb;
+      --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.1);
+    }
+    [data-theme="dark"] {
+      --bg-page: #18191a; --bg-card: #242526; --text-primary: #e4e6eb;
+      --text-secondary: #b0b3b8; --border-light: #3e4042; --primary: #3b82f6;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tahoma', sans-serif;
+      background: var(--bg-page); color: var(--text-primary); line-height: 1.5;
+      padding: 16px; transition: background 0.2s ease, color 0.2s ease; min-height: 100vh;
+    }
+    .container { max-width: 780px; margin: 0 auto; width: 100%; }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0 16px; border-bottom: 1px solid var(--border-light);
+      margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+    }
+    .logo {
+      font-weight: 800; font-size: 1.5rem;
+      background: linear-gradient(135deg, var(--primary), #8b5cf6);
+      background-clip: text; -webkit-background-clip: text; color: transparent;
+    }
+    .controls { display: flex; gap: 12px; align-items: center; }
+    .btn {
+      background: var(--primary); color: white; border: none; padding: 10px 18px;
+      border-radius: 40px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+    .btn-success { background: var(--success); }
+    .card {
+      background: var(--bg-card); border-radius: 24px; padding: 20px;
+      margin-bottom: 20px; box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light); transition: background 0.2s;
+      position: relative;
+    }
+    .symptom-option {
+      display: block; width: 100%; padding: 14px 18px; margin: 10px 0;
+      background: var(--bg-card); border: 1px solid var(--border-light);
+      border-radius: 20px; text-align: right; cursor: pointer;
+      transition: 0.2s; font-weight: 500; font-size: 1rem; color: var(--text-primary);
+    }
+    .symptom-option:hover, .symptom-option.selected {
+      border-color: var(--primary); background: rgba(59, 130, 246, 0.1);
+    }
+    .progress {
+      height: 6px; background: var(--border-light); border-radius: 10px;
+      overflow: hidden; margin: 20px 0;
+    }
+    .progress-bar {
+      height: 100%; background: var(--primary); width: 0%; transition: width 0.3s;
+    }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+      border-radius: 40px; font-size: 0.85rem; font-weight: 600;
+    }
+    .status-green { background: #2e7d32; color: #e8f5e9; }
+    .status-yellow { background: #b45309; color: #fffbeb; }
+    .status-red { background: #c62828; color: #ffebee; }
+    .status-locked { background: var(--border-light); color: var(--text-secondary); }
+    [data-theme="dark"] .status-green { background: #1b5e20; color: #c8e6c9; }
+    [data-theme="dark"] .status-yellow { background: #e65100; color: #fff3e0; }
+    [data-theme="dark"] .status-red { background: #b71c1c; color: #ffcdd2; }
+    .tip-box {
+      background: rgba(59, 130, 246, 0.1); border-right: 4px solid var(--primary);
+      padding: 14px 18px; border-radius: 16px; margin: 20px 0;
+      font-size: 0.95rem; color: var(--text-primary);
+    }
+    .level-toggle {
+      display: flex; gap: 12px; margin: 20px 0; flex-wrap: wrap;
+    }
+    .level-btn {
+      flex: 1; min-width: 90px; padding: 10px 8px; border: 1px solid var(--border-light);
+      background: var(--bg-card); border-radius: 50px; text-align: center;
+      cursor: pointer; transition: 0.2s; font-weight: 600; color: var(--text-primary);
+      position: relative;
+    }
+    .level-btn.active {
+      border-color: var(--primary); background: rgba(59, 130, 246, 0.2); color: var(--primary);
+    }
+    .level-btn.locked::after {
+      content: "🔒";
+      position: absolute;
+      top: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      background: var(--warning);
+      color: #1e293b;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+    .footer {
+      text-align: center; padding: 24px 0 16px; color: var(--text-secondary);
+      font-size: 0.85rem; border-top: 1px solid var(--border-light);
+    }
+    .hidden { display: none !important; }
+    .result-section { display: none; }
+    .result-section.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .locked-message {
+      background: var(--bg-page);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      margin: 16px 0;
+    }
+    h2, h3, p, li, .logo, .footer, .tip-box span, .tip-box strong { color: var(--text-primary); }
+    ol, ul { padding-right: 1.5rem; margin: 12px 0; }
+    li { margin: 8px 0; }
+    @media (max-width: 560px) {
+      body { padding: 12px; }
+      .card { padding: 16px; }
+      .btn { padding: 8px 14px; font-size: 0.85rem; }
+      .symptom-option { padding: 12px 16px; font-size: 0.95rem; }
+      .level-btn { min-width: 70px; padding: 8px 6px; font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">🔋 إيفي تشخيص</div>
+    <div class="controls">
+      <button class="btn btn-outline" id="themeToggle">🌙</button>
+      <button class="btn btn-outline" id="updateBtn">🔄 تحديث</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom: 12px;">🚗 نيسان ليف 2026 - التشخيص الذكي</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 16px;">
+      اختر مستوى خبرتك: 🟢 سائق (مجاني كامل) | 🟡 صنايعي (مجاني للشحن والأداء) | 🔴 خبير (في النسخة الكاملة)
+    </p>
+    
+    <div class="level-toggle">
+      <div class="level-btn active" data-level="1">🟢 سائق</div>
+      <div class="level-btn" data-level="2">🟡 صنايعي</div>
+      <div class="level-btn locked" data-level="3">🔴 خبير</div>
+    </div>
+
+    <div id="step1">
+      <p><strong>شو الملاحظة الأساسية على السيارة؟</strong></p>
+      <button class="symptom-option" data-symptom="battery">🔋 مشكلة بالشحن أو البطارية</button>
+      <button class="symptom-option" data-symptom="performance">🐌 ضعف في الأداء أو المدى</button>
+      <button class="symptom-option" data-symptom="warning">⚠️ لمبة تحذير على الشاشة</button>
+      <button class="symptom-option" data-symptom="noise">🔊 صوت أو اهتزاز غريب</button>
+      <button class="symptom-option" data-symptom="other">❓ شيء ثاني</button>
+    </div>
+
+    <div id="step2" class="hidden">
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+      <p id="questionText" style="font-weight: 600; margin-bottom: 12px;"></p>
+      <div id="answersContainer"></div>
+      <button class="btn btn-outline" id="backBtn" style="margin-top: 20px;">← رجوع</button>
+    </div>
+
+    <div id="result" class="result-section card">
+      <h3 style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <span id="resultIcon">✅</span> <span id="resultTitle">التشخيص</span>
+      </h3>
+      <div id="resultStatus" class="status-badge status-green" style="margin-bottom: 12px;"></div>
+      <div id="resultContent" style="margin-bottom: 16px;"></div>
+      <div class="tip-box" id="tipBox">
+        💡 <strong>نصيحة ذهبية:</strong> <span id="tipText"></span>
+      </div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <button class="btn btn-success" id="saveReport">💾 حفظ التقرير</button>
+        <button class="btn btn-outline" id="newDiagnosis">🔄 تشخيص جديد</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="footer">
+    <p>إيفي تشخيص © 2026 - بلهجتك الشامية | 🟢 مجاني | 🟡 مجاني جزئياً | 🔴 النسخة الكاملة</p>
+  </div>
+</div>
+
+<script>
+  // ========== إعدادات الثيم ==========
+  function safeGetItem(key, fallback) { try { return localStorage.getItem(key) || fallback; } catch(e) { return fallback; } }
+  function safeSetItem(key, value) { try { localStorage.setItem(key, value); } catch(e) {} }
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initialTheme = safeGetItem('eviTheme', systemPrefersDark ? 'dark' : 'light');
+  
+  const state = { level: 1, symptom: null, answers: {}, lastResultKey: null };
+  
+  (function applyTheme() {
+    if (initialTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.getElementById('themeToggle').textContent = '☀️';
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      document.getElementById('themeToggle').textContent = '🌙';
+    }
+  })();
+
+  // ========== قاعدة المعرفة (نفس الأسئلة لجميع المستويات) ==========
+  const knowledgeBase = {
+    battery: {
+      q1: { text: "شو بالضبط المشكلة بالشحن؟", answers: [
+        { text: "الشاحن بيقطع نص نص", next: "b_q2" },
+        { text: "السيارة ما بتقبل تشحن أصلاً", result: "b_no_charge" },
+        { text: "المدى نقص فجأة", result: "batt_degradation" },
+        { text: "لمبة التحذير طالعة", result: "ev_system" }
+      ] },
+      b_q2: { text: "هل في رسالة خطأ على الشاشة؟", answers: [
+        { text: "أيوة: 'Check Charging System'", result: "charger_comm" },
+        { text: "لا، بس الشاحن بيفصل", result: "charger_overheat" },
+        { text: "شاحن تاني شغال", result: "obc_failure" }
+      ] }
+    },
+    performance: {
+      q1: { text: "ضعف الأداء وين بتحسه؟", answers: [
+        { text: "من الوقفة بطيء", result: "perf_start" },
+        { text: "فوق 80 كم/س ما في استجابة", result: "perf_high" },
+        { text: "المسافة أقل", result: "batt_degradation" }
+      ] }
+    },
+    warning: {
+      q1: { text: "شو لون اللمبة؟", answers: [
+        { text: "صفرا", result: "warn_yellow" },
+        { text: "حمرا", result: "warn_red" },
+        { text: "ABS أو ESC", result: "abs_sensor" }
+      ] }
+    },
+    noise: {
+      q1: { text: "شو نوع الصوت؟", answers: [
+        { text: "صفير رفيع", result: "noise_whine" },
+        { text: "طنين مع السرعة", result: "noise_hum" },
+        { text: "تكة لما أدور", result: "cv_joint" }
+      ] }
+    },
+    other: {
+      q1: { text: "أختر المشكلة:", answers: [
+        { text: "الشاشة مجمدة", result: "infotainment_reset" },
+        { text: "النوافذ ما بتشتغل", result: "window_motor" }
+      ] }
+    }
+  };
+
+  // ========== النتائج ==========
+  // allowedForMechanic = true (مسموح للصنايعي) / false (مقفل على الصنايعي)
+  const results = {
+    charger_comm: { title: "مشكلة اتصال بين الشاحن والسيارة", icon: "🔌", allowedForMechanic: true,
+      levels: {
+        1: { status: "🟡 أصفر - جرب بنفسك", content: "جرب هالخطوات:", steps: ["افصل الشاحن وانتظر 30 ثانية", "جرب شاحن ثاني", "نظف منفذ الشحن"], warning: "إذا ما ضبط روح لمركز خدمة.", tip: "نظف منفذ الشحن كل شهر." },
+        2: { status: "🟡 فحص متقدم", content: "الكود P1C2A (فقدان اتصال PLC).", steps: ["افحص جهد CC و CP (9-12 فولت)", "تحقق من كابل التواصل EVSE-VCU", "استخدم قارئ أعطال"], warning: "لا تلمس أسلاك الجهد العالي.", tip: "سجل قيم الجهد للمقارنة." }
+      }
+    },
+    b_no_charge: { title: "مشكلة في نظام الشحن الأساسي", icon: "⚡", allowedForMechanic: true,
+      levels: {
+        1: { status: "🔴 أحمر - خدمة فورية", content: "السيارة ما بتقبل شحن.", steps: ["تأكد من كابل الشحن", "افحص فيوز 12V", "جرب شاحن آخر"], warning: "لا تفتح أي غطاء برتقالي.", tip: "خلي رقم الطوارئ معك." },
+        2: { status: "🔴 تشخيص تقني", content: "افحص OBC ومحول DC-DC.", steps: ["قياس جهد 12V", "افحص ريلاي الجهد العالي", "اقرأ أكواد OBD2"], warning: "الجهد العالي خطر!", tip: "استخدم مخطط الأسلاك الرسمي." }
+      }
+    },
+    charger_overheat: { title: "ارتفاع حرارة الشاحن", icon: "🌡️", allowedForMechanic: true,
+      levels: {
+        1: { status: "🟡 أصفر - تبريد", content: "الشاحن بيفصل للحماية.", steps: ["انتظر 15 دقيقة", "نظف منفذ الشحن", "جرب تيار أقل"], warning: "إذا شممت رائحة حريق، أطفي.", tip: "اشحن في الظل." },
+        2: { status: "🟡 فحص حساسات", content: "افحص حساس الحرارة.", steps: ["قياس مقاومة NTC (10kΩ عند 25°C)", "افحص تدفق الهواء", "نظف مراوح OBC"], warning: "لا تعطل دوائر الحماية.", tip: "كاميرا حرارية تكشف النقاط الساخنة." }
+      }
+    },
+    obc_failure: { title: "عطل في الشاحن الداخلي (OBC)", icon: "🔧", allowedForMechanic: true,
+      levels: {
+        1: { status: "🔴 أحمر - مركز خدمة", content: "الشاحن الداخلي خربان.", steps: ["استخدم شحن سريع DC", "تجنب الشحن المنزلي", "احجز بالوكالة"], warning: "لا تحاول الإصلاح بنفسك.", tip: "تطبيق NissanConnect يحدد المركز." },
+        2: { status: "🔴 تشخيص فني", content: "عزل العطل في OBC.", steps: ["افحص فيوزات 30A و 50A", "قِس جهد الدخل 220V والخرج 400V", "افحص اتصال CAN"], warning: "الجهد خطير حتى بعد الفصل.", tip: "انتظر 10 دقائق قبل الفتح." }
+      }
+    },
+    batt_degradation: { title: "تدهور صحة البطارية (SOH)", icon: "🔋", allowedForMechanic: true,
+      levels: {
+        1: { status: "🟡 أصفر - متابعة", content: "المدى نقص بشكل طبيعي.", steps: ["اشحن بين 20%-80%", "تجنب الشحن السريع", "استخدم وضع Eco"], warning: "إذا نقص فجأة، افحص النظام.", tip: "راقب المدى كل شهر." },
+        2: { status: "🟡 فحص تقني", content: "اقرأ SOH من BMS.", steps: ["استخدم LeafSpy Pro", "قارن مع الضمان (70% خلال 8 سنين)", "افحص توازن الخلايا (فرق < 50mV)"], warning: "لا تعيد معايرة البطارية بدون خبرة.", tip: "شحن موازن مرة أسبوعياً." }
+      }
+    },
+    ev_system: { title: "عطل في نظام الجهد العالي", icon: "⚠️", allowedForMechanic: true,
+      levels: {
+        1: { status: "🔴 أحمر - توقف فوري", content: "لمبة EV System تعني خطر.", steps: ["أوقف السيارة", "نطّر 5 دقائق وشغلها", "إذا باقية اتصل بالسحب"], warning: "لا تقود مع هاللمبة.", tip: "صوّر رسالة الخطأ." },
+        2: { status: "🔴 تشخيص عاجل", content: "اقرأ الأكواد.", steps: ["استخدم Consult-III", "افحص أكواد P0AA6 (عزل) أو P3100", "افحص اتصالات CAN"], warning: "بعض الأعطال تسبب فقدان الطاقة.", tip: "سجل Freeze Frame Data." }
+      }
+    },
+    perf_start: { title: "ضعف تسارع من الوقفة", icon: "🐢", allowedForMechanic: true,
+      levels: {
+        1: { status:"🟡 تحقق من الكفرات", content:"تأكد من ضغط الهواء", steps:["انفخ لـ 38-40psi","جرّب Eco"], tip:"الضغط المنخفض ياكل الكهربا" },
+        2: { status:"🟡 فحص المكابح", content:"قد يكون كاليبر عالق", steps:["ارفع العجلة ودورها","نظف الفرجار"], tip:"إذا سخنت العجلة، الكاليبر خربان" }
+      }
+    },
+    perf_high: { title: "ضعف على السرعات العالية", icon: "📉", allowedForMechanic: true,
+      levels: {
+        1: { status:"🟡 شحن البطارية", content:"BMS يحد من القدرة", steps:["اشحن حتى 80% وجرب"], tip:"إذا تحسن، الخلل في BMS" },
+        2: { status:"🟡 فحص حرارة البطارية", content:"ارتفاع الحرارة يضعف الأداء", steps:["اقرأ درجة حرارة البطارية"], tip:"برد السيارة قبل القيادة" }
+      }
+    },
+
+    // الأعراض غير المسموحة للصنايعي (allowedForMechanic = false)
+    warn_yellow: { title: "لمبة صفراء", icon:"⚠️", allowedForMechanic: false,
+      levels: {1: { status: "🟡 قيادة مع فحص", content: "صيانة قريبة ممكنة", steps: ["اقرأ الكود عند الورشة"], tip: "لا تتجاهل اللمبة لأسبوع" }, 2: {} } },
+    warn_red: { title: "لمبة حمراء - خطر", icon:"🔴", allowedForMechanic: false,
+      levels: {1: { status: "🔴 توقف فوراً", content: "لا تقود السيارة", steps: ["اتصل بسحب"], tip: "خطر صعقة كهربائية" }, 2: {} } },
+    abs_sensor: { title: "حساس ABS معطل", icon:"🛞", allowedForMechanic: false,
+      levels: {1: { status: "🟡 نظف الحساس", content: "الغبار يسبب خطأ", steps: ["نظف الحساس خلف العجلة"], tip: "جرب غسيل السيارة" }, 2: {} } },
+    noise_whine: { title: "صفير من الأمام", icon:"🎵", allowedForMechanic: false,
+      levels: {1: { status: "🟢 طبيعي", content: "إنفيرتر بتردد عالي", steps: ["إذا خفيف لا تقلق"], tip: "بعض الناس بيحبوا الصوت" }, 2: {} } },
+    noise_hum: { title: "طنين مع السرعة", icon:"🔄", allowedForMechanic: false,
+      levels: {1: { status: "🟡 رمان عجلة", content: "الصوت يزيد مع السرعة", steps: ["ارفع العجلة ودورها"], tip: "إذا خشونة، بدله" }, 2: {} } },
+    cv_joint: { title: "تكة عند الدوران", icon:"⚙️", allowedForMechanic: false,
+      levels: {1: { status: "🟡 وصلة CV", content: "تكة من الكفر الداخلي", steps: ["افحص الغطاء الأسود"], tip: "غير نصف العمود" }, 2: {} } },
+    infotainment_reset: { title: "شاشة تتجمد", icon:"📱", allowedForMechanic: false,
+      levels: {1: { status: "🟢 حل بسيط", content: "اضغط زر الطاقة 15 ثانية", steps: ["إذا متكرر، حدث النظام"], tip: "تحديث V3.2.1 يحل المشكلة" }, 2: {} } },
+    window_motor: { title: "النوافذ ما بتشتغل", icon:"🪟", allowedForMechanic: false,
+      levels: {1: { status: "🟡 افحص الفيوز", content: "فيوز 30A في صندوق الراكب", steps: ["استبدله"], tip: "أعد برمجة: اسحب الزر 10 ثواني" }, 2: {} } }
+  };
+
+  function getResult(key) { return results[key]; }
+
+  // ========== إعادة ضبط التشخيص ==========
+  function resetDiagnostic() {
+    state.symptom = null;
+    state.answers = {};
+    delete state.lastResultKey;
+    document.getElementById('step1').classList.remove('hidden');
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('result').classList.remove('active');
+  }
+
+  function setActiveLevel(level) {
+    state.level = level;
+    document.querySelectorAll('.level-btn').forEach(btn => {
+      if (parseInt(btn.dataset.level) === level) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+    resetDiagnostic();
+  }
+
+  // ========== الأحداث ==========
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        safeSetItem('eviTheme', 'light');
+        document.getElementById('themeToggle').textContent = '🌙';
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        safeSetItem('eviTheme', 'dark');
+        document.getElementById('themeToggle').textContent = '☀️';
+      }
+    });
+
+    document.getElementById('updateBtn').addEventListener('click', () => {
+      alert('✅ تم تحديث قاعدة الأعطال إلى أحدث إصدار.');
+    });
+
+    document.querySelectorAll('.level-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const level = parseInt(btn.dataset.level);
+        setActiveLevel(level);
+      });
+    });
+
+    document.querySelectorAll('#step1 .symptom-option').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        state.symptom = e.currentTarget.dataset.symptom;
+        state.answers = {};
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+        const firstKey = state.symptom + '.q1';
+        if (knowledgeBase[state.symptom]?.q1) loadQuestion(firstKey);
+        else showResult('charger_comm');
+      });
+    });
+
+    document.getElementById('backBtn').addEventListener('click', () => {
+      document.getElementById('step2').classList.add('hidden');
+      document.getElementById('step1').classList.remove('hidden');
+    });
+
+    document.getElementById('newDiagnosis').addEventListener('click', resetDiagnostic);
+    document.getElementById('saveReport').addEventListener('click', () => {
+      alert('📄 تم حفظ التقرير (نصي). يمكنك مشاركته مع مركز الخدمة.');
+    });
+  });
+
+  function loadQuestion(fullKey) {
+    const [symptom, qKey] = fullKey.split('.');
+    const q = knowledgeBase[symptom]?.[qKey];
+    if (!q) { showResult('charger_comm'); return; }
+    document.getElementById('questionText').textContent = q.text;
+    const container = document.getElementById('answersContainer');
+    container.innerHTML = '';
+    q.answers.forEach(ans => {
+      const btn = document.createElement('button');
+      btn.className = 'symptom-option';
+      btn.textContent = ans.text;
+      btn.onclick = () => {
+        state.answers[fullKey] = ans.text;
+        if (ans.result) showResult(ans.result);
+        else if (ans.next) loadQuestion(symptom + '.' + ans.next);
+        else showResult('charger_comm');
+      };
+      container.appendChild(btn);
+    });
+    const progress = Math.min(80, (Object.keys(state.answers).length + 1) * 20);
+    document.getElementById('progressBar').style.width = progress + '%';
+  }
+
+  function showResult(resultKey) {
+    state.lastResultKey = resultKey;
+    const res = getResult(resultKey);
+    if (!res) { showFallback(); return; }
+
+    // ✅ مستوى الخبير (3) : قفل كامل لأي عرض
+    if (state.level === 3) {
+      document.getElementById('resultIcon').textContent = "🔒";
+      document.getElementById('resultTitle').textContent = res.title;
+      document.getElementById('resultStatus').textContent = "🔐 النسخة الكاملة";
+      document.getElementById('resultStatus').className = "status-badge status-locked";
+      document.getElementById('resultContent').innerHTML = `
+        <div class="locked-message">
+          <p style="margin-bottom:12px;">✨ هذا المحتوى متوفر فقط في <strong>النسخة الكاملة</strong> من إيفي تشخيص ✨</p>
+          <p style="font-size:0.9rem; color:var(--text-secondary)">للحصول على جميع التحليلات المتقدمة (CAN Bus، أكواد المصنع، مخططات HV)، قم بشراء التطبيق من موقعنا.</p>
+        </div>
+      `;
+      document.getElementById('tipText').textContent = "💡 مستوى الخبير يتطلب النسخة الكاملة. تواصل مع الدعم لمعرفة المزيد.";
+      document.getElementById('step2').classList.add('hidden');
+      document.getElementById('result').classList.add('active');
+      return;
+    }
+
+    // ✅ مستوى الصنايعي (2) : فقط الأعراض المسموحة (allowedForMechanic = true)
+    if (state.level === 2 && !res.allowedForMechanic) {
+      document.getElementById('resultIcon').textContent = "🔒";
+      document.getElementById('resultTitle').textContent = res.title;
+      document.getElementById('resultStatus').textContent = "🔐 النسخة المدفوعة";
+      document.getElementById('resultStatus').className = "status-badge status-locked";
+      document.getElementById('resultContent').innerHTML = `
+        <div class="locked-message">
+          <p style="margin-bottom:12px;">✨ هذا التشخيص متاح فقط في <strong>النسخة المدفوعة</strong> ✨</p>
+          <p style="font-size:0.9rem; color:var(--text-secondary)">يمكنك الحصول على كامل الميزات عبر شراء التطبيق.</p>
+        </div>
+      `;
+      document.getElementById('tipText').textContent = "💡 لفتح جميع الأعراض (لمبات، أصوات، مشاكل أخرى)، قم بشراء النسخة الكاملة.";
+      document.getElementById('step2').classList.add('hidden');
+      document.getElementById('result').classList.add('active');
+      return;
+    }
+
+    // ✅ المستوى 1 (سائق) أو المستوى 2 في عرض مسموح: عرض المحتوى الطبيعي
+    const levelData = res.levels[state.level] || res.levels[1];
+    if (!levelData) { showFallback(); return; }
+    document.getElementById('resultIcon').textContent = res.icon;
+    document.getElementById('resultTitle').textContent = res.title;
+    document.getElementById('resultStatus').textContent = levelData.status;
+    let statusClass = 'status-green';
+    if (levelData.status.includes('أصفر')) statusClass = 'status-yellow';
+    else if (levelData.status.includes('أحمر')) statusClass = 'status-red';
+    document.getElementById('resultStatus').className = 'status-badge ' + statusClass;
+    
+    let content = `<p style="margin-bottom:12px">${levelData.content || ''}</p>`;
+    if (levelData.steps?.length) {
+      content += `<ol style="padding-right:20px; margin:12px 0">`;
+      levelData.steps.forEach(step => content += `<li style="margin:8px 0">${step}</li>`);
+      content += `</ol>`;
+    }
+    if (levelData.warning) content += `<p style="color:var(--danger); font-weight:600; margin-top:12px">⚠️ ${levelData.warning}</p>`;
+    document.getElementById('resultContent').innerHTML = content;
+    document.getElementById('tipText').textContent = levelData.tip || 'احرص على السلامة أولاً.';
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('result').classList.add('active');
+  }
+
+  function showFallback() {
+    document.getElementById('resultContent').innerHTML = '<p>لا توجد بيانات كافية.</p>';
+    document.getElementById('resultStatus').textContent = "⚠️ خطأ";
+    document.getElementById('tipText').textContent = "يرجى المحاولة مرة أخرى.";
+  }
+</script>
+</body>
+</html>
