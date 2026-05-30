@@ -25,6 +25,7 @@
     .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: bold; color: var(--primary); }
     .logo i { font-size: 1.8rem; }
 
+    /* ✅ تنسيق تبويبات الفئات */
     .category-tabs {
       display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;
       margin-bottom: 2rem;
@@ -116,8 +117,10 @@
     </div>
   </header>
 
+  <!-- ✅ تبويبات الفئات -->
   <div class="category-tabs" id="categoryTabs">
     <button class="cat-btn active" onclick="filterProducts('all')">الكل</button>
+    <!-- سيتم ملؤها بالجافاسكربت -->
   </div>
 
   <main class="products" id="productsGrid"></main>
@@ -172,6 +175,7 @@
   </div>
 
   <script>
+    // ✅ الترجمات
     const texts_ar = {
       siteName: "DigiFlow", footer: "DigiFlow 2026 © جميع الحقوق محفوظة.",
       buy: "شراء الآن", tryDemo: "🎁 جرب مجاناً", buyFull: "🔓 شراء النسخة الكاملة",
@@ -184,11 +188,12 @@
       demoTitle: "تجربة المنتج", close: "إغلاق",
       loadingProducts: "جاري تحميل المنتجات...", noProducts: "لا توجد منتجات", loadFailed: "فشل التحميل",
       priceError: "⚠️ خطأ في سعر المنتج", productError: "⚠️ خطأ في المنتج", connectionError: "⚠️ فشل الاتصال",
-      defaultDesc: "منتج رقمي متميز", catAll: "الكل"
+      defaultDesc: "منتج رقمي متميز",
+      catAll: "الكل"
     };
     const texts_en = {
       siteName: "DigiFlow", footer: "DigiFlow 2026 © All rights reserved.",
-      buy: "Buy Now", tryDemo: "🎁 Try Free", buyFull: "🔓 Buy Full Version",
+      buy: "Buy Now", tryDemo: "🎁 Try Free", buyFull: " Buy Full Version",
       emailTitle: "Complete Order", emailDesc: "Please enter your email to receive the product",
       emailLabel: "Email Address *", emailError: "Please enter a valid email",
       cancel: "Cancel", confirm: "Confirm", processing: "Processing...",
@@ -198,11 +203,18 @@
       demoTitle: "Product Demo", close: "Close",
       loadingProducts: "Loading products...", noProducts: "No products available", loadFailed: "Failed to load",
       priceError: "⚠️ Invalid product price", productError: "Product not found", connectionError: "Connection failed",
-      defaultDesc: "Premium digital product", catAll: "All"
+      defaultDesc: "Premium digital product",
+      catAll: "All"
+    };
+
+    // ✅ خريطة الفئات (IDs من Supabase)
+    const CATEGORY_MAP = {
+      '5079db3f': { ar: 'مهندسي الطاقة', en: 'Engineers' },
+      'e973f13f': { ar: 'منتجات تجريبية', en: 'Demo Products' },
+      '4e7e0ee0': { ar: 'قوالب وتصاميم', en: 'Templates' }
     };
 
     const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
-    const API_CATEGORIES_URL = 'https://digitalstore.dlod6929.workers.dev/api/categories';
     const API_ORDERS_URL = API_URL.replace('/products', '/orders');
     const DEMOS_FOLDER = 'demos/';
     const CONFIG = { CURRENCY: 'USDT' };
@@ -213,28 +225,48 @@
     texts = lang === 'ar' ? texts_ar : texts_en;
 
     let currentCategory = 'all';
-    let categoriesCache = [];
     let selectedProductId = null, selectedProductName = null, selectedProductPrice = null;
     let selectedProductDemoUrl = null, currentOrderData = null, productsCache = [];
 
-    async function fetchCategories() {
-      try {
-        const response = await fetch(API_CATEGORIES_URL);
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) categoriesCache = result.data;
-        }
-      } catch (err) { console.error('Error fetching categories:', err); }
+    function applyLanguage() {
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      document.title = texts.siteName;
+      document.getElementById('siteName').textContent = texts.siteName;
+      document.getElementById('footerText').textContent = texts.footer;
+      document.getElementById('demoTitle').textContent = texts.demoTitle;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (texts[key]) el.textContent = texts[key];
+      });
+      renderCategories();
+      renderProducts();
     }
 
+    function applyTheme() { document.documentElement.setAttribute('data-theme', theme); }
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    });
+
+    // ✅ عرض تبويبات الفئات
     function renderCategories() {
       const container = document.getElementById('categoryTabs');
       container.innerHTML = `<button class="cat-btn active" onclick="filterProducts('all')">${texts.catAll}</button>`;
-      categoriesCache.forEach(cat => {
-        if (cat.is_active) {
-          const name = lang === 'ar' ? cat.name_ar : cat.name_en;
-          container.innerHTML += `<button class="cat-btn" onclick="filterProducts('${cat.id}')">${name}</button>`;
+      
+      // استخراج الفئات الفريدة من المنتجات
+      const cats = new Set();
+      productsCache.forEach(p => {
+        if (p.category_id) {
+          // البحث عن مفتاح الفئة في الخريطة
+          for (const key in CATEGORY_MAP) {
+            if (p.category_id.startsWith(key)) cats.add(key);
+          }
         }
+      });
+
+      cats.forEach(key => {
+        const name = CATEGORY_MAP[key] ? (lang === 'ar' ? CATEGORY_MAP[key].ar : CATEGORY_MAP[key].en) : 'Category';
+        container.innerHTML += `<button class="cat-btn" onclick="filterProducts('${key}')">${name}</button>`;
       });
     }
 
@@ -256,6 +288,7 @@
         if (!result.success) throw new Error(result.error || 'خطأ غير معروف');
         
         productsCache = result.data;
+        renderCategories(); // تحديث التبويبات بعد تحميل المنتجات
         
         const filtered = currentCategory === 'all' 
           ? productsCache 
@@ -288,7 +321,7 @@
         });
       } catch (err) {
         console.error('Error:', err);
-        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ ${texts.loadFailed}</p>`;
+        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">️ ${texts.loadFailed}</p>`;
       }
     }
 
@@ -357,6 +390,7 @@
       btn.disabled = true;
       btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts.processing}`;
 
+      // ✅ بوابة الدفع: manual
       const orderData = { guest_email: email, payment_method: "manual", items: [{ product_id: selectedProductId, quantity: 1 }] };
 
       try {
@@ -368,7 +402,7 @@
           showSuccessModal(currentOrderData);
           selectedProductId = selectedProductName = selectedProductPrice = selectedProductDemoUrl = null;
         } else {
-          alert(`${lang === 'ar' ? '⚠️ خطأ: ' : '⚠️ Error: '}${result.error || 'فشل الإنشاء'}`);
+          alert(`${lang === 'ar' ? '️ خطأ: ' : '⚠️ Error: '}${result.error || 'فشل الإنشاء'}`);
         }
       } catch (err) {
         console.error('❌ Error:', err);
@@ -408,14 +442,7 @@
     emailEl.addEventListener('input', function() { this.style.borderColor = this.value.trim() && isValidEmail(this.value.trim()) ? 'var(--success)' : ''; this.classList.remove('error'); });
     emailEl.addEventListener('blur', function() { if (this.value.trim() && !isValidEmail(this.value.trim())) showEmailError(); });
 
-    async function init() {
-      applyLanguage();
-      applyTheme();
-      await fetchCategories();
-      renderCategories();
-      renderProducts();
-    }
-    init();
+    applyLanguage(); applyTheme();
   </script>
 </body>
 </html>
