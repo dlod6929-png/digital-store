@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المستشار الشمسي الاحترافي</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='22' fill='%23FF8C00'/><g stroke='%23FFA500' stroke-width='4' stroke-linecap='round'><line x1='50' y1='8' x2='50' y2='20'/><line x1='50' y1='80' x2='50' y2='92'/><line x1='8' y1='50' x2='20' y2='50'/><line x1='80' y1='50' x2='92' y2='50'/><line x1='20' y1='20' x2='29' y2='29'/><line x1='71' y1='71' x2='80' y2='80'/><line x1='20' y1='80' x2='29' y2='71'/><line x1='71' y1='29' x2='80' y2='20'/></g></svg>" type="image/svg+xml">
+    <style>
+        :root {
+            --bg-color: #f4f6f8; --card-bg: #ffffff; --text-color: #2c3e50;
+            --input-bg: #f9fafb; --input-border: #e0e0e0;
+            --neon-orange: #FF8C00; --neon-border: 2px solid #FF8C00; --neon-glow: 0 0 8px rgba(255, 140, 0, 0.5), 0 0 15px rgba(255, 140, 0, 0.2);
+            --success: #27ae60; --danger: #e74c3c; --warning: #f39c12; --placeholder-color: #b0b8c1;
+        }
+        .dark-mode {
+            --bg-color: #0f1115; --card-bg: #1a1d23; --text-color: #ecf0f1;
+            --input-bg: #2d3139; --input-border: #444;
+            --neon-orange: #FFA500; --neon-border: 2px solid #FFA500; --neon-glow: 0 0 10px rgba(255, 165, 0, 0.6), 0 0 20px rgba(255, 165, 0, 0.3);
+            --success: #2ecc71; --danger: #ff5252; --warning: #ffc107; --placeholder-color: #5a6270;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-color); color: var(--text-color); transition: 0.4s; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .icon-box { display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; font-size: 1.4rem; background-color: var(--input-bg); border: var(--neon-border); border-radius: 12px; box-shadow: var(--neon-glow); flex-shrink: 0; }
+        .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        h2 { color: var(--neon-orange); margin: 0; font-size: 1.3rem; }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid var(--input-border); margin-bottom: 15px; transition: 0.4s; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab-btn { flex: 1; padding: 12px 5px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 12px; color: var(--text-color); font-weight: bold; cursor: pointer; text-align: center; transition: 0.3s; font-size: 0.9rem; min-width: 100px; }
+        .tab-btn.active { background: var(--neon-orange); color: #fff; border-color: var(--neon-orange); box-shadow: var(--neon-glow); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+        .input-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .input-group label { font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+        .input-group input, .input-group select, .psh-helper select { width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 10px; padding: 10px; color: var(--text-color); font-size: 1rem; outline: none; transition: 0.3s; }
+        .input-group input:focus, .input-group select:focus, .psh-helper select:focus { border-color: var(--neon-orange); box-shadow: var(--neon-glow); }
+        input::placeholder { color: var(--placeholder-color); opacity: 1; font-weight: normal; }
+        .psh-helper { margin-top: -5px; margin-bottom: 10px; font-size: 0.85rem; }
+        .input-error { border-color: var(--danger) !important; box-shadow: 0 0 8px rgba(231, 76, 60, 0.5) !important; animation: shake 0.4s ease-in-out; }
+        .input-disabled { opacity: 0.4; pointer-events: none; background: var(--input-border); }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .btn-group { display: flex; gap: 15px; margin-top: 10px; }
+        .neon-btn { flex: 2; padding: 12px; background: var(--input-bg); border: var(--neon-border); color: var(--neon-orange); border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: var(--neon-glow); }
+        .neon-btn:hover { background: var(--neon-orange); color: #fff; }
+        .neon-btn .icon-box { width: 35px; height: 35px; font-size: 1.1rem; margin: 0; border-radius: 8px; }
+        .reset-btn { flex: 1; padding: 12px; background: var(--input-bg); border: 2px solid var(--danger); color: var(--danger); border-radius: 12px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .reset-btn:hover { background: var(--danger); color: #fff; }
+        .load-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+        .load-table th, .load-table td { padding: 8px; text-align: center; border-bottom: 1px solid var(--input-border); }
+        .del-btn { color: var(--danger); cursor: pointer; font-weight: bold; }
+        .res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 600px) { .res-grid { grid-template-columns: 1fr; } }
+        .res-item { background: var(--input-bg); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid var(--input-border); }
+        .res-label { font-size: 0.85rem; opacity: 0.8; margin-bottom: 5px; }
+        .res-value { font-size: 1.4rem; font-weight: bold; color: var(--neon-orange); }
+        .res-sub { font-size: 0.75rem; opacity: 0.7; margin-top: 5px; line-height: 1.4; }
+        .mini-tabs { display: inline-flex; background: var(--card-bg); border-radius: 8px; overflow: hidden; border: 1px solid var(--input-border); margin-bottom: 5px; }
+        .mini-tab { padding: 4px 10px; font-size: 0.75rem; cursor: pointer; font-weight: bold; color: var(--text-color); background: var(--input-bg); transition: 0.2s; }
+        .mini-tab.active { background: var(--neon-orange); color: #fff; }
+        
+        .batt-options {
+            transition: max-height 0.4s ease, opacity 0.4s ease, margin-bottom 0.4s ease;
+            max-height: 150px; opacity: 1; overflow: hidden; position: relative;
+        }
+        .batt-options.hidden {
+            max-height: 0; opacity: 0; margin-bottom: 0; pointer-events: none;
+        }
+        .batt-replaced-msg {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 0.8rem; color: var(--placeholder-color); white-space: nowrap;
+            pointer-events: none; opacity: 0; transition: opacity 0.4s ease;
+        }
+        .batt-options.hidden .batt-replaced-msg { opacity: 1; }
+
+        .verdict-box { padding: 15px; border-radius: 10px; margin-top: 15px; font-weight: bold; font-size: 0.9rem; text-align: center; grid-column: 1 / -1; }
+        .helper-note { opacity: 0.7; font-size: 0.75rem; margin-top: 5px; display: block; line-height: 1.5; }
+        
+        .eng-toggle-header {
+            cursor: pointer; color: var(--neon-orange); font-weight: bold; 
+            display: flex; align-items: center; gap: 5px; margin-top: 6px;
+        }
+        .arrow { display: inline-block; transition: transform 0.3s ease; font-size: 0.9em; }
+        .eng-toggle-wrapper.open .arrow { transform: rotate(90deg); }
+        
+        .eng-details {
+            max-height: 0; opacity: 0; overflow: hidden; 
+            transition: max-height 0.4s ease, opacity 0.4s ease, margin-top 0.4s ease, padding 0.4s ease;
+            margin-top: 0; padding: 0 10px;
+            background: var(--input-bg); border-radius: 6px; font-size: 0.8rem; line-height: 1.6; border: 1px solid var(--input-border);
+        }
+        .eng-details.open {
+            max-height: 200px; opacity: 1; margin-top: 8px; padding: 10px;
+        }
+        .eng-details strong { color: var(--neon-orange); }
+
+        .info-box { background: var(--input-bg); padding: 12px; border-radius: 10px; text-align: center; border: 1px dashed var(--input-border); grid-column: 1 / -1; font-size: 0.85rem; color: var(--text-color); opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <div class="icon-box" style="width:60px; height:60px; font-size:2rem; margin: 0 auto 10px;">☀️</div>
+        <h2 style="font-size: 1.8rem;" id="siteTitle">المستشار الشمسي الاحترافي</h2>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(1)" id="tab1Btn">🏠 طريقة 1: الأحمال</button>
+        <button class="tab-btn" onclick="switchTab(2)" id="tab2Btn">⚡ طريقة 2: مغذي مباشر</button>
+        <button class="tab-btn" onclick="switchTab(3)" id="tab3Btn">🔋 طريقة 3: استطاعة كلية</button>
+    </div>
+
+    <div id="tab1" class="card">
+        <div class="section-header"><div class="icon-box">➕</div><h2 id="loadsTitle">إضافة الأحمال</h2></div>
+        <div class="grid">
+            <div class="input-group"><label id="presetLabel">اختر حمل شائع</label><select id="presetSelect" onchange="applyPreset()"></select></div>
+            <div class="input-group"><label id="nameLabel">اسم الجهاز</label><input type="text" id="loadName" placeholder="مثال: ثلاجة"></div>
+            <div class="input-group"><label id="wattLabel">القدرة (واط)</label><input type="number" id="loadWatt" placeholder="0" min="0"></div>
+            <div class="input-group"><label id="hoursLabel">الساعات يومياً</label><input type="number" id="loadHours" placeholder="0" min="0" max="24"></div>
+        </div>
+        <button class="neon-btn" onclick="addLoad()" style="width:100%;"><div class="icon-box">➕</div> <span id="addBtnText">إضافة للحمل</span></button>
+        <table class="load-table"><thead><tr><th id="thDevice">الجهاز</th><th id="thWatt">القدرة</th><th id="thHours">الساعات</th><th id="thConsumption">الاستهلاك</th><th id="thDelete">حذف</th></tr></thead><tbody id="loadTable"></tbody></table>
+        <div style="text-align:left; font-weight:bold; margin-top:10px; color:var(--neon-orange);"><span id="totalLabel">إجمالي الاستهلاك</span>: <span id="totalWh">0</span> Wh</div>
+        <div style="margin-top: 15px; border-top: 1px dashed var(--input-border); padding-top: 15px;">
+            <div class="input-group"><label id="pshLabel">ساعات الشمس (PSH) ⭐</label><input type="number" id="sunHours" placeholder="0.5 - 12" min="0.5" max="12" step="0.5"></div>
+            <div class="psh-helper"><select id="pshSelect" onchange="applyPshValue('sunHours', 'pshSelect')"></select></div>
+            <div class="input-group batt-options">
+                <label id="nightRatioLabel">نسبة الليل %</label>
+                <input type="number" id="nightRatio" placeholder="معدل المنازل 50%" min="0" max="100">
+                <span class="batt-replaced-msg" id="nightRatioMsg">☀️ غير متاح (نظام نهاري)</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab2" class="card" style="display: none;">
+        <div class="section-header"><div class="icon-box">⚡</div><h2 id="directTitle">مغذي مباشر</h2></div>
+        <div class="grid">
+            <div class="input-group"><label id="dayAmpLabel">تيار نهاراً (A)</label><input type="number" id="dirDayAmp" placeholder="0" min="0"></div>
+            <div class="input-group"><label id="dayHoursLabel">ساعات نهاراً</label><input type="number" id="dirDayHours" placeholder="0" min="0" max="24"></div>
+            <div class="input-group"><label id="nightAmpLabel">تيار ليلاً (A)</label><input type="number" id="dirNightAmp" placeholder="0" min="0"></div>
+            <div class="input-group"><label id="nightHoursLabel">ساعات ليلاً</label><input type="number" id="dirNightHours" placeholder="0" min="0" max="24"></div>
+            <div class="input-group"><label id="voltLabel">الجهد (V)</label><input type="number" id="dirVolt" value="220" style="font-weight:bold;"></div>
+            <div class="input-group"><label id="pshLabel2">ساعات الشمس (PSH)</label><input type="number" id="dirSunH" placeholder="0.5 - 12" min="0.5" max="12" step="0.5"></div>
+        </div>
+        <div class="psh-helper"><select id="pshSelect2" onchange="applyPshValue('dirSunH', 'pshSelect2')"></select></div>
+    </div>
+
+    <div id="tab3" class="card" style="display: none;">
+        <div class="section-header"><div class="icon-box">🔋</div><h2 id="totalPowerTitle">استطاعة كلية</h2></div>
+        <div class="grid">
+            <div class="input-group"><label id="totalWattLabel">الاستطاعة (W)</label><input type="number" id="totalWatt" placeholder="0" min="0"></div>
+            <div class="input-group"><label id="totalHoursLabel">الساعات يومياً</label><input type="number" id="totalHours" placeholder="0" min="0" max="24"></div>
+            <div class="input-group"><label id="pshLabel3">ساعات الشمس (PSH)</label><input type="number" id="totalSunH" placeholder="0.5 - 12" min="0.5" max="12" step="0.5"></div>
+            <div class="input-group batt-options">
+                <label id="nightRatioLabel3">نسبة الليل %</label>
+                <input type="number" id="nightRatio3" placeholder="معدل المنازل 50%" min="0" max="100">
+                <span class="batt-replaced-msg" id="nightRatio3Msg">☀️ غير متاح (نظام نهاري)</span>
+            </div>
+        </div>
+        <div class="psh-helper"><select id="pshSelect3" onchange="applyPshValue('totalSunH', 'pshSelect3')"></select></div>
+    </div>
+
+    <div class="card">
+        <div class="section-header"><div class="icon-box">⚙️</div><h2 id="settingsTitle">المعدات والبطاريات</h2></div>
+        <div class="grid">
+            <div class="input-group"><label id="panelWLabel">قدرة اللوح (W)</label><input type="number" id="panelW" value="540"></div>
+            <div class="input-group"><label id="battTypeLabel">نوع البطارية (DoD)</label><select id="battType" onchange="updateChargeRateDefault()"></select></div>
+            <div class="input-group"><label id="sysVoltLabel">جهد البطاريات</label><select id="sysVolt"><option value="12">12V</option><option value="24">24V</option><option value="48" selected>48V</option></select></div>
+            
+            <div class="input-group">
+                <label id="autonomyLabel">أيام الاحتياط</label>
+                <select id="autonomy" onchange="toggleBatteryOptions()"></select>
+                <small id="autonomyNote" class="helper-note"></small>
+            </div>
+            
+            <div class="input-group batt-options">
+                <label id="chargeRateLabel">سرعة الشحن (C-Rate)</label>
+                <select id="chargeRate"></select>
+                <small id="chargeRateNote" class="helper-note"></small>
+                <span class="batt-replaced-msg" id="chargeRateMsg">☀️ غير متاح (نظام نهاري)</span>
+            </div>
+
+            <div class="input-group">
+                <label id="motorLabel">أحمال حثية (موتورات)؟</label>
+                <select id="hasMotor" onchange="onMotorTypeChange()"></select>
+                <small class="helper-note">
+                    <span id="motorNoteText"></span>
+                    <div class="eng-toggle-wrapper" id="engDetailsTag">
+                        <div class="eng-toggle-header" id="motorNoteSummary" onclick="toggleEngDetails()">
+                            <span class="arrow">◂</span> <span id="motorNoteSummaryText">للمهندسين: تفاصيل الحساب</span>
+                        </div>
+                        <div class="eng-details" id="motorNoteDetails"></div>
+                    </div>
+                </small>
+            </div>
+            
+            <div class="input-group" id="motorWattGroup">
+                <label id="motorWattLabel">قدرة أكبر موتور (W)</label>
+                <input type="number" id="motorWatt" placeholder="0" min="0" max="15000" value="0">
+                <small id="motorWattNote" class="helper-note" style="color: var(--warning);"></small>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="neon-btn" onclick="calculate()"><div class="icon-box">☀️</div> <span id="calcBtnText">احسب المنظومة</span></button>
+        <button class="reset-btn" onclick="resetSystem()"><span id="resetBtnText">🗑️ مسح الكل</span></button>
+    </div>
+
+    <div class="card" id="results" style="display: none; border: var(--neon-border); box-shadow: var(--neon-glow); margin-top: 20px;">
+        <div class="section-header" style="justify-content: center;"><div class="icon-box">📊</div><h2 id="resultsTitle">نتيجة التصميم</h2></div>
+        <div class="res-grid">
+            <div class="res-item"><div class="res-label" id="panelsLabel">عدد الألواح</div><div class="res-value" id="rPanels">-</div></div>
+            <div class="res-item"><div class="res-label" id="powerLabel">قدرة المنظومة (لحظي)</div><div class="res-value" id="rPower">-</div></div>
+            <div class="res-item">
+                <div class="mini-tabs"><div class="mini-tab active" onclick="switchUnit('inv', 'w')">W</div><div class="mini-tab" onclick="switchUnit('inv', 'va')">VA</div></div>
+                <div class="res-label" id="inverterLabel">قدرة الإنفرتر</div>
+                <div class="res-value" id="rInvW">-</div>
+                <div class="res-value" id="rInvVA" style="display:none;">-</div>
+            </div>
+            <div class="res-item">
+                <div class="mini-tabs"><div class="mini-tab" onclick="switchUnit('batt', 'kwh')">kWh</div><div class="mini-tab active" onclick="switchUnit('batt', 'ah')">Ah</div></div>
+                <div class="res-label" id="batteryLabel">سعة البطاريات</div>
+                <div class="res-value" id="rBattKwh" style="display:none;">-</div>
+                <div class="res-value" id="rBattAh">-</div>
+                <div class="res-sub" id="rBattNote"></div>
+            </div>
+            <div class="info-box" id="nightConsBox" style="display: none;"><span id="nightConsLabel">الاستهلاك الليلي المقدر</span>: <strong id="rNightCons" style="color: var(--neon-orange);">-</strong> Wh</div>
+            <div id="verdictBox" class="verdict-box"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) { document.body.classList.add('dark-mode'); }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => { document.body.classList.toggle('dark-mode', e.matches); });
+    })();
+
+    const translations = {
+        ar: {
+            title: "المستشار الشمسي الاحترافي",
+            tab1: "🏠 طريقة 1: الأحمال", tab2: "⚡ طريقة 2: مغذي مباشر", tab3: "🔋 طريقة 3: استطاعة كلية",
+            loadsTitle: "إضافة الأحمال", presetLabel: "اختر حمل شائع", nameLabel: "اسم الجهاز", wattLabel: "القدرة (واط)", hoursLabel: "الساعات يومياً",
+            addBtnText: "إضافة للحمل", thDevice: "الجهاز", thWatt: "القدرة", thHours: "الساعات", thConsumption: "الاستهلاك", thDelete: "حذف",
+            totalLabel: "إجمالي الاستهلاك", pshLabel: "ساعات الشمس (PSH) ⭐", nightRatioLabel: "نسبة الليل %",
+            directTitle: "مغذي مباشر", dayAmpLabel: "تيار نهاراً (A)", dayHoursLabel: "ساعات نهاراً", nightAmpLabel: "تيار ليلاً (A)", nightHoursLabel: "ساعات ليلاً", voltLabel: "الجهد (V)", pshLabel2: "ساعات الشمس (PSH)",
+            totalPowerTitle: "استطاعة كلية", totalWattLabel: "الاستطاعة (W)", totalHoursLabel: "الساعات يومياً", pshLabel3: "ساعات الشمس (PSH)", nightRatioLabel3: "نسبة الليل %",
+            settingsTitle: "المعدات والبطاريات", panelWLabel: "قدرة اللوح (W)", battTypeLabel: "نوع البطارية (DoD)", sysVoltLabel: "جهد البطاريات", autonomyLabel: "أيام الاحتياط", chargeRateLabel: "سرعة الشحن (C-Rate)", motorLabel: "أحمال حثية (موتورات)؟", motorWattLabel: "قدرة أكبر موتور (W)",
+            calcBtnText: "احسب المنظومة", resetBtnText: "🗑️ مسح الكل", resultsTitle: "نتيجة التصميم", panelsLabel: "عدد الألواح", powerLabel: "قدرة المنظومة (لحظي)", inverterLabel: "قدرة الإنفرتر", batteryLabel: "سعة البطاريات",
+            battNote: (ah, sysV, series) => `سعة البنك: <strong>${Number(ah).toLocaleString()}Ah @ ${sysV}V</strong><br><small>(${series}×12V بطاريات توالي، سعة كل وحدة: ${Number(ah).toLocaleString()}Ah)</small>`,
+            noBattery: "لا يوجد", panelUnit: " لوح", verdictDay: "⚠️ نظام نهاري: تأكد من وجود مولد لليل", verdictPanels: "💡 فكر في تقسيم النظام لمصفوفتين لتحسين الظل", verdictBatt: "🔋 سعة بطاريات كبيرة، تأكد من التهوية", verdictOk: "✅ التصميم متوازن ومناسب للتنفيذ!",
+            ph_loadName: "مثال: ثلاجة", ph_zero: "0", ph_night: "معدل المنازل 50%",
+            autonomyNote: "💡 أيام الاحتياط تحسب على الاستهلاك اليومي الكامل (ليل+نهار).",
+            chargeRateNote: "⚡ C/10 للرصاص (آمن)، C/5 قياسي لليثيوم، C/2 شحن سريع لليثيوم الحديث.",
+            motorNoteText: "✅ قيم آمنة تناسب معظم الإنفرترات التجارية.",
+            motorNoteSummary: "للمهندسين: تفاصيل الحساب",
+            motorNoteDetails: "<strong>الافتراضات الهندسية:</strong><br>• تيار بدء المحركات (Inrush): 5-10x حسب النوع<br>• قدرة الإنفرتر اللحظية (Surge): 2-3x عادةً<br>• <strong>المعادلة:</strong> (تيار البدء ÷ قدرة الإنفرتر اللحظية) × 1.2 هامش أمان",
+            motorWattNote: "⚡ أدخل القدرة التشغيلية (Running Watts). الكود سيضربها تلقائياً بالمعامل لحساب الإنفرتر.",
+            nightConsLabel: "الاستهلاك الليلي المقدر",
+            errorPsh: "⚠️ ساعات الشمس يجب أن تكون بين 0.5 و 12",
+            errorMotor: "⚠️ قدرة الموتور لا يمكن أن تتجاوز إجمالي الأحمال!",
+            errorMotorZero: "⚠️ لقد اخترت أحمالاً حثية، الرجاء إدخال قدرة أكبر موتور!",
+            errorMotorLow: "⚠️ تنبيه هندسي: اخترت حملاً حثياً ثقيلاً ولكن قدرة الموتور المدخلة صغيرة جداً. تأكد من صحة الإدخال.",
+            errorDaytimeHours: "⚠️ تنبيه هندسي: الأحمال تعمل لساعات أطول من ساعات الشمس المتاحة!\nبدون بطاريات، سينقطع التيار عن الأحمال ليلاً. نوصي باختيار أيام احتياط (بطاريات).",
+            presets: [
+                {value: 0, text: "-- اختيار سريع --", group: null},
+                {value: 10, text: "مصباح LED 10W", group: "💡 إنارة"}, {value: 20, text: "مصباح LED 20W", group: "💡 إنارة"}, {value: 50, text: "لمبة LED 50W", group: "💡 إنارة"}, {value: 40, text: "فلورسنت عادي 40W", group: "💡 إنارة"}, {value: 75, text: "فلورسنت إلكتروني 75W", group: "💡 إنارة"},
+                {value: 150, text: "ثلاجة صغيرة 150W", group: "❄️ تبريد"}, {value: 250, text: "ثلاجة كبيرة 250W", group: "❄️ تبريد"}, {value: 300, text: "فريزر 300W", group: "❄️ تبريد"}, {value: 1200, text: "مكيف سبليت 1 طن", group: "❄️ تبريد"}, {value: 1800, text: "مكيف سبليت 1.5 طن", group: "❄️ تبريد"}, {value: 2400, text: "مكيف سبليت 2 طن", group: "❄️ تبريد"},
+                {value: 500, text: "غسالة أوتوماتيك 500W", group: "🍳 مطبخ"}, {value: 1800, text: "غسالة صحون 1800W", group: "🍳 مطبخ"}, {value: 1200, text: "ميكرويف 1200W", group: "🍳 مطبخ"}, {value: 1500, text: "غلاية كهربائية 1500W", group: "🍳 مطبخ"}, {value: 2500, text: "فرن كهربائي 2500W", group: "🍳 مطبخ"}, {value: 800, text: "ماكينة قهوة 800W", group: "🍳 مطبخ"},
+                {value: 750, text: "مضخة مياه 1 HP", group: "💧 مضخات"}, {value: 1500, text: "مضخة مياه 2 HP", group: "💧 مضخات"}, {value: 2200, text: "مضخة غاطسة 3 HP", group: "💧 مضخات"},
+                {value: 50, text: "تلفزيون 32 بوصة 50W", group: "📺 إلكترونيات"}, {value: 100, text: "تلفزيون 55 بوصة 100W", group: "📺 إلكترونيات"}, {value: 30, text: "رسيفر ستالايت 30W", group: "📺 إلكترونيات"}, {value: 15, text: "راوتر انترنت 15W", group: "📺 إلكترونيات"}, {value: 300, text: "كمبيوتر مكتبي 300W", group: "📺 إلكترونيات"}, {value: 65, text: "لابتوب 65W", group: "📺 إلكترونيات"},
+                {value: 75, text: "مروحة سقف 75W", group: "🏠 عام"}, {value: 40, text: "شفاط هواء 40W", group: "🏠 عام"}, {value: 1500, text: "مكواة 1500W", group: "🏠 عام"}, {value: 1200, text: "مكنسة كهربائية 1200W", group: "🏠 عام"}
+            ],
+            regions: [{value: 0, text: " اختر المنطقة (اختياري) "}, {value: 7.5, text: "بلاد الشام: صيف"}, {value: 5, text: "بلاد الشام: سنوي"}, {value: 3.5, text: "بلاد الشام: شتاء"}, {value: 8, text: "العراق: صيف"}, {value: 6, text: "العراق: سنوي"}, {value: 4.5, text: "العراق: شتاء"}, {value: 8.5, text: "الخليج: صيف"}, {value: 6.5, text: "الخليج: سنوي"}, {value: 6, text: "الخليج: شتاء"}, {value: 7, text: "شمال أفريقيا"}],
+            battTypes: [{value: 0.8, text: "ليثيوم فوسفات حديد LiFePO4 (80% ضمان)"}, {value: 0.9, text: "ليثيوم فوسفات حديد LiFePO4 (90% أقصى استغلال)"}, {value: 0.5, text: "أنبوبي غمر Tubular / OPzS (50%)"}, {value: 0.5, text: "جل Gel / AGM (50%)"}],
+            autonomyDays: [{value: 0, text: "بدون (نهاري)"}, {value: 1, text: "يوم"}, {value: 2, text: "يومين"}, {value: 3, text: "3 أيام"}],
+            chargeRates: [{value: 10, text: "C/10 (بطيء - رصاص)"}, {value: 5, text: "C/5 (قياسي - ليثيوم)"}, {value: 2, text: "C/2 (سريع - ليثيوم حديث)"}],
+            motorOpts: [{value: 1.25, text: "لا (أحمال مقاومية فقط)"}, {value: 4, text: "نعم - ثلاجة/غسالة/مكيف (4x)"}, {value: 6, text: "نعم - مضخات مياه سطحية (6x)"}, {value: 8, text: "نعم - مضخات غاطسة >2HP (8x)"}]
+        },
+           en: {
+            title: "Solar Calc Pro", tab1: "🏠 Method 1: Loads", tab2: "⚡ Method 2: Direct", tab3: "🔋 Method 3: Total Power",
+            loadsTitle: "Add Loads", presetLabel: "Choose Load", nameLabel: "Device Name", wattLabel: "Power (W)", hoursLabel: "Hours/Day",
+            addBtnText: "Add Load", thDevice: "Device", thWatt: "Power", thHours: "Hours", thConsumption: "Consumption", thDelete: "Delete",
+            totalLabel: "Total Daily", pshLabel: "Sun Hours (PSH) ⭐", nightRatioLabel: "Night %",
+            directTitle: "Direct Feeder", dayAmpLabel: "Day Current (A)", dayHoursLabel: "Day Hours", nightAmpLabel: "Night Current (A)", nightHoursLabel: "Night Hours", voltLabel: "Voltage (V)", pshLabel2: "Sun Hours (PSH)",
+            totalPowerTitle: "Total Power", totalWattLabel: "Power (W)", totalHoursLabel: "Hours/Day", pshLabel3: "Sun Hours (PSH)", nightRatioLabel3: "Night %",
+            settingsTitle: "Equipment & Batteries", panelWLabel: "Panel Power (W)", battTypeLabel: "Battery Type (DoD)", sysVoltLabel: "Battery Voltage", autonomyLabel: "Backup Days", chargeRateLabel: "Charge Speed (C-Rate)", motorLabel: "Inductive Loads (Motors)?", motorWattLabel: "Largest Motor Power (W)",
+            calcBtnText: "Calculate System", resetBtnText: "🗑️ Reset All", resultsTitle: "Design Result", panelsLabel: "Panels Count", powerLabel: "System Power (Peak)", inverterLabel: "Inverter Power", batteryLabel: "Battery Capacity",
+            battNote: (ah, sysV, series) => `Bank Capacity: <strong>${Number(ah).toLocaleString()}Ah @ ${sysV}V</strong><br><small>(${series}×12V in series, each unit: ${Number(ah).toLocaleString()}Ah)</small>`,
+            noBattery: "N/A", panelUnit: " panels", verdictDay: "⚠️ Day-only system: Ensure backup generator", verdictPanels: "💡 Consider splitting into two arrays for shading", verdictBatt: "🔋 Large battery bank: Ensure proper ventilation", verdictOk: "✅ Balanced design, ready to implement!",
+            ph_loadName: "e.g. Fridge", ph_zero: "0", ph_night: "Avg homes 50%",
+            autonomyNote: "💡 Backup days are calculated based on full daily consumption (day + night).",
+            chargeRateNote: "⚡ C/10 for Lead-Acid (safe), C/5 standard for Lithium, C/2 fast charge for modern Lithium.",
+            motorNoteText: "✅ Safe values suitable for most commercial inverters.", motorNoteSummary: "For Engineers: Calculation details",
+            motorNoteDetails: "<strong>Engineering Assumptions:</strong><br>• Motor starting current (Inrush): 5-10x depending on type<br>• Inverter surge capacity: usually 2-3x<br>• <strong>Formula:</strong> (Inrush Current ÷ Inverter Surge) × 1.2 safety margin",
+            motorWattNote: "⚡ Enter Running Watts. The code will multiply it by the selected factor to calculate inverter surge.",
+            nightConsLabel: "Estimated Night Consumption", 
+            errorPsh: "⚠️ Sun hours must be between 0.5 and 12", 
+            errorMotor: "⚠️ Motor power cannot exceed total loads!", 
+            errorMotorZero: "⚠️ You selected inductive loads, please enter the largest motor power!", 
+            errorMotorLow: "⚠️ Engineering Alert: You selected a heavy inductive load but entered a very low motor power rating. Please verify.",
+            errorDaytimeHours: "⚠️ Engineering Alert: Loads run longer than available sun hours!\nWithout batteries, loads will lose power at night. We recommend selecting backup days (batteries).",
+            presets: [ {value: 0, text: "-- Quick Select --", group: null}, {value: 10, text: "LED Bulb 10W", group: "💡 Lighting"}, {value: 20, text: "LED Bulb 20W", group: "💡 Lighting"}, {value: 50, text: "LED Bulb 50W", group: "💡 Lighting"}, {value: 40, text: "Regular Fluorescent 40W", group: "💡 Lighting"}, {value: 75, text: "Electronic Fluorescent 75W", group: "💡 Lighting"}, {value: 150, text: "Small Fridge 150W", group: "❄️ Cooling"}, {value: 250, text: "Large Fridge 250W", group: "❄️ Cooling"}, {value: 300, text: "Freezer 300W", group: "❄️ Cooling"}, {value: 1200, text: "Split AC 1 Ton", group: "❄️ Cooling"}, {value: 1800, text: "Split AC 1.5 Ton", group: "❄️ Cooling"}, {value: 2400, text: "Split AC 2 Ton", group: "❄️ Cooling"}, {value: 500, text: "Auto Washing Machine 500W", group: "🍳 Kitchen"}, {value: 1800, text: "Dishwasher 1800W", group: "🍳 Kitchen"}, {value: 1200, text: "Microwave 1200W", group: "🍳 Kitchen"}, {value: 1500, text: "Electric Kettle 1500W", group: "🍳 Kitchen"}, {value: 2500, text: "Electric Oven 2500W", group: "🍳 Kitchen"}, {value: 800, text: "Coffee Machine 800W", group: "🍳 Kitchen"}, {value: 750, text: "Water Pump 1 HP", group: "💧 Pumps"}, {value: 1500, text: "Water Pump 2 HP", group: "💧 Pumps"}, {value: 2200, text: "Submersible Pump 3 HP", group: "💧 Pumps"}, {value: 50, text: '32" TV 50W', group: "📺 Electronics"}, {value: 100, text: '55" TV 100W', group: "📺 Electronics"}, {value: 30, text: "Satellite Receiver 30W", group: "📺 Electronics"}, {value: 15, text: "Internet Router 15W", group: "📺 Electronics"}, {value: 300, text: "Desktop PC 300W", group: "📺 Electronics"}, {value: 65, text: "Laptop 65W", group: "📺 Electronics"}, {value: 75, text: "Ceiling Fan 75W", group: "🏠 General"}, {value: 40, text: "Air Extractor 40W", group: "🏠 General"}, {value: 1500, text: "Iron 1500W", group: "🏠 General"}, {value: 1200, text: "Vacuum Cleaner 1200W", group: "🏠 General"} ],
+            regions: [{value: 0, text: "Select Region (optional)"}, {value: 7.5, text: "Levant: Summer"}, {value: 5, text: "Levant: Annual"}, {value: 3.5, text: "Levant: Winter"}, {value: 8, text: "Iraq: Summer"}, {value: 6, text: "Iraq: Annual"}, {value: 4.5, text: "Iraq: Winter"}, {value: 8.5, text: "Gulf: Summer"}, {value: 6.5, text: "Gulf: Annual"}, {value: 6, text: "Gulf: Winter"}, {value: 7, text: "North Africa"}],
+            battTypes: [{value: 0.8, text: "Lithium Iron Phosphate LiFePO4 (80% warranty)"}, {value: 0.9, text: "Lithium Iron Phosphate LiFePO4 (90% max usage)"}, {value: 0.5, text: "Flooded Tubular / OPzS (50%)"}, {value: 0.5, text: "Gel / AGM (50%)"}],
+            autonomyDays: [{value: 0, text: "None (Daytime)"}, {value: 1, text: "1 Day"}, {value: 2, text: "2 Days"}, {value: 3, text: "3 Days"}],
+            chargeRates: [{value: 10, text: "C/10 (Slow - Lead Acid)"}, {value: 5, text: "C/5 (Standard - Lithium)"}, {value: 2, text: "C/2 (Fast - Modern Lithium)"}],
+            motorOpts: [{value: 1.25, text: "No (Resistive loads only)"}, {value: 4, text: "Yes - Fridge/Washer/AC (4x)"}, {value: 6, text: "Yes - Surface Water Pumps (6x)"}, {value: 8, text: "Yes - Submersible Pumps >2HP (8x)"}]
+        }
+    };
+
+    let loads = []; let activeTab = 1; let currentLang = 'ar';
+
+    function initLanguage() { const userLang = navigator.language || navigator.userLanguage; currentLang = userLang.startsWith('ar') ? 'ar' : 'en'; document.documentElement.lang = currentLang; document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr'; document.title = translations[currentLang].title; applyTranslations(); }
+
+    function buildSelect(selectId, items) { const sel = document.getElementById(selectId); sel.innerHTML = ''; let currentOptgroup = null; items.forEach(item => { if (item.group) { if (!currentOptgroup || currentOptgroup.label !== item.group) { currentOptgroup = document.createElement('optgroup'); currentOptgroup.label = item.group; sel.appendChild(currentOptgroup); } const opt = document.createElement('option'); opt.value = item.value; opt.innerText = item.text; currentOptgroup.appendChild(opt); } else { const opt = document.createElement('option'); opt.value = item.value; opt.innerText = item.text; sel.appendChild(opt); } }); }
+
+    function applyTranslations() {
+        const t = translations[currentLang];
+        document.getElementById('siteTitle').innerText = t.title; document.getElementById('tab1Btn').innerText = t.tab1; document.getElementById('tab2Btn').innerText = t.tab2; document.getElementById('tab3Btn').innerText = t.tab3;
+        document.getElementById('loadsTitle').innerText = t.loadsTitle; document.getElementById('presetLabel').innerText = t.presetLabel; document.getElementById('nameLabel').innerText = t.nameLabel; document.getElementById('wattLabel').innerText = t.wattLabel; document.getElementById('hoursLabel').innerText = t.hoursLabel;
+        document.getElementById('addBtnText').innerText = t.addBtnText; document.getElementById('thDevice').innerText = t.thDevice; document.getElementById('thWatt').innerText = t.thWatt; document.getElementById('thHours').innerText = t.thHours; document.getElementById('thConsumption').innerText = t.thConsumption; document.getElementById('thDelete').innerText = t.thDelete;
+        document.getElementById('totalLabel').innerText = t.totalLabel; document.getElementById('pshLabel').innerText = t.pshLabel; document.getElementById('nightRatioLabel').innerText = t.nightRatioLabel;
+        document.getElementById('directTitle').innerText = t.directTitle; document.getElementById('dayAmpLabel').innerText = t.dayAmpLabel; document.getElementById('dayHoursLabel').innerText = t.dayHoursLabel; document.getElementById('nightAmpLabel').innerText = t.nightAmpLabel; document.getElementById('nightHoursLabel').innerText = t.nightHoursLabel; document.getElementById('voltLabel').innerText = t.voltLabel; document.getElementById('pshLabel2').innerText = t.pshLabel2;
+        document.getElementById('totalPowerTitle').innerText = t.totalPowerTitle; document.getElementById('totalWattLabel').innerText = t.totalWattLabel; document.getElementById('totalHoursLabel').innerText = t.totalHoursLabel; document.getElementById('pshLabel3').innerText = t.pshLabel3; document.getElementById('nightRatioLabel3').innerText = t.nightRatioLabel3;
+        document.getElementById('settingsTitle').innerText = t.settingsTitle; document.getElementById('panelWLabel').innerText = t.panelWLabel; document.getElementById('battTypeLabel').innerText = t.battTypeLabel; document.getElementById('sysVoltLabel').innerText = t.sysVoltLabel; document.getElementById('autonomyLabel').innerText = t.autonomyLabel; document.getElementById('autonomyNote').innerText = t.autonomyNote; document.getElementById('chargeRateLabel').innerText = t.chargeRateLabel; document.getElementById('chargeRateNote').innerText = t.chargeRateNote; document.getElementById('motorLabel').innerText = t.motorLabel; document.getElementById('motorWattLabel').innerText = t.motorWattLabel; document.getElementById('motorWattNote').innerText = t.motorWattNote;
+        document.getElementById('calcBtnText').innerText = t.calcBtnText; document.getElementById('resetBtnText').innerText = t.resetBtnText; document.getElementById('resultsTitle').innerText = t.resultsTitle; document.getElementById('panelsLabel').innerText = t.panelsLabel; document.getElementById('powerLabel').innerText = t.powerLabel; document.getElementById('inverterLabel').innerText = t.inverterLabel; document.getElementById('batteryLabel').innerText = t.batteryLabel;
+        document.getElementById('motorNoteText').innerText = t.motorNoteText; document.getElementById('motorNoteSummaryText').innerText = t.motorNoteSummary; document.getElementById('motorNoteDetails').innerHTML = t.motorNoteDetails; document.getElementById('nightConsLabel').innerText = t.nightConsLabel;
+        
+        const dayModeMsg = currentLang === 'ar' ? "☀️ غير متاح (نظام نهاري)" : "☀️ N/A (Daytime)";
+        document.getElementById('nightRatioMsg').innerText = dayModeMsg; document.getElementById('nightRatio3Msg').innerText = dayModeMsg; document.getElementById('chargeRateMsg').innerText = dayModeMsg;
+
+        document.getElementById('loadName').placeholder = t.ph_loadName; document.getElementById('loadWatt').placeholder = t.ph_zero; document.getElementById('loadHours').placeholder = t.ph_zero;
+        document.getElementById('sunHours').placeholder = "0.5 - 12"; document.getElementById('dirDayAmp').placeholder = t.ph_zero; document.getElementById('dirDayHours').placeholder = t.ph_zero; document.getElementById('dirNightAmp').placeholder = t.ph_zero; document.getElementById('dirNightHours').placeholder = t.ph_zero; document.getElementById('dirSunH').placeholder = "0.5 - 12";
+        document.getElementById('totalWatt').placeholder = t.ph_zero; document.getElementById('totalHours').placeholder = t.ph_zero; document.getElementById('totalSunH').placeholder = "0.5 - 12";
+        document.getElementById('nightRatio').placeholder = t.ph_night; document.getElementById('nightRatio3').placeholder = t.ph_night; document.getElementById('motorWatt').placeholder = t.ph_zero;
+        buildSelect('presetSelect', t.presets); buildSelect('pshSelect', t.regions); buildSelect('pshSelect2', t.regions); buildSelect('pshSelect3', t.regions); buildSelect('battType', t.battTypes); buildSelect('autonomy', t.autonomyDays); buildSelect('chargeRate', t.chargeRates); buildSelect('hasMotor', t.motorOpts);
+        document.getElementById('battType').value = "0.8"; document.getElementById('autonomy').value = "1"; document.getElementById('hasMotor').value = "1.25";
+        updateChargeRateDefault(); onMotorTypeChange();
+    }
+
+    function escapeHtml(text) { const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }; return text.replace(/[&<>"']/g, m => map[m]); }
+    function saveLoads() { try { localStorage.setItem('solarLoads', JSON.stringify(loads)); } catch(e) {} }
+    function loadLoads() { try { const saved = localStorage.getItem('solarLoads'); if(saved) { loads = JSON.parse(saved); renderTable(); } } catch(e) { loads = []; localStorage.removeItem('solarLoads'); } }
+
+    function switchTab(num) { activeTab = num; document.getElementById('tab1').style.display = num === 1 ? 'block' : 'none'; document.getElementById('tab2').style.display = num === 2 ? 'block' : 'none'; document.getElementById('tab3').style.display = num === 3 ? 'block' : 'none'; document.querySelectorAll('.tab-btn').forEach((btn, i) => btn.classList.toggle('active', i === num - 1)); }
+
+    function toggleBatteryOptions() { const autonomy = parseFloat(document.getElementById('autonomy').value); document.querySelectorAll('.batt-options').forEach(g => g.classList.toggle('hidden', autonomy === 0)); }
+
+    function toggleEngDetails() { const wrapper = document.getElementById('engDetailsTag'); const details = document.getElementById('motorNoteDetails'); wrapper.classList.toggle('open'); details.classList.toggle('open'); }
+
+    function onMotorTypeChange() { const hasMotor = parseFloat(document.getElementById('hasMotor').value); const motorWattInput = document.getElementById('motorWatt'); const motorWattGroup = document.getElementById('motorWattGroup'); if (hasMotor === 1.25) { motorWattInput.value = 0; motorWattGroup.classList.add('input-disabled'); motorWattInput.disabled = true; } else { motorWattGroup.classList.remove('input-disabled'); motorWattInput.disabled = false; } }
+
+    function updateChargeRateDefault() { const dod = parseFloat(document.getElementById('battType').value); const chargeRateSelect = document.getElementById('chargeRate'); if(dod >= 0.8) { chargeRateSelect.value = "5"; } else { chargeRateSelect.value = "10"; } }
+
+    // 🌟 دالة مخصصة لحل مشكلة القائمة المنسدلة للمناطق
+    function applyPshValue(inputId, selectId) {
+        const sel = document.getElementById(selectId);
+        const val = sel.value;
+        // إذا اختار منطقة حقيقية (ليست العبارة الاختيارية)، نقوم بتحديث الحقل
+        if (val !== '0') {
+            document.getElementById(inputId).value = val;
+        }
+    }
+
+    function switchUnit(type, unit) { if(type === 'inv') { document.getElementById('rInvW').style.display = unit === 'w' ? 'block' : 'none'; document.getElementById('rInvVA').style.display = unit === 'va' ? 'block' : 'none'; document.querySelectorAll('.res-item:nth-child(3) .mini-tab').forEach((t, i) => t.classList.toggle('active', (i === 0 && unit === 'w') || (i === 1 && unit === 'va'))); } else { document.getElementById('rBattKwh').style.display = unit === 'kwh' ? 'block' : 'none'; document.getElementById('rBattAh').style.display = unit === 'ah' ? 'block' : 'none'; document.querySelectorAll('.res-item:nth-child(4) .mini-tab').forEach((t, i) => t.classList.toggle('active', (i === 0 && unit === 'kwh') || (i === 1 && unit === 'ah'))); } }
+
+    function applyPreset() { const sel = document.getElementById('presetSelect'); const watt = sel.value; const name = sel.options[sel.selectedIndex].text; if(watt !== "0") { document.getElementById('loadWatt').value = watt; document.getElementById('loadName').value = name; if(name.includes("ثلاجة") || name.includes("فريزر") || name.includes("Fridge") || name.includes("Freezer")) { document.getElementById('loadHours').value = 24; } else { document.getElementById('loadHours').value = ''; } } }
+
+    function clearErrors() { document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error')); }
+    function highlightError(elementId) { const el = document.getElementById(elementId); if(el) { el.classList.add('input-error'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
+    document.querySelectorAll('input').forEach(input => { input.addEventListener('input', function() { this.classList.remove('input-error'); }); });
+
+    function addLoad() { clearErrors(); const name = document.getElementById('loadName').value || (currentLang === 'ar' ? 'جهاز' : 'Device'); const watt = parseFloat(document.getElementById('loadWatt').value); const hours = parseFloat(document.getElementById('loadHours').value); let hasError = false; if(isNaN(watt) || watt <= 0) { highlightError('loadWatt'); hasError = true; } if(isNaN(hours) || hours <= 0 || hours > 24) { if(!hasError) highlightError('loadHours'); document.getElementById('loadHours').classList.add('input-error'); hasError = true; } if(hasError) return; loads.push({ id: Date.now(), name, watt, hours }); renderTable(); saveLoads(); document.getElementById('loadName').value = ''; document.getElementById('loadWatt').value = ''; document.getElementById('loadHours').value = ''; document.getElementById('presetSelect').value = '0'; }
+    function removeLoad(id) { loads = loads.filter(l => l.id !== id); renderTable(); saveLoads(); }
+    function renderTable() { const tbody = document.getElementById('loadTable'); tbody.innerHTML = ''; let totalWh = 0; loads.forEach(l => { const wh = l.watt * l.hours; totalWh += wh; tbody.insertAdjacentHTML('beforeend', `<tr><td>${escapeHtml(l.name)}</td><td>${l.watt}</td><td>${l.hours}</td><td>${wh}</td><td><span class="del-btn" onclick="removeLoad(${l.id})">✕</span></td></tr>`); }); document.getElementById('totalWh').innerText = totalWh.toLocaleString(); }
+
+    function resetSystem() { loads = []; saveLoads(); renderTable(); document.querySelectorAll('input[type="number"]').forEach(input => { if(input.id === 'dirVolt' || input.id === 'panelW') return; input.value = ''; }); document.getElementById('hasMotor').value = "1.25"; onMotorTypeChange(); document.getElementById('results').style.display = 'none'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+    function getVerdict(numPanels, inverterW, battAh, autonomy) { const t = translations[currentLang]; if(autonomy === 0) return { text: t.verdictDay, style: `background:rgba(243,156,18,0.1); border:1px solid var(--warning); color:var(--warning);` }; if(numPanels > 20) return { text: t.verdictPanels, style: `background:rgba(52,152,219,0.1); border:1px solid #3498db; color:#3498db;` }; if(battAh > 400) return { text: t.verdictBatt, style: `background:rgba(231,76,60,0.1); border:1px solid var(--danger); color:var(--danger);` }; return { text: t.verdictOk, style: `background:rgba(39,174,96,0.1); border:1px solid var(--success); color:var(--success);` }; }
+
+    function calculate() {
+        clearErrors(); let dailyWh = 0, nightWh = 0, peakWatts = 0, sunH = 0, effectiveLoadHours = 0, firstErrorElement = null; const t = translations[currentLang];
+        
+        if(activeTab === 1) { 
+            dailyWh = parseFloat(document.getElementById('totalWh').innerText.replace(/,/g, '')) || 0; 
+            peakWatts = loads.reduce((sum, l) => sum + l.watt, 0); 
+            sunH = parseFloat(document.getElementById('sunHours').value) || 0; 
+            const nightRatio = (parseFloat(document.getElementById('nightRatio').value) || 0) / 100; 
+            nightWh = dailyWh * nightRatio; 
+            effectiveLoadHours = loads.length > 0 ? Math.max(...loads.map(l => l.hours)) : 0;
+            if(dailyWh === 0) { highlightError('loadWatt'); document.getElementById('loadHours').classList.add('input-error'); return; } 
+        }
+        else if(activeTab === 2) { 
+            const dirDayAmp = parseFloat(document.getElementById('dirDayAmp').value) || 0; 
+            const dirNightAmp = parseFloat(document.getElementById('dirNightAmp').value) || 0; 
+            const dirDayHours = parseFloat(document.getElementById('dirDayHours').value) || 0; 
+            const dirNightHours = parseFloat(document.getElementById('dirNightHours').value) || 0; 
+            const dirVolt = parseFloat(document.getElementById('dirVolt').value); 
+            sunH = parseFloat(document.getElementById('dirSunH').value) || 0; 
+            let tab2Error = false; 
+            if(dirDayAmp <= 0 && dirNightAmp <= 0) { firstErrorElement = 'dirDayAmp'; document.getElementById('dirNightAmp').classList.add('input-error'); tab2Error = true; } 
+            else if (dirDayAmp > 0 && (dirDayHours <= 0 || dirDayHours > 24)) { firstErrorElement = 'dirDayHours'; tab2Error = true; } 
+            else if (dirNightAmp > 0 && (dirNightHours <= 0 || dirNightHours > 24)) { firstErrorElement = 'dirNightHours'; tab2Error = true; } 
+            if(!tab2Error && (dirDayHours + dirNightHours) > 24) { firstErrorElement = 'dirDayHours'; document.getElementById('dirNightHours').classList.add('input-error'); tab2Error = true; } 
+            if(tab2Error) { highlightError(firstErrorElement); return; } 
+            peakWatts = (dirDayAmp + dirNightAmp) * dirVolt; 
+            dailyWh = (dirDayAmp * dirVolt * dirDayHours) + (dirNightAmp * dirVolt * dirNightHours); 
+            nightWh = dirNightAmp * dirVolt * dirNightHours;
+            effectiveLoadHours = dirDayHours + dirNightHours;
+        }
+        else if(activeTab === 3) { 
+            peakWatts = parseFloat(document.getElementById('totalWatt').value) || 0; 
+            const totalHours = parseFloat(document.getElementById('totalHours').value) || 0; 
+            sunH = parseFloat(document.getElementById('totalSunH').value) || 0; 
+            const nightRatio = (parseFloat(document.getElementById('nightRatio3').value) || 0) / 100; 
+            if(peakWatts <= 0) { firstErrorElement = 'totalWatt'; } 
+            else if (totalHours <= 0 || totalHours > 24) { firstErrorElement = 'totalHours'; } 
+            if(firstErrorElement) { highlightError(firstErrorElement); return; } 
+            dailyWh = peakWatts * totalHours; 
+            nightWh = dailyWh * nightRatio;
+            effectiveLoadHours = totalHours;
+        }
+
+        // التحقق من صحة ساعات الشمس أولاً قبل أي فحص آخر
+        const pshElementId = activeTab === 1 ? 'sunHours' : (activeTab === 2 ? 'dirSunH' : 'totalSunH');
+        if(isNaN(sunH) || sunH < 0.5 || sunH > 12) { highlightError(pshElementId); alert(t.errorPsh); return; }
+
+        const panelW = parseFloat(document.getElementById('panelW').value); const dod = parseFloat(document.getElementById('battType').value); const autonomy = parseFloat(document.getElementById('autonomy').value); const sysV = parseFloat(document.getElementById('sysVolt').value);
+        const motorSurgeFactor = parseFloat(document.getElementById('hasMotor').value); let motorWatt = parseFloat(document.getElementById('motorWatt').value) || 0; const systemLosses = 0.80;
+
+        // ✅ تحقق هندسي: نظام نهاري + أحمال تتجاوز ساعات الشمس
+        if (autonomy === 0 && effectiveLoadHours > sunH) {
+            alert(t.errorDaytimeHours);
+            highlightError('autonomy');
+            return;
+        }
+
+        if(motorSurgeFactor === 1.25) { motorWatt = 0; } 
+        else if(motorSurgeFactor > 1.25 && motorWatt === 0) { highlightError('motorWatt'); alert(t.errorMotorZero); return; }
+        if(motorWatt > peakWatts) { highlightError('motorWatt'); alert(t.errorMotor); return; }
+        if(motorSurgeFactor >= 6 && motorWatt < 200 && motorWatt > 0) { highlightError('motorWatt'); alert(t.errorMotorLow); return; }
+
+        let battKwh = 0, battAh = 0, battRequiredWh = 0;
+        if(autonomy > 0) { battRequiredWh = (dailyWh * autonomy) / dod; battKwh = (battRequiredWh / 1000).toFixed(1); battAh = Math.ceil(battRequiredWh / sysV); }
+
+        const requiredSolarWForLoad = dailyWh / (sunH * systemLosses);
+        let requiredSolarW = requiredSolarWForLoad;
+        if(autonomy > 0 && battAh > 0) {
+            const cRate = parseFloat(document.getElementById('chargeRate').value);
+            const rechargeCurrentNeeded = battAh / cRate;
+            const panelAmpForCharge = (requiredSolarWForLoad / sysV) * systemLosses;
+            if(panelAmpForCharge < rechargeCurrentNeeded) { requiredSolarW = (rechargeCurrentNeeded * sysV) / systemLosses; }
+        }
+        const numPanels = Math.ceil(requiredSolarW / panelW); const actualPower = numPanels * panelW;
+
+        const nonMotorWatts = Math.max(0, peakWatts - motorWatt); const inverterW = (nonMotorWatts * 1.25) + (motorWatt * motorSurgeFactor); const inverterVA = inverterW / 0.8;
+
+        document.getElementById('rPanels').innerText = numPanels + t.panelUnit; document.getElementById('rPower').innerText = (actualPower/1000).toFixed(1) + " kW"; document.getElementById('rInvW').innerText = Math.ceil(inverterW).toLocaleString() + " W"; document.getElementById('rInvVA').innerText = Math.ceil(inverterVA).toLocaleString() + " VA";
+        document.getElementById('rBattKwh').innerText = autonomy > 0 ? battKwh + " kWh" : t.noBattery; document.getElementById('rBattAh').innerText = autonomy > 0 ? Number(battAh).toLocaleString() + " Ah" : t.noBattery;
+        const batteriesInSeries = sysV / 12; document.getElementById('rBattNote').innerHTML = autonomy > 0 ? t.battNote(battAh, sysV, batteriesInSeries) : "";
+
+        const nightConsBox = document.getElementById('nightConsBox'); if(autonomy > 0 && nightWh > 0) { nightConsBox.style.display = 'block'; document.getElementById('rNightCons').innerText = Number(Math.round(nightWh)).toLocaleString(); } else { nightConsBox.style.display = 'none'; }
+
+        const verdict = getVerdict(numPanels, inverterW, battAh, autonomy); const verdictBox = document.getElementById('verdictBox'); verdictBox.innerText = verdict.text; verdictBox.style.cssText = verdict.style;
+        document.getElementById('results').style.display = 'block'; document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    initLanguage(); loadLoads(); toggleBatteryOptions();
+</script>
+</body>
+</html>
