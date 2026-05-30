@@ -32,7 +32,6 @@
     .product-image { height: 180px; background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1), rgba(var(--primary-rgb), 0.05)); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 4rem; border-bottom: 1px solid var(--border); }
     .product-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
     
-    /* ✅ تنسيق جديد: الاسم فوق، والسعر تحته بالجهة المقابلة */
     .product-header {
       display: flex;
       flex-direction: column;
@@ -190,7 +189,6 @@
     <p id="footerText"> DigiFlow 2026 ©  </p>
   </footer>
 
-  <!-- نافذة إدخال الإيميل فقط -->
   <div class="modal-overlay" id="emailModal">
     <div class="modal">
       <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال الطلب</span></h3>
@@ -209,7 +207,6 @@
     </div>
   </div>
 
-  <!-- نافذة النجاح -->
   <div class="modal-overlay" id="successModal">
     <div class="modal">
       <h3 style="color: var(--success);"><i class="ph-bold ph-check-circle"></i> <span data-i18n="successTitle">تم إنشاء طلبك!</span></h3>
@@ -231,7 +228,6 @@
     </div>
   </div>
 
-  <!-- نافذة الديمو -->
   <div class="modal-overlay demo-modal" id="demoModal">
     <div class="modal">
       <div class="demo-header">
@@ -314,14 +310,14 @@
         productsCache = products;
         
         if (!products || products.length === 0) {
-          grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات' : 'No products'}</p>`;
+          grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${texts.noProducts}</p>`;
           return;
         }
         
         grid.innerHTML = '';
         products.forEach(p => {
           const title = lang === 'ar' ? p.title_ar : p.title_en;
-          const desc = lang === 'ar' ? (p.desc_ar || '') : (p.desc_en || '');
+          const desc = lang === 'ar' ? (p.desc_ar || texts.defaultDesc) : (p.desc_en || texts.defaultDesc);
           const priceDisplay = `${p.price} ${p.currency || CONFIG.CURRENCY}`;
           const icon = 'ph-package';
           const hasDemo = p.demo_url && p.demo_url.trim() !== '';
@@ -351,7 +347,7 @@
         });
       } catch (err) {
         console.error('Error loading products:', err);
-        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ ${lang === 'ar' ? 'فشل التحميل' : 'Failed to load'}</p>`;
+        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ ${texts.loadFailed}</p>`;
       }
     }
 
@@ -381,7 +377,7 @@
       selectedProductPrice = parseFloat(button.dataset.productPrice);
       
       if (!selectedProductPrice || isNaN(selectedProductPrice)) {
-        alert('⚠️ خطأ في سعر المنتج');
+        alert(texts.priceError);
         return;
       }
       
@@ -429,12 +425,12 @@
       
       const price = selectedProductPrice;
       if (!price || price <= 0 || isNaN(price)) {
-        alert('⚠️ خطأ في السعر');
+        alert(texts.priceError);
         return;
       }
       
       if (!selectedProductName) {
-        alert('⚠️ خطأ في المنتج');
+        alert(texts.productError);
         return;
       }
       
@@ -443,10 +439,10 @@
       btn.disabled = true;
       btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts.processing}`;
 
-      // ✅ إصلاح: نرسل payment_method: "manual" عشان يقبل الـ Worker الطلب
+      // ✅ طريقة دفع وهمية مقبولة من الـ Worker
       const orderData = {
         guest_email: email,
-        payment_method: "manual",  // ✅ قيمة ثابتة مقبولة من الخادم
+        payment_method: "direct_link",
         items: [{ product_id: selectedProductId, quantity: 1 }]
       };
 
@@ -477,7 +473,7 @@
         }
       } catch (err) {
         console.error('❌ Error:', err);
-        alert(lang === 'ar' ? '⚠️ فشل الاتصال' : '⚠️ Connection failed');
+        alert(texts.connectionError);
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalHTML;
@@ -500,7 +496,7 @@
 
     function copyOrderDetails() {
       if (!currentOrderData) return;
-      const txt = `${texts.orderId}: ${currentOrderData.orderId}\n${texts.product}: ${currentOrderData.product}\n${texts.email}: ${currentOrderData.email}`;
+      const txt = `${texts.orderId} ${currentOrderData.orderId}\n${texts.product} ${currentOrderData.product}\n${texts.email} ${currentOrderData.email}`;
       navigator.clipboard.writeText(txt).then(() => {
         const btn = document.querySelector('#successModal .btn-copy');
         const old = btn.innerHTML;
