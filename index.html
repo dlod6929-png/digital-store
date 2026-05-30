@@ -91,7 +91,6 @@
       border-top: 1px solid var(--border);
     }
 
-    /* باقي الأنماط للنوافذ المنبثقة (كما هي) */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center;
@@ -165,6 +164,18 @@
     }
     .btn-buy-full:hover { box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.4); }
 
+    /* ✨ رسالة إعادة المحاولة */
+    .retry-msg {
+      text-align: center; padding: 2rem; color: var(--text-secondary);
+    }
+    .retry-msg button {
+      margin-top: 0.75rem; padding: 0.5rem 1.5rem;
+      background: var(--primary); color: white; border: none;
+      border-radius: 8px; cursor: pointer; font-weight: bold;
+      transition: all 0.3s;
+    }
+    .retry-msg button:hover { box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.4); }
+
     [data-theme="dark"] .btn-cancel:hover { background: #475569; }
     @media (max-width: 600px) { 
       .products { grid-template-columns: 1fr; }
@@ -182,17 +193,14 @@
     </div>
   </header>
 
-  <!-- تبويبات الفئات -->
   <div class="category-tabs" id="categoryTabs"></div>
-
   <main class="products" id="productsGrid"></main>
-</div> <!-- نهاية main-container -->
+</div>
 
 <footer>
   <p id="footerText">© 2026 Digital Products. All rights reserved.</p>
 </footer>
 
-<!-- باقي النوافذ المنبثقة (نفس الكود السابق) -->
 <div class="modal-overlay" id="emailModal">
   <div class="modal">
     <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال عملية الشراء</span></h3>
@@ -250,7 +258,8 @@
       orderId: "رقم الطلب:", product: "المنتج:", email: "البريد:",
       copied: "تم النسخ!", buyFull: "🔓 شراء النسخة الكاملة",
       warningText: "احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني",
-      copyButton: "نسخ المعلومات", close: "إغلاق", processing: "جاري المعالجة..."
+      copyButton: "نسخ المعلومات", close: "إغلاق", processing: "جاري المعالجة...",
+      loadError: "فشل التحميل", retry: "إعادة المحاولة", retrying: "محاولة إعادة الاتصال..."
     },
     en: {
       siteName: "Digital Products", footer: "© 2026 Digital Products. All rights reserved.", buy: "Buy Now", tryDemo: "🎁 Try Free",
@@ -261,7 +270,8 @@
       orderId: "Order ID:", product: "Product:", email: "Email:",
       copied: "Copied!", buyFull: "🔓 Buy Full Version",
       warningText: "Save order details (Order ID, Email, Product) for follow-up and support",
-      copyButton: "Copy Details", close: "Close", processing: "Processing..."
+      copyButton: "Copy Details", close: "Close", processing: "Processing...",
+      loadError: "Load failed", retry: "Retry", retrying: "Retrying connection..."
     }
   };
 
@@ -275,7 +285,23 @@
   const DEMOS_FOLDER = 'demos/';
 
   let selectedProductId = null, selectedProductName = null, selectedProductPrice = null, currentOrderData = null;
-  let currentCategoryId = null; // UUID كامل
+  let currentCategoryId = null;
+
+  // ✨ دالة إعادة المحاولة (التعديل 3)
+  async function fetchWithRetry(url, options = {}, retries = 3, delay = 1500) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const res = await fetch(url, options);
+        // حتى لو الحالة مو 200، نرجع الاستجابة عشان نعالجها
+        return res;
+      } catch (err) {
+        // خطأ شبكة حقيقي (لا اتصال، timeout، إلخ)
+        if (i === retries - 1) throw err;
+        // انتظار تصاعدي قبل المحاولة التالية
+        await new Promise(r => setTimeout(r, delay * (i + 1)));
+      }
+    }
+  }
 
   function applyLanguage() {
     document.documentElement.lang = lang;
@@ -295,13 +321,25 @@
     document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
   });
 
+  // ✨ عرض خطأ مع زر إعادة المحاولة
+  function showLoadError(container, retryFn) {
+    const t = texts[lang];
+    container.innerHTML = `
+      <div class="retry-msg">
+        <i class="ph-bold ph-warning-circle" style="font-size:2rem;color:var(--error);"></i>
+        <p>${t.loadError}</p>
+        <button onclick="${retryFn}"><i class="ph-bold ph-arrow-clockwise"></i> ${t.retry}</button>
+      </div>`;
+  }
+
   async function loadCategories() {
-    try {
-      const res = await fetch(API_CATEGORIES);
+  const container = document.getElementById('categoryTabs');
+  try {
+    container.innerHTML = `<p style="text-align:center;color:var(--text-secondary)">${texts[lang].retrying}</p>`;
+    const res = await fetchWithRetry(API_CATEGORIES);
       const result = await res.json();
       if (!result.success) throw new Error(result.error);
       const categories = result.data;
-      const container = document.getElementById('categoryTabs');
       container.innerHTML = `<button class="cat-btn ${currentCategoryId === null ? 'active' : ''}" data-cat="">${lang === 'ar' ? 'الكل' : 'All'}</button>`;
       categories.forEach(cat => {
         const name = lang === 'ar' ? cat.name_ar : cat.name_en;
@@ -317,17 +355,17 @@
       });
     } catch (err) {
       console.error(err);
-      document.getElementById('categoryTabs').innerHTML = `<p style="color:red;">${lang === 'ar' ? 'خطأ في تحميل الفئات' : 'Error loading categories'}</p>`;
+      showLoadError(container, 'loadCategories()');
     }
   }
 
-  async function loadProducts() {
-    const grid = document.getElementById('productsGrid');
-    grid.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">${lang === 'ar' ? 'جاري تحميل المنتجات...' : 'Loading...'}</p>`;
-    try {
-      let url = API_PRODUCTS;
-      if (currentCategoryId) url += `?category_id=${encodeURIComponent(currentCategoryId)}`;
-      const res = await fetch(url);
+ async function loadProducts() {
+  const grid = document.getElementById('productsGrid');
+  grid.innerHTML = `<p style="text-align:center; color: var(--text-secondary);"><i class="ph-bold ph-spinner-gap ph-spin" style="font-size:1.5rem;"></i> ${lang === 'ar' ? 'جاري تحميل المنتجات...' : 'Loading...'}</p>`;
+  try {
+    let url = API_PRODUCTS;
+    if (currentCategoryId) url += `?category_id=${encodeURIComponent(currentCategoryId)}`;
+    const res = await fetchWithRetry(url);
       const result = await res.json();
       if (!result.success) throw new Error(result.error);
       const products = result.data;
@@ -341,6 +379,8 @@
         const desc = (lang === 'ar' ? p.desc_ar : p.desc_en) || (lang === 'ar' ? 'منتج رقمي متميز' : 'Premium product');
         const price = `${p.price} ${p.currency || 'USD'}`;
         const hasDemo = p.demo_url && p.demo_url.trim();
+        // ✨ التعديل 2: تنظيف الشرطة المائلة من بداية demo_url
+        const cleanDemoUrl = hasDemo ? (p.demo_url.startsWith('/') ? p.demo_url.substring(1) : p.demo_url) : '';
         grid.innerHTML += `
           <div class="product-card">
             <div class="product-image"><i class="ph-bold ph-package"></i></div>
@@ -349,28 +389,29 @@
               <div class="price">${escapeHtml(price)}</div>
               <p class="desc">${escapeHtml(desc)}</p>
               <button class="buy-btn" data-product-id="${p.id}" data-product-name="${escapeHtml(title)}" data-product-price="${p.price}" onclick="handleBuyClick(this)"><i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}</button>
-              ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER}${escapeHtml(p.demo_url)}', '${escapeHtml(title)}')"><i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}</button>` : ''}
+              ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER}${escapeHtml(cleanDemoUrl)}', '${escapeHtml(title)}')"><i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}</button>` : ''}
             </div>
           </div>
         `;
       });
     } catch (err) {
       console.error(err);
-      grid.innerHTML = `<p style="text-align:center; color:red;">⚠️ ${lang === 'ar' ? 'فشل تحميل المنتجات' : 'Failed to load products'}</p>`;
+      showLoadError(grid, 'loadProducts()');
     }
   }
 
   function escapeHtml(str) {
     if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
+    return str.replace(/[&<>"]/g, function(m) {
       if (m === '&') return '&amp;';
       if (m === '<') return '&lt;';
       if (m === '>') return '&gt;';
+      if (m === '"') return '&quot;';
       return m;
     });
   }
 
-  // -------------------- دوال الشراء والديمو (نفس الكود السابق) --------------------
+  // -------------------- دوال الشراء والديمو --------------------
   function openDemo(demoUrl, productName) {
     document.getElementById('demoFrame').src = demoUrl;
     document.getElementById('demoModal').classList.add('active');
@@ -426,7 +467,8 @@
     btn.disabled = true;
     btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
     try {
-      const res = await fetch(API_ORDERS, {
+      // ✨ استخدام fetchWithRetry لإنشاء الطلب أيضاً
+      const res = await fetchWithRetry(API_ORDERS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ guest_email: email, payment_method: "manual", items: [{ product_id: selectedProductId, quantity: 1 }] })
@@ -441,7 +483,7 @@
         alert(`${lang === 'ar' ? '⚠️ خطأ: ' : '⚠️ Error: '}${result.error || 'فشل إنشاء الطلب'}`);
       }
     } catch (err) {
-      alert(lang === 'ar' ? '⚠️ فشل الاتصال بالخادم' : '⚠️ Connection failed');
+      alert(lang === 'ar' ? '⚠️ فشل الاتصال بالخادم بعد عدة محاولات' : '⚠️ Server unreachable after retries');
     } finally {
       btn.disabled = false;
       btn.innerHTML = original;
