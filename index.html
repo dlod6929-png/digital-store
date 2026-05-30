@@ -39,7 +39,6 @@
     .buy-btn:hover { box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3); transform: scale(1.02); }
     .buy-btn i { font-size: 1.2rem; }
 
-    /* === زر التجربة === */
     .demo-btn {
       width: 100%; padding: 0.6rem; margin-top: 0.5rem;
       background: transparent; color: var(--primary);
@@ -52,7 +51,6 @@
 
     footer { text-align: center; margin-top: 4rem; padding: 1rem; color: var(--text-secondary); font-size: 0.9rem; }
 
-    /* === النوافذ المنبثقة === */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center;
@@ -119,7 +117,6 @@
       border-radius: 4px; margin-top: 0.5rem; font-size: 0.85rem;
     }
 
-    /* === نافذة الديمو === */
     .demo-modal .modal { max-width: 90%; width: 95%; height: 90%; padding: 0; display: flex; flex-direction: column; }
     .demo-header {
       display: flex; justify-content: space-between; align-items: center;
@@ -168,7 +165,6 @@
     <p id="footerText"> Digital Products 2026 ©  </p>
   </footer>
 
-  <!-- === نافذة الإيميل والدفع === -->
   <div class="modal-overlay" id="emailModal">
     <div class="modal">
       <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال عملية الشراء</span></h3>
@@ -196,7 +192,6 @@
     </div>
   </div>
 
-  <!-- === نافذة النجاح === -->
   <div class="modal-overlay" id="successModal">
     <div class="modal">
       <h3 style="color: var(--success);"><i class="ph-bold ph-check-circle"></i> <span data-i18n="successTitle">تم إنشاء طلبك بنجاح!</span></h3>
@@ -219,7 +214,6 @@
     </div>
   </div>
 
-  <!-- === نافذة الديمو (جديدة) === -->
   <div class="modal-overlay demo-modal" id="demoModal">
     <div class="modal">
       <div class="demo-header">
@@ -248,24 +242,26 @@
       CWALLET_CURRENCY: 'USDT'
     };
 
-    // سيتم تحميل النصوص من ملفات اللغات الخارجية
-let texts = {};
+    let texts = {};
 
-function loadLanguage(langCode) {
-  if (langCode === 'ar') {
-    texts = texts_ar;
-  } else {
-    texts = texts_en;
-  }
-}
+    function loadLanguage(langCode) {
+      if (langCode === 'ar') {
+        texts = texts_ar;
+      } else {
+        texts = texts_en;
+      }
+    }
 
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     
+    // ✅ استدعاء دالة تحميل اللغة
+    loadLanguage(lang);
+    
     let selectedProductId = null;
     let selectedProductName = null;
     let selectedProductPrice = null;
-    let selectedProductDemoUrl = null; // ✅ جديد: رابط الديمو
+    let selectedProductDemoUrl = null;
     let currentOrderData = null;
     let productsCache = [];
     let currentPaymentUrl = '';
@@ -273,14 +269,14 @@ function loadLanguage(langCode) {
     function applyLanguage() {
       document.documentElement.lang = lang;
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      document.title = texts[lang].siteName;
-      document.getElementById('siteName').textContent = texts[lang].siteName;
-      document.getElementById('footerText').textContent = texts[lang].footer;
-      document.getElementById('demoTitle').textContent = lang === 'ar' ? 'تجربة المنتج' : 'Product Demo';
+      document.title = texts.siteName;
+      document.getElementById('siteName').textContent = texts.siteName;
+      document.getElementById('footerText').textContent = texts.footer;
+      document.getElementById('demoTitle').textContent = texts.demoTitle;
       
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (texts[lang][key]) el.textContent = texts[lang][key];
+        if (texts[key]) el.textContent = texts[key];
       });
       renderProducts();
     }
@@ -314,7 +310,7 @@ function loadLanguage(langCode) {
           const title = lang === 'ar' ? p.title_ar : p.title_en;
           const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
           const icon = 'ph-package';
-          const hasDemo = p.demo_url && p.demo_url.trim() !== ''; // ✅ نتحقق من وجود ديمو
+          const hasDemo = p.demo_url && p.demo_url.trim() !== '';
           
           grid.innerHTML += `
             <div class="product-card">
@@ -329,10 +325,10 @@ function loadLanguage(langCode) {
                         data-product-price="${p.price}"
                         data-product-demo="${hasDemo ? (DEMOS_FOLDER + p.demo_url) : ''}"
                         onclick="handleBuyClick(this)">
-                  <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
+                  <i class="ph-bold ph-shopping-cart-simple"></i> ${texts.buy}
                 </button>
                 ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER + p.demo_url}', '${title}')">
-                  <i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}
+                  <i class="ph-bold ph-play-circle"></i> ${texts.tryDemo}
                 </button>` : ''}
               </div>
             </div>
@@ -344,29 +340,22 @@ function loadLanguage(langCode) {
       }
     }
 
-    // ✅ دالة فتح الديمو
     function openDemo(demoUrl, productName) {
       selectedProductDemoUrl = demoUrl;
       selectedProductName = productName;
-      
       document.getElementById('demoFrame').src = demoUrl;
       document.getElementById('demoModal').classList.add('active');
-      
       console.log('🎬 Demo opened:', demoUrl);
     }
 
-    // ✅ دالة إغلاق الديمو
     function closeDemoModal() {
       document.getElementById('demoModal').classList.remove('active');
-      document.getElementById('demoFrame').src = 'about:blank'; // إيقاف التحميل
+      document.getElementById('demoFrame').src = 'about:blank';
       selectedProductDemoUrl = null;
     }
 
-    // ✅ دالة الشراء من داخل الديمو
     function buyFromDemo() {
       closeDemoModal();
-      
-      // نعيد فتح نافذة الدفع للمنتج نفسه
       if (selectedProductName && selectedProductPrice) {
         openEmailModal(selectedProductId, selectedProductName);
       }
@@ -376,7 +365,7 @@ function loadLanguage(langCode) {
       selectedProductId = button.dataset.productId;
       selectedProductName = button.dataset.productName;
       selectedProductPrice = parseFloat(button.dataset.productPrice);
-      selectedProductDemoUrl = button.dataset.productDemo || null; // ✅ نقرأ رابط الديمو
+      selectedProductDemoUrl = button.dataset.productDemo || null;
       
       console.log('🛒 Product:', selectedProductName, '| Price:', selectedProductPrice, '| Demo:', selectedProductDemoUrl);
       
@@ -386,20 +375,17 @@ function loadLanguage(langCode) {
         return;
       }
       
-      // ✅ إذا كان للمنتج ديمو، نفتح الديمو أولاً
       if (selectedProductDemoUrl) {
         openDemo(selectedProductDemoUrl, selectedProductName);
-        return; // نوقف هنا، الشراء سيكون من داخل الديمو
+        return;
       }
       
-      // إذا ما في ديمو، نفتح الدفع مباشرة
       openEmailModal(selectedProductId, selectedProductName);
     }
 
     function openEmailModal(productId, productName) {
       selectedProductId = productId;
       selectedProductName = productName || (lang === 'ar' ? 'منتج غير معروف' : 'Unknown Product');
-      
       document.getElementById('emailModal').classList.add('active');
       document.getElementById('customerEmail').focus();
       clearEmailError();
@@ -451,7 +437,7 @@ function loadLanguage(langCode) {
       const btn = event.currentTarget;
       const originalHTML = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
+      btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts.processing}`;
 
       const paymentMethod = document.getElementById('paymentMethodSelect').value;
       
@@ -501,26 +487,25 @@ function loadLanguage(langCode) {
 
     function showPaymentInfo(method, amount) {
       const container = document.getElementById('paymentInfoContainer');
-      const t = texts[lang];
       
       let html = '<div class="payment-info-box">';
       
       if (method === 'direct_link') {
         currentPaymentUrl = CONFIG.DIRECT_PAYMENT_LINK;
-        html += `<strong>${t.paymentLink}</strong><code id="paymentLinkCode">${CONFIG.DIRECT_PAYMENT_LINK}</code>
+        html += `<strong>${texts.paymentLink}</strong><code id="paymentLinkCode">${CONFIG.DIRECT_PAYMENT_LINK}</code>
           <button class="btn-copy" onclick="copyPaymentLink(this)" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
-            <i class="ph-bold ph-copy"></i> ${t.copyLink}
+            <i class="ph-bold ph-copy"></i> ${texts.copyLink}
           </button>`;
       } else if (method === 'cwallet_id') {
         if (!CONFIG.CWALLET_ID || CONFIG.CWALLET_ID === '123456789') {
           html += `<p style="color:var(--error);">⚠️ معرف CWallet غير مضبوط</p>`;
         } else {
           currentPaymentUrl = `https://cwallet.com/request?amount=${amount}&currency=${CONFIG.CWALLET_CURRENCY}&network=${CONFIG.CWALLET_NETWORK}&cwallet_id=${CONFIG.CWALLET_ID}`;
-          html += `<strong>${t.cwalletId}:</strong> ${CONFIG.CWALLET_ID}<br>
-            <strong>${t.amount}:</strong> ${amount} ${CONFIG.CWALLET_CURRENCY}<br>
-            <strong>${t.paymentLink}:</strong><code id="paymentLinkCode">${currentPaymentUrl}</code>
+          html += `<strong>${texts.cwalletId}:</strong> ${CONFIG.CWALLET_ID}<br>
+            <strong>${texts.amount}:</strong> ${amount} ${CONFIG.CWALLET_CURRENCY}<br>
+            <strong>${texts.paymentLink}:</strong><code id="paymentLinkCode">${currentPaymentUrl}</code>
             <button class="btn-copy" onclick="copyPaymentLink(this)" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
-              <i class="ph-bold ph-copy"></i> ${t.copyLink}
+              <i class="ph-bold ph-copy"></i> ${texts.copyLink}
             </button>`;
         }
       } else {
@@ -528,11 +513,11 @@ function loadLanguage(langCode) {
           html += `<p style="color:var(--error);">⚠️ عنوان المحفظة غير مضبوط</p>`;
         } else {
           currentPaymentUrl = `https://cwallet.com/request?amount=${amount}&currency=${CONFIG.CWALLET_CURRENCY}&network=${CONFIG.CWALLET_NETWORK}&address=${CONFIG.CWALLET_ADDRESS}`;
-          html += `<strong>${t.walletAddress}:</strong><br><code style="font-size:0.75rem;">${CONFIG.CWALLET_ADDRESS}</code><br>
-            <strong>${t.amount}:</strong> ${amount} ${CONFIG.CWALLET_CURRENCY}<br>
-            <strong>${t.paymentLink}:</strong><code id="paymentLinkCode">${currentPaymentUrl}</code>
+          html += `<strong>${texts.walletAddress}:</strong><br><code style="font-size:0.75rem;">${CONFIG.CWALLET_ADDRESS}</code><br>
+            <strong>${texts.amount}:</strong> ${amount} ${CONFIG.CWALLET_CURRENCY}<br>
+            <strong>${texts.paymentLink}:</strong><code id="paymentLinkCode">${currentPaymentUrl}</code>
             <button class="btn-copy" onclick="copyPaymentLink(this)" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
-              <i class="ph-bold ph-copy"></i> ${t.copyLink}
+              <i class="ph-bold ph-copy"></i> ${texts.copyLink}
             </button>`;
         }
       }
@@ -545,19 +530,18 @@ function loadLanguage(langCode) {
       if (linkCode) {
         navigator.clipboard.writeText(linkCode.textContent).then(() => {
           const old = btn.innerHTML;
-          btn.innerHTML = `<i class="ph-bold ph-check"></i> ${texts[lang].copied}`;
+          btn.innerHTML = `<i class="ph-bold ph-check"></i> ${texts.copied}`;
           setTimeout(() => btn.innerHTML = old, 2000);
         });
       }
     }
 
     function showSuccessModal(orderData) {
-      const t = texts[lang];
       document.getElementById('orderDetails').innerHTML = `
-        <div><strong>${t.orderId}</strong> <span>${orderData.orderId}</span></div>
-        <div><strong>${t.product}</strong> <span>${orderData.product}</span></div>
-        <div><strong>${t.email}</strong> <span>${orderData.email}</span></div>
-        <div><strong>${t.amount}</strong> <span>${orderData.amount} ${CONFIG.CWALLET_CURRENCY}</span></div>`;
+        <div><strong>${texts.orderId}</strong> <span>${orderData.orderId}</span></div>
+        <div><strong>${texts.product}</strong> <span>${orderData.product}</span></div>
+        <div><strong>${texts.email}</strong> <span>${orderData.email}</span></div>
+        <div><strong>${texts.amount}</strong> <span>${orderData.amount} ${CONFIG.CWALLET_CURRENCY}</span></div>`;
       document.getElementById('successModal').classList.add('active');
     }
 
@@ -570,12 +554,11 @@ function loadLanguage(langCode) {
 
     function copyOrderDetails() {
       if (!currentOrderData) return;
-      const t = texts[lang];
-      const txt = `${t.orderId} ${currentOrderData.orderId}\n${t.product} ${currentOrderData.product}\n${t.email} ${currentOrderData.email}\n${t.amount} ${currentOrderData.amount} ${CONFIG.CWALLET_CURRENCY}`;
+      const txt = `${texts.orderId} ${currentOrderData.orderId}\n${texts.product} ${currentOrderData.product}\n${texts.email} ${currentOrderData.email}\n${texts.amount} ${currentOrderData.amount} ${CONFIG.CWALLET_CURRENCY}`;
       navigator.clipboard.writeText(txt).then(() => {
         const btn = document.querySelector('#successModal .btn-copy');
         const old = btn.innerHTML;
-        btn.innerHTML = `<i class="ph-bold ph-check"></i> ${t.copied}`;
+        btn.innerHTML = `<i class="ph-bold ph-check"></i> ${texts.copied}`;
         setTimeout(() => btn.innerHTML = old, 2000);
       });
     }
