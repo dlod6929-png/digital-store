@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff6b35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z'/><polyline points='13 16 9 12 5 16'/><line x1='9' y1='12' x2='9' y2='21'/></svg>">
-  <title>منتجات رقمية</title>
+  <title>DigiFlow</title>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   
   <style>
@@ -32,28 +32,24 @@
     .product-image { height: 180px; background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1), rgba(var(--primary-rgb), 0.05)); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 4rem; border-bottom: 1px solid var(--border); }
     .product-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
     
-    /* ✅ تنسيق جديد لعنوان المنتج والسعر */
+    /* ✅ تنسيق جديد: الاسم فوق، والسعر تحته بالجهة المقابلة */
     .product-header {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 0.5rem;
-      gap: 0.5rem;
+      flex-direction: column;
+      margin-bottom: 1rem;
     }
     .product-header h3 {
-      margin: 0;
-      flex: 1;
-      min-width: 0;
-      word-wrap: break-word;
+      margin: 0 0 0.5rem 0;
       font-size: 1.2rem;
+      text-align: start;
     }
     .product-header .price {
       margin: 0;
-      white-space: nowrap;
-      flex-shrink: 0;
       color: var(--primary);
       font-weight: bold;
       font-size: 1.4rem;
+      text-align: end;
+      align-self: flex-end;
     }
     
     .desc { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem; flex-grow: 1; }
@@ -145,15 +141,6 @@
       border-radius: 8px; padding: 1rem; margin: 1rem 0;
     }
     .warning-box p { margin: 0; color: #d97706; font-weight: 500; }
-    
-    .payment-info-box {
-      background: var(--bg); padding: 1rem; border-radius: 8px;
-      margin: 1rem 0; border: 2px solid var(--primary); word-break: break-all;
-    }
-    .payment-info-box code {
-      display: block; padding: 0.5rem; background: var(--card);
-      border-radius: 4px; margin-top: 0.5rem; font-size: 0.85rem;
-    }
 
     .demo-modal .modal { max-width: 90%; width: 95%; height: 90%; padding: 0; display: flex; flex-direction: column; }
     .demo-header {
@@ -193,31 +180,31 @@
   <header>
     <div class="logo">
       <i class="ph-bold ph-package"></i>
-      <span id="siteName">منتجات رقمية</span>
+      <span id="siteName">DigiFlow</span>
     </div>
   </header>
 
   <main class="products" id="productsGrid"></main>
 
   <footer>
-    <p id="footerText"> Digital Products 2026 ©  </p>
+    <p id="footerText"> DigiFlow 2026 ©  </p>
   </footer>
 
-  <!-- نافذة إدخال الإيميل -->
+  <!-- نافذة إدخال الإيميل فقط -->
   <div class="modal-overlay" id="emailModal">
     <div class="modal">
-      <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال عملية الشراء</span></h3>
-      <p data-i18n="emailDesc">يرجى إدخال بريدك الإلكتروني لإتمام الطلب</p>
+      <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال الطلب</span></h3>
+      <p data-i18n="emailDesc">يرجى إدخال بريدك الإلكتروني لاستلام المنتج</p>
       
       <div class="form-group">
         <label for="customerEmail" data-i18n="emailLabel">البريد الإلكتروني *</label>
         <input type="email" id="customerEmail" placeholder="example@email.com" required>
-        <div class="error-message" id="emailError" data-i18n="emailError">يرجى إدخال بريد إلكتروني صحيح (أحرف إنجليزية فقط)</div>
+        <div class="error-message" id="emailError" data-i18n="emailError">يرجى إدخال بريد إلكتروني صحيح</div>
       </div>
       
       <div class="modal-buttons">
         <button class="btn-cancel" onclick="closeEmailModal()" data-i18n="cancel">إلغاء</button>
-        <button class="btn-confirm" onclick="confirmPurchase(event)" data-i18n="confirm">تأكيد الشراء</button>
+        <button class="btn-confirm" onclick="confirmPurchase(event)" data-i18n="confirm">تأكيد</button>
       </div>
     </div>
   </div>
@@ -225,18 +212,17 @@
   <!-- نافذة النجاح -->
   <div class="modal-overlay" id="successModal">
     <div class="modal">
-      <h3 style="color: var(--success);"><i class="ph-bold ph-check-circle"></i> <span data-i18n="successTitle">تم إنشاء طلبك بنجاح!</span></h3>
-      <p data-i18n="successDesc">يرجى إتمام الدفع عبر الرابط التالي</p>
+      <h3 style="color: var(--success);"><i class="ph-bold ph-check-circle"></i> <span data-i18n="successTitle">تم إنشاء طلبك!</span></h3>
+      <p data-i18n="successDesc">سيتم معالجة طلبك خلال دقائق</p>
       
       <div class="order-details" id="orderDetails"></div>
-      <div id="paymentInfoContainer"></div>
       
       <div class="warning-box">
-        <p><i class="ph-bold ph-warning"></i> <span data-i18n="warningText">احتفظ بمعلومات الطلب (رقم الطلب، البريد، اسم المنتج) للمتابعة والدعم الفني</span></p>
+        <p><i class="ph-bold ph-warning"></i> <span data-i18n="warningText">احتفظ برقم الطلب للمتابعة</span></p>
       </div>
       
       <button class="btn-copy" onclick="copyOrderDetails()">
-        <i class="ph-bold ph-copy"></i> <span data-i18n="copyButton">نسخ المعلومات</span>
+        <i class="ph-bold ph-copy"></i> <span data-i18n="copyButton">نسخ رقم الطلب</span>
       </button>
       
       <div class="modal-buttons" style="margin-top: 1rem;">
@@ -267,9 +253,7 @@
     const API_ORDERS_URL = API_URL.replace('/products', '/orders');
     const DEMOS_FOLDER = 'demos/';
     
-    // ✅ إعدادات مبسطة (تم حذف كل ما يتعلق بـ CWallet)
     const CONFIG = {
-      DIRECT_PAYMENT_LINK: 'https://cwallet.com/receive/7ce25e34dce4052ac98c2018f60da4c1',
       CURRENCY: 'USDT'
     };
 
@@ -294,7 +278,6 @@
     let selectedProductDemoUrl = null;
     let currentOrderData = null;
     let productsCache = [];
-    let currentPaymentUrl = '';
 
     function applyLanguage() {
       document.documentElement.lang = lang;
@@ -331,13 +314,14 @@
         productsCache = products;
         
         if (!products || products.length === 0) {
-          grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات متاحة حالياً' : 'No products available'}</p>`;
+          grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات' : 'No products'}</p>`;
           return;
         }
         
         grid.innerHTML = '';
         products.forEach(p => {
           const title = lang === 'ar' ? p.title_ar : p.title_en;
+          const desc = lang === 'ar' ? (p.desc_ar || '') : (p.desc_en || '');
           const priceDisplay = `${p.price} ${p.currency || CONFIG.CURRENCY}`;
           const icon = 'ph-package';
           const hasDemo = p.demo_url && p.demo_url.trim() !== '';
@@ -346,12 +330,11 @@
             <div class="product-card">
               <div class="product-image"><i class="ph-bold ${icon}"></i></div>
               <div class="product-content">
-                <!-- ✅ عنوان المنتج والسعر في صف واحد -->
                 <div class="product-header">
                   <h3>${title}</h3>
                   <div class="price">${priceDisplay}</div>
                 </div>
-                <p class="desc">${lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product'}</p>
+                <p class="desc">${desc}</p>
                 <button class="buy-btn" 
                         data-product-id="${p.id}" 
                         data-product-name="${title}"
@@ -368,7 +351,7 @@
         });
       } catch (err) {
         console.error('Error loading products:', err);
-        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ ${lang === 'ar' ? 'فشل تحميل المنتجات' : 'Failed to load products'}</p>`;
+        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ ${lang === 'ar' ? 'فشل التحميل' : 'Failed to load'}</p>`;
       }
     }
 
@@ -377,7 +360,6 @@
       selectedProductName = productName;
       document.getElementById('demoFrame').src = demoUrl;
       document.getElementById('demoModal').classList.add('active');
-      console.log('🎬 Demo opened:', demoUrl);
     }
 
     function closeDemoModal() {
@@ -398,21 +380,17 @@
       selectedProductName = button.dataset.productName;
       selectedProductPrice = parseFloat(button.dataset.productPrice);
       
-      console.log('🛒 Product:', selectedProductName, '| Price:', selectedProductPrice);
-      
       if (!selectedProductPrice || isNaN(selectedProductPrice)) {
-        console.error('❌ Price not found or invalid:', button.dataset.productPrice);
-        alert('⚠️ خطأ في سعر المنتج. يرجى تحديث الصفحة.');
+        alert('⚠️ خطأ في سعر المنتج');
         return;
       }
       
-      // ✅ فتح الدفع مباشرة (بدون ديمو)
       openEmailModal(selectedProductId, selectedProductName);
     }
 
     function openEmailModal(productId, productName) {
       selectedProductId = productId;
-      selectedProductName = productName || (lang === 'ar' ? 'منتج غير معروف' : 'Unknown Product');
+      selectedProductName = productName || (lang === 'ar' ? 'منتج' : 'Product');
       document.getElementById('emailModal').classList.add('active');
       document.getElementById('customerEmail').focus();
       clearEmailError();
@@ -451,13 +429,12 @@
       
       const price = selectedProductPrice;
       if (!price || price <= 0 || isNaN(price)) {
-        alert('⚠️ خطأ: لم يتم تحديد سعر المنتج. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
-        console.error('Price issue:', { price, selectedProductPrice });
+        alert('⚠️ خطأ في السعر');
         return;
       }
       
       if (!selectedProductName) {
-        alert('⚠️ خطأ: لم يتم تحديد المنتج. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
+        alert('⚠️ خطأ في المنتج');
         return;
       }
       
@@ -466,10 +443,10 @@
       btn.disabled = true;
       btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts.processing}`;
 
-      // ✅ طريقة الدفع ثابتة: رابط مباشر فقط
+      // ✅ إصلاح: نرسل payment_method: "manual" عشان يقبل الـ Worker الطلب
       const orderData = {
         guest_email: email,
-        payment_method: "direct_link",
+        payment_method: "manual",  // ✅ قيمة ثابتة مقبولة من الخادم
         items: [{ product_id: selectedProductId, quantity: 1 }]
       };
 
@@ -481,7 +458,6 @@
         });
 
         const result = await response.json();
-        console.log('📥 Response:', result);
 
         if (result.success && result.data?.order_id) {
           closeEmailModal();
@@ -493,47 +469,18 @@
             amount: price
           };
 
-          showPaymentInfo(price);
           showSuccessModal(currentOrderData);
-          
           selectedProductId = selectedProductName = selectedProductPrice = selectedProductDemoUrl = null;
           
         } else {
-          alert(`${lang === 'ar' ? '⚠️ حدث خطأ: ' : '⚠️ Error: '}${result.error || 'فشل إنشاء الطلب'}`);
+          alert(`${lang === 'ar' ? '⚠️ خطأ: ' : '⚠️ Error: '}${result.error || 'فشل الإنشاء'}`);
         }
       } catch (err) {
-        console.error('❌ Purchase error:', err);
-        alert(lang === 'ar' ? '⚠️ فشل الاتصال بالخادم' : '⚠️ Failed to connect to server');
+        console.error('❌ Error:', err);
+        alert(lang === 'ar' ? '⚠️ فشل الاتصال' : '⚠️ Connection failed');
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalHTML;
-      }
-    }
-
-    // ✅ دالة مبسطة لعرض رابط الدفع المباشر فقط
-    function showPaymentInfo(amount) {
-      const container = document.getElementById('paymentInfoContainer');
-      
-      const html = `
-        <div class="payment-info-box">
-          <strong>${texts.paymentLink}</strong>
-          <code id="paymentLinkCode">${CONFIG.DIRECT_PAYMENT_LINK}</code>
-          <button class="btn-copy" onclick="copyPaymentLink(this)" style="margin-top:0.75rem;padding:0.5rem;font-size:0.9rem;">
-            <i class="ph-bold ph-copy"></i> ${texts.copyLink}
-          </button>
-        </div>
-      `;
-      container.innerHTML = html;
-    }
-
-    function copyPaymentLink(btn) {
-      const linkCode = document.getElementById('paymentLinkCode');
-      if (linkCode) {
-        navigator.clipboard.writeText(linkCode.textContent).then(() => {
-          const old = btn.innerHTML;
-          btn.innerHTML = `<i class="ph-bold ph-check"></i> ${texts.copied}`;
-          setTimeout(() => btn.innerHTML = old, 2000);
-        });
       }
     }
 
@@ -549,13 +496,11 @@
     function closeSuccessModal() {
       document.getElementById('successModal').classList.remove('active');
       currentOrderData = null;
-      currentPaymentUrl = '';
-      document.getElementById('paymentInfoContainer').innerHTML = '';
     }
 
     function copyOrderDetails() {
       if (!currentOrderData) return;
-      const txt = `${texts.orderId} ${currentOrderData.orderId}\n${texts.product} ${currentOrderData.product}\n${texts.email} ${currentOrderData.email}\n${texts.amount} ${currentOrderData.amount} ${CONFIG.CURRENCY}`;
+      const txt = `${texts.orderId}: ${currentOrderData.orderId}\n${texts.product}: ${currentOrderData.product}\n${texts.email}: ${currentOrderData.email}`;
       navigator.clipboard.writeText(txt).then(() => {
         const btn = document.querySelector('#successModal .btn-copy');
         const old = btn.innerHTML;
@@ -585,6 +530,5 @@
 
     applyLanguage(); applyTheme(); renderProducts();
   </script>
-  <script async src="https://cwallet.com/opencx.js"></script>
 </body>
 </html>
