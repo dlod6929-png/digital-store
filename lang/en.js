@@ -1,5 +1,6 @@
 const texts_en = {
   siteName: "Digital Products",
+  loadingProducts: "Loading products...",
   footer: "© 2026 Digital Products. All rights reserved.",
   buy: "Buy Now",
   tryDemo: "🎁 Try Free",
