@@ -99,20 +99,6 @@
         .neon-btn:hover { background: var(--neon-orange); color: #fff; }
         .neon-btn .icon-box { width: 35px; height: 35px; font-size: 1.1rem; margin: 0; border-radius: 8px; }
 
-        /* === زر الشراء الكامل === */
-        .buy-full-btn {
-            width: 100%; padding: 1rem; margin-top: 1.5rem;
-            background: linear-gradient(135deg, var(--neon-orange), #ff6b35);
-            color: white; border: none; border-radius: 12px;
-            font-size: 1.1rem; font-weight: bold; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4);
-            transition: all 0.3s ease;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-        .buy-full-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 140, 0, 0.6); }
-        @keyframes glow { from { box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4); } to { box-shadow: 0 4px 25px rgba(255, 140, 0, 0.7); } }
-
         .load-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
         .load-table th, .load-table td { padding: 8px; text-align: center; border-bottom: 1px solid var(--input-border); }
         .del-btn { color: var(--danger); cursor: pointer; font-weight: bold; }
@@ -133,7 +119,21 @@
 
         .verdict-box { padding: 15px; border-radius: 10px; margin-top: 15px; font-weight: bold; font-size: 0.9rem; text-align: center; grid-column: 1 / -1; }
         
-        /* === محتوى مقفل === */
+        /* === زر الشراء الكامل (يظهر داخل بطاقة النتائج) === */
+        .buy-full-btn {
+            width: 100%; padding: 1rem; margin-top: 1.5rem;
+            background: linear-gradient(135deg, var(--neon-orange), #ff6b35);
+            color: white; border: none; border-radius: 12px;
+            font-size: 1.1rem; font-weight: bold; cursor: pointer;
+            display: none;
+            align-items: center; justify-content: center; gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4);
+            transition: all 0.3s ease;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        .buy-full-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 140, 0, 0.6); }
+        @keyframes glow { from { box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4); } to { box-shadow: 0 4px 25px rgba(255, 140, 0, 0.7); } }
+
         .locked-content {
             position: relative; opacity: 0.5; pointer-events: none;
             filter: blur(2px); user-select: none;
@@ -159,131 +159,117 @@
 <body>
 
 <div class="container">
-    <!-- === شريط النسخة التجريبية === -->
-    <div class="demo-banner">
+    <div class="demo-banner" id="demoBannerText">
         <i class="ph-bold ph-sparkle"></i>
-        <span>🎁 نسخة تجريبية مجانية - جرب طريقة "الاستطاعة الكلية" فقط</span>
+        <span id="demoBannerSpan">🎁 نسخة تجريبية مجانية - جرب طريقة "الاستطاعة الكلية" فقط</span>
     </div>
 
     <div style="text-align: center; margin-bottom: 20px;">
         <div class="icon-box" style="width:60px; height:60px; font-size:2rem; margin: 0 auto 10px;">☀️</div>
         <h2 style="font-size: 1.8rem;" id="siteTitle">المستشار الشمسي الاحترافي</h2>
-        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;" id="demoSubText">
             <i class="ph-bold ph-info"></i> النسخة الكاملة تحتوي على 3 طرق احترافية + ميزات متقدمة
         </p>
     </div>
 
     <div class="tabs">
-        <!-- التبويب 1: مقفل -->
-        <button class="tab-btn locked" id="tab1Btn" title="متاح في النسخة الكاملة">
-            🏠 طريقة 1: الأحمال
-        </button>
-        <!-- التبويب 2: مقفل -->
-        <button class="tab-btn locked" id="tab2Btn" title="متاح في النسخة الكاملة">
-            ⚡ طريقة 2: مغذي مباشر
-        </button>
-        <!-- التبويب 3: مفتوح -->
-        <button class="tab-btn active" onclick="switchTab(3)" id="tab3Btn">
-            🔋 طريقة 3: استطاعة كلية
-        </button>
+        <button class="tab-btn locked" id="tab1Btn"></button>
+        <button class="tab-btn locked" id="tab2Btn"></button>
+        <button class="tab-btn active" onclick="switchTab(3)" id="tab3Btn"></button>
     </div>
 
-    <!-- التبويب 1: محتوى مقفل -->
+    <!-- التبويب 1: مقفل -->
     <div id="tab1" class="card" style="display: none;">
         <div class="locked-content">
-            <div class="section-header"><div class="icon-box">➕</div><h2 id="loadsTitle">إضافة الأحمال</h2></div>
+            <div class="section-header"><div class="icon-box">➕</div><h2 id="loadsTitle"></h2></div>
             <div class="grid">
-                <div class="input-group"><label id="presetLabel">اختر حمل شائع</label><select id="presetSelect" disabled></select></div>
-                <div class="input-group"><label id="nameLabel">اسم الجهاز</label><input type="text" id="loadName" placeholder="مثال: ثلاجة" disabled></div>
-                <div class="input-group"><label id="wattLabel">القدرة (واط)</label><input type="number" id="loadWatt" placeholder="0" min="0" disabled></div>
-                <div class="input-group"><label id="hoursLabel">الساعات يومياً</label><input type="number" id="loadHours" placeholder="0" min="0" max="24" disabled></div>
+                <div class="input-group"><label id="presetLabel"></label><select id="presetSelect" disabled></select></div>
+                <div class="input-group"><label id="nameLabel"></label><input type="text" id="loadName" disabled></div>
+                <div class="input-group"><label id="wattLabel"></label><input type="number" id="loadWatt" placeholder="0" min="0" disabled></div>
+                <div class="input-group"><label id="hoursLabel"></label><input type="number" id="loadHours" placeholder="0" min="0" max="24" disabled></div>
             </div>
-            <button class="neon-btn" disabled><div class="icon-box">➕</div> <span id="addBtnText">إضافة للحمل</span></button>
-            <table class="load-table"><thead><tr><th id="thDevice">الجهاز</th><th id="thWatt">القدرة</th><th id="thHours">الساعات</th><th id="thConsumption">الاستهلاك</th><th id="thDelete">حذف</th></tr></thead><tbody id="loadTable"></tbody></table>
-            <div style="text-align:left; font-weight:bold; margin-top:10px; color:var(--neon-orange);"><span id="totalLabel">إجمالي الاستهلاك</span>: <span id="totalWh">0</span> Wh</div>
+            <button class="neon-btn" disabled><div class="icon-box">➕</div> <span id="addBtnText"></span></button>
+            <table class="load-table"><thead><tr><th id="thDevice"></th><th id="thWatt"></th><th id="thHours"></th><th id="thConsumption"></th><th id="thDelete"></th></tr></thead><tbody id="loadTable"></tbody> </table>
+            <div style="text-align:left; font-weight:bold; margin-top:10px; color:var(--neon-orange);"><span id="totalLabel"></span>: <span id="totalWh">0</span> Wh</div>
             <div style="margin-top: 15px; border-top: 1px dashed var(--input-border); padding-top: 15px;">
-                <div class="input-group"><label id="pshLabel">ساعات الشمس (PSH) ⭐</label><input type="number" id="sunHours" placeholder="0" min="0" step="0.5" disabled></div>
+                <div class="input-group"><label id="pshLabel"></label><input type="number" id="sunHours" placeholder="0" min="0" step="0.5" disabled></div>
                 <div class="psh-helper"><select id="pshSelect" disabled></select></div>
-                <div class="input-group batt-options"><label id="nightRatioLabel">نسبة الليل %</label><input type="number" id="nightRatio" placeholder="معدل المنازل 50%" min="0" max="100" disabled></div>
+                <div class="input-group batt-options"><label id="nightRatioLabel"></label><input type="number" id="nightRatio" placeholder="معدل المنازل 50%" min="0" max="100" disabled></div>
             </div>
-            <div class="locked-overlay"><div class="locked-badge">🔒 متاح في النسخة الكاملة</div></div>
+            <div class="locked-overlay"><div class="locked-badge" id="lockedBadge1">🔒 متاح في النسخة الكاملة</div></div>
         </div>
     </div>
 
-    <!-- التبويب 2: محتوى مقفل -->
+    <!-- التبويب 2: مقفل -->
     <div id="tab2" class="card" style="display: none;">
         <div class="locked-content">
-            <div class="section-header"><div class="icon-box">⚡</div><h2 id="directTitle">مغذي مباشر</h2></div>
+            <div class="section-header"><div class="icon-box">⚡</div><h2 id="directTitle"></h2></div>
             <div class="grid">
-                <div class="input-group"><label id="dayAmpLabel">تيار نهاراً (A)</label><input type="number" id="dirDayAmp" placeholder="0" min="0" disabled></div>
-                <div class="input-group"><label id="dayHoursLabel">ساعات نهاراً</label><input type="number" id="dirDayHours" placeholder="0" min="0" max="24" disabled></div>
-                <div class="input-group"><label id="nightAmpLabel">تيار ليلاً (A)</label><input type="number" id="dirNightAmp" placeholder="0" min="0" disabled></div>
-                <div class="input-group"><label id="nightHoursLabel">ساعات ليلاً</label><input type="number" id="dirNightHours" placeholder="0" min="0" max="24" disabled></div>
-                <div class="input-group"><label id="voltLabel">الجهد (V)</label><input type="number" id="dirVolt" value="220" style="font-weight:bold;" disabled></div>
-                <div class="input-group"><label id="pshLabel2">ساعات الشمس (PSH)</label><input type="number" id="dirSunH" placeholder="0" min="0" step="0.5" disabled></div>
+                <div class="input-group"><label id="dayAmpLabel"></label><input type="number" id="dirDayAmp" placeholder="0" min="0" disabled></div>
+                <div class="input-group"><label id="dayHoursLabel"></label><input type="number" id="dirDayHours" placeholder="0" min="0" max="24" disabled></div>
+                <div class="input-group"><label id="nightAmpLabel"></label><input type="number" id="dirNightAmp" placeholder="0" min="0" disabled></div>
+                <div class="input-group"><label id="nightHoursLabel"></label><input type="number" id="dirNightHours" placeholder="0" min="0" max="24" disabled></div>
+                <div class="input-group"><label id="voltLabel"></label><input type="number" id="dirVolt" value="220" style="font-weight:bold;" disabled></div>
+                <div class="input-group"><label id="pshLabel2"></label><input type="number" id="dirSunH" placeholder="0" min="0" step="0.5" disabled></div>
             </div>
             <div class="psh-helper"><select id="pshSelect2" disabled></select></div>
-            <div class="locked-overlay"><div class="locked-badge">🔒 متاح في النسخة الكاملة</div></div>
+            <div class="locked-overlay"><div class="locked-badge" id="lockedBadge2">🔒 متاح في النسخة الكاملة</div></div>
         </div>
     </div>
 
     <!-- التبويب 3: مفتوح بالكامل ✅ -->
     <div id="tab3" class="card">
-        <div class="section-header"><div class="icon-box">🔋</div><h2 id="totalPowerTitle">استطاعة كلية</h2></div>
+        <div class="section-header"><div class="icon-box">🔋</div><h2 id="totalPowerTitle"></h2></div>
         <div class="grid">
-            <div class="input-group"><label id="totalWattLabel">الاستطاعة (W)</label><input type="number" id="totalWatt" placeholder="0" min="0"></div>
-            <div class="input-group"><label id="totalHoursLabel">الساعات يومياً</label><input type="number" id="totalHours" placeholder="0" min="0" max="24"></div>
-            <div class="input-group"><label id="pshLabel3">ساعات الشمس (PSH)</label><input type="number" id="totalSunH" placeholder="0" min="0" step="0.5"></div>
-            <div class="input-group batt-options"><label id="nightRatioLabel3">نسبة الليل %</label><input type="number" id="nightRatio3" placeholder="معدل المنازل 50%" min="0" max="100"></div>
+            <div class="input-group"><label id="totalWattLabel"></label><input type="number" id="totalWatt" placeholder="0" min="0"></div>
+            <div class="input-group"><label id="totalHoursLabel"></label><input type="number" id="totalHours" placeholder="0" min="0" max="24"></div>
+            <div class="input-group"><label id="pshLabel3"></label><input type="number" id="totalSunH" placeholder="0" min="0" step="0.5"></div>
+            <div class="input-group batt-options"><label id="nightRatioLabel3"></label><input type="number" id="nightRatio3" placeholder="معدل المنازل 50%" min="0" max="100"></div>
         </div>
         <div class="psh-helper"><select id="pshSelect3" onchange="document.getElementById('totalSunH').value=this.value; this.value='0';"></select></div>
     </div>
 
     <!-- الإعدادات -->
     <div class="card">
-        <div class="section-header"><div class="icon-box">⚙️</div><h2 id="settingsTitle">المعدات والبطاريات</h2></div>
+        <div class="section-header"><div class="icon-box">⚙️</div><h2 id="settingsTitle"></h2></div>
         <div class="grid">
-            <div class="input-group"><label id="panelWLabel">قدرة اللوح (W)</label><input type="number" id="panelW" value="540"></div>
-            <div class="input-group">
-                <label id="battTypeLabel">نوع البطارية (DoD)</label>
-                <select id="battType"></select>
-            </div>
-            <div class="input-group"><label id="sysVoltLabel">جهد البطاريات</label><select id="sysVolt"><option value="12">12V</option><option value="24">24V</option><option value="48" selected>48V</option></select></div>
-            <div class="input-group"><label id="autonomyLabel">أيام الاحتياط</label><select id="autonomy" onchange="toggleBatteryOptions()"></select></div>
-            <div class="input-group" style="grid-column: span 2;"><label id="motorLabel">أحمال حثية (موتورات)؟</label><select id="hasMotor"></select></div>
+            <div class="input-group"><label id="panelWLabel"></label><input type="number" id="panelW" value="540"></div>
+            <div class="input-group"><label id="battTypeLabel"></label><select id="battType"></select></div>
+            <div class="input-group"><label id="sysVoltLabel"></label><select id="sysVolt"><option value="12">12V</option><option value="24">24V</option><option value="48" selected>48V</option></select></div>
+            <div class="input-group"><label id="autonomyLabel"></label><select id="autonomy" onchange="toggleBatteryOptions()"></select></div>
+            <div class="input-group" style="grid-column: span 2;"><label id="motorLabel"></label><select id="hasMotor"></select></div>
         </div>
     </div>
 
-    <button class="neon-btn" onclick="calculate()"><div class="icon-box">☀️</div> <span id="calcBtnText">احسب المنظومة</span></button>
+    <button class="neon-btn" onclick="calculate()"><div class="icon-box">☀️</div> <span id="calcBtnText"></span></button>
 
-    <!-- زر الشراء الكامل -->
-    <button class="buy-full-btn" onclick="window.parent.buyFromDemo?.()">
-        <i class="ph-bold ph-unlock-key"></i> 🔓 احصل على النسخة الكاملة الآن
-    </button>
-
-    <!-- النتائج -->
+    <!-- النتائج + زر الشراء -->
     <div class="card" id="results" style="display: none; border: var(--neon-border); box-shadow: var(--neon-glow); margin-top: 20px;">
-        <div class="section-header" style="justify-content: center;"><div class="icon-box">📊</div><h2 id="resultsTitle">نتيجة التصميم</h2></div>
+        <div class="section-header" style="justify-content: center;"><div class="icon-box">📊</div><h2 id="resultsTitle"></h2></div>
         <div class="res-grid">
-            <div class="res-item"><div class="res-label" id="panelsLabel">عدد الألواح</div><div class="res-value" id="rPanels">-</div></div>
-            <div class="res-item"><div class="res-label" id="powerLabel">قدرة المنظومة (لحظي)</div><div class="res-value" id="rPower">-</div></div>
+            <div class="res-item"><div class="res-label" id="panelsLabel"></div><div class="res-value" id="rPanels">-</div></div>
+            <div class="res-item"><div class="res-label" id="powerLabel"></div><div class="res-value" id="rPower">-</div></div>
             
             <div class="res-item">
                 <div class="mini-tabs"><div class="mini-tab active" onclick="switchUnit('inv', 'w')">W</div><div class="mini-tab" onclick="switchUnit('inv', 'va')">VA</div></div>
-                <div class="res-label" id="inverterLabel">قدرة الإنفرتر</div>
+                <div class="res-label" id="inverterLabel"></div>
                 <div class="res-value" id="rInvW">-</div>
                 <div class="res-value" id="rInvVA" style="display:none;">-</div>
             </div>
 
             <div class="res-item">
                 <div class="mini-tabs"><div class="mini-tab" onclick="switchUnit('batt', 'kwh')">kWh</div><div class="mini-tab active" onclick="switchUnit('batt', 'ah')">Ah</div></div>
-                <div class="res-label" id="batteryLabel">سعة البطاريات</div>
+                <div class="res-label" id="batteryLabel"></div>
                 <div class="res-value" id="rBattKwh" style="display:none;">-</div>
                 <div class="res-value" id="rBattAh">-</div>
                 <div class="res-sub" id="rBattNote"></div>
             </div>
             
             <div id="verdictBox" class="verdict-box"></div>
+            
+            <button class="buy-full-btn" id="buyFullBtn" onclick="openPurchaseModal()">
+                <i class="ph-bold ph-unlock-key"></i> <span id="buyFullText">🔓 احصل على النسخة الكاملة الآن</span>
+            </button>
         </div>
     </div>
 </div>
@@ -347,27 +333,34 @@
                 {value: 0, text: " اختر المنطقة (اختياري) "}, {value: 7.5, text: "بلاد الشام: صيف"}, {value: 5, text: "بلاد الشام: سنوي"}, {value: 3.5, text: "بلاد الشام: شتاء"}, {value: 8, text: "العراق: صيف"}, {value: 6, text: "العراق: سنوي"}, {value: 4.5, text: "العراق: شتاء"}, {value: 8.5, text: "الخليج: صيف"}, {value: 6.5, text: "الخليج: سنوي"}, {value: 6, text: "الخليج: شتاء"}, {value: 7, text: "شمال أفريقيا"}
             ],
             battTypes: [
-                {value: 0.8, text: "ليثيوم فوسفات حديد LiFePO4 (80% ضمان وعمر أطول)"}, {value: 0.9, text: "ليثيوم فوسفات حديد LiFePO4 (90% أقصى استغلال)"}, {value: 0.5, text: "أنبوبي غمر Tubular / OPzS (50%)"}, {value: 0.5, text: "جل Gel / AGM (50%)"}
+                {value: 0.8, text: "ليثيوم فوسفات حديد LiFePO4 (80% ضمان وعمر أطول)", locked: true},
+                {value: 0.9, text: "ليثيوم فوسفات حديد LiFePO4 (90% أقصى استغلال)", locked: true},
+                {value: 0.5, text: "أنبوبي غمر Tubular / OPzS (50%)", locked: true},
+                {value: 0.5, text: "جل Gel / AGM (50%)", locked: false}
             ],
             autonomyDays: [
                 {value: 0, text: "بدون (نهاري)"}, {value: 1, text: "يوم"}, {value: 2, text: "يومين"}, {value: 3, text: "3 أيام"}
             ],
             motorOpts: [
                 {value: 1.25, text: "لا (معامل أمان 1.25x)"}, {value: 3, text: "نعم عادي - ثلاجة/غسالة (3x)"}, {value: 5, text: "نعم ثقيل - مضخات غاطسة (5x)"}
-            ]
+            ],
+            demoBanner: "🎁 نسخة تجريبية مجانية - جرب طريقة \"الاستطاعة الكلية\" فقط",
+            demoSub: "النسخة الكاملة تحتوي على 3 طرق احترافية + ميزات متقدمة",
+            lockedMsg: "🔒 متاح في النسخة الكاملة",
+            buyFull: "🔓 احصل على النسخة الكاملة الآن"
         },
         en: {
-            title: "Solar Calc Pro - Demo",
-            tab1: "🏠 Method 1: Loads", tab2: "⚡ Method 2: Direct", tab3: "🔋 Method 3: Total Power",
-            loadsTitle: "Add Loads", presetLabel: "Choose Load", nameLabel: "Device Name", wattLabel: "Power (W)", hoursLabel: "Hours/Day",
+            title: "Solar Advisor Pro - Demo",
+            tab1: "🏠 Method 1: Loads", tab2: "⚡ Method 2: Direct Feeder", tab3: "🔋 Method 3: Total Power",
+            loadsTitle: "Add Loads", presetLabel: "Select Common Load", nameLabel: "Device Name", wattLabel: "Power (W)", hoursLabel: "Hours/Day",
             addBtnText: "Add Load", thDevice: "Device", thWatt: "Power", thHours: "Hours", thConsumption: "Consumption", thDelete: "Delete",
-            totalLabel: "Total Daily", pshLabel: "Sun Hours (PSH) ⭐", nightRatioLabel: "Night %",
+            totalLabel: "Total Consumption", pshLabel: "Sun Hours (PSH) ⭐", nightRatioLabel: "Night %",
             directTitle: "Direct Feeder", dayAmpLabel: "Day Current (A)", dayHoursLabel: "Day Hours", nightAmpLabel: "Night Current (A)", nightHoursLabel: "Night Hours", voltLabel: "Voltage (V)", pshLabel2: "Sun Hours (PSH)",
             totalPowerTitle: "Total Power", totalWattLabel: "Power (W)", totalHoursLabel: "Hours/Day", pshLabel3: "Sun Hours (PSH)", nightRatioLabel3: "Night %",
             settingsTitle: "Equipment & Batteries", panelWLabel: "Panel Power (W)", battTypeLabel: "Battery Type (DoD)", sysVoltLabel: "Battery Voltage", autonomyLabel: "Backup Days", motorLabel: "Inductive Loads (Motors)?",
             calcBtnText: "Calculate System", resultsTitle: "Design Result", panelsLabel: "Panels Count", powerLabel: "System Power (Peak)", inverterLabel: "Inverter Power", batteryLabel: "Battery Capacity",
             battNote: (ah, sysV, series) => `Bank Capacity: <strong>${Number(ah).toLocaleString()}Ah @ ${sysV}V</strong><br><small>(${series}×12V in series, each unit: ${Number(ah).toLocaleString()}Ah)</small>`,
-            noBattery: "N/A", panelUnit: " panels", verdictDay: "⚠️ Day-only system: Ensure backup generator", verdictPanels: "💡 Consider splitting into two arrays for shading", verdictBatt: "🔋 Large battery bank: Ensure proper ventilation", verdictOk: "✅ Balanced design, ready to implement!",
+            noBattery: "N/A", panelUnit: " panels", verdictDay: "⚠️ Day-only system: Ensure backup generator", verdictPanels: "💡 Consider splitting into two arrays for shading", verdictBatt: "🔋 Large battery bank: Ensure ventilation", verdictOk: "✅ Balanced design, ready to implement!",
             ph_loadName: "e.g. Fridge", ph_zero: "0", ph_night: "Avg homes 50%",
             presets: [
                 {value: 0, text: "-- Quick Select --", group: null},
@@ -382,18 +375,26 @@
                 {value: 0, text: "-- Select Region --"}, {value: 7.5, text: "Levant: Summer"}, {value: 5, text: "Levant: Annual"}, {value: 3.5, text: "Levant: Winter"}, {value: 8, text: "Iraq: Summer"}, {value: 6, text: "Iraq: Annual"}, {value: 4.5, text: "Iraq: Winter"}, {value: 8.5, text: "Gulf: Summer"}, {value: 6.5, text: "Gulf: Annual"}, {value: 6, text: "Gulf: Winter"}, {value: 7, text: "North Africa"}
             ],
             battTypes: [
-                {value: 0.8, text: "Lithium Iron Phosphate LiFePO4 (80% warranty & longer life)"}, {value: 0.9, text: "Lithium Iron Phosphate LiFePO4 (90% max usage)"}, {value: 0.5, text: "Flooded Tubular / OPzS (50%)"}, {value: 0.5, text: "Gel / AGM (50%)"}
+                {value: 0.8, text: "Lithium Iron Phosphate LiFePO4 (80% warranty & longer life)", locked: true},
+                {value: 0.9, text: "Lithium Iron Phosphate LiFePO4 (90% max usage)", locked: true},
+                {value: 0.5, text: "Flooded Tubular / OPzS (50%)", locked: true},
+                {value: 0.5, text: "Gel / AGM (50%)", locked: false}
             ],
             autonomyDays: [
                 {value: 0, text: "None (Daytime)"}, {value: 1, text: "1 Day"}, {value: 2, text: "2 Days"}, {value: 3, text: "3 Days"}
             ],
             motorOpts: [
                 {value: 1.25, text: "No (Safety factor 1.25x)"}, {value: 3, text: "Yes Normal - Fridge/Washer (3x)"}, {value: 5, text: "Yes Heavy - Submersible Pump (5x)"}
-            ]
+            ],
+            demoBanner: "🎁 Free Demo - Try 'Total Power' method only",
+            demoSub: "Full version includes 3 professional methods + advanced features",
+            lockedMsg: "🔒 Available in full version",
+            buyFull: "🔓 Get Full Version Now"
         }
     };
 
-    let loads = []; let activeTab = 3; let currentLang = 'ar'; // ✅ نبدأ بالتبويب 3
+    let loads = []; let activeTab = 3; let currentLang = 'ar';
+    let calculationDone = false;
 
     function initLanguage() {
         const userLang = navigator.language || navigator.userLanguage;
@@ -404,11 +405,11 @@
         applyTranslations();
     }
 
-    function buildSelect(selectId, items) {
+    function buildSelect(selectId, items, extraOptions = {}) {
         const sel = document.getElementById(selectId);
+        if (!sel) return;
         sel.innerHTML = '';
         let currentOptgroup = null;
-        
         items.forEach(item => {
             if (item.group) {
                 if (!currentOptgroup || currentOptgroup.label !== item.group) {
@@ -419,11 +420,19 @@
                 const opt = document.createElement('option');
                 opt.value = item.value;
                 opt.innerText = item.text;
+                if (item.locked === true) {
+                    opt.disabled = true;
+                    opt.innerText += ' 🔒';
+                }
                 currentOptgroup.appendChild(opt);
             } else {
                 const opt = document.createElement('option');
                 opt.value = item.value;
                 opt.innerText = item.text;
+                if (item.locked === true) {
+                    opt.disabled = true;
+                    opt.innerText += ' 🔒';
+                }
                 sel.appendChild(opt);
             }
         });
@@ -431,11 +440,18 @@
 
     function applyTranslations() {
         const t = translations[currentLang];
-        
         document.getElementById('siteTitle').innerText = t.title;
-        document.getElementById('tab1Btn').title = currentLang === 'ar' ? 'متاح في النسخة الكاملة' : 'Available in full version';
-        document.getElementById('tab2Btn').title = currentLang === 'ar' ? 'متاح في النسخة الكاملة' : 'Available in full version';
+        document.getElementById('tab1Btn').innerText = t.tab1;
+        document.getElementById('tab2Btn').innerText = t.tab2;
         document.getElementById('tab3Btn').innerText = t.tab3;
+        document.getElementById('tab1Btn').title = t.lockedMsg;
+        document.getElementById('tab2Btn').title = t.lockedMsg;
+        document.getElementById('demoBannerSpan').innerText = t.demoBanner;
+        document.getElementById('demoSubText').innerHTML = `<i class="ph-bold ph-info"></i> ${t.demoSub}`;
+        document.getElementById('lockedBadge1').innerText = t.lockedMsg;
+        document.getElementById('lockedBadge2').innerText = t.lockedMsg;
+        document.getElementById('buyFullText').innerText = t.buyFull;
+        
         document.getElementById('loadsTitle').innerText = t.loadsTitle;
         document.getElementById('presetLabel').innerText = t.presetLabel;
         document.getElementById('nameLabel').innerText = t.nameLabel;
@@ -498,7 +514,9 @@
         buildSelect('autonomy', t.autonomyDays);
         buildSelect('hasMotor', t.motorOpts);
 
-        document.getElementById('battType').value = "0.8";
+        // ضبط القيمة الافتراضية على الخيار المسموح (آخر عنصر في battTypes، والذي locked = false)
+        const allowedBatt = t.battTypes.find(b => b.locked === false);
+        if (allowedBatt) document.getElementById('battType').value = allowedBatt.value;
         document.getElementById('autonomy').value = "2";
         document.getElementById('hasMotor').value = "3";
     }
@@ -508,17 +526,14 @@
     function loadLoads() { const saved = localStorage.getItem('solarLoads'); if(saved) { loads = JSON.parse(saved); renderTable(); } }
 
     function switchTab(num) {
-        // ✅ في الديمو، نسمح فقط بالتبويب 3
         if (num !== 3) {
-            alert(currentLang === 'ar' ? '🔒 هذه الميزة متاحة في النسخة الكاملة فقط!' : '🔒 This feature is available in the full version only!');
+            alert(translations[currentLang].lockedMsg);
             return;
         }
-        
         activeTab = num;
         document.getElementById('tab1').style.display = 'none';
         document.getElementById('tab2').style.display = 'none';
-        document.getElementById('tab3').style.display = num === 3 ? 'block' : 'none';
-        
+        document.getElementById('tab3').style.display = 'block';
         const btns = document.querySelectorAll('.tab-btn');
         btns.forEach((btn, i) => {
             if (i === 2) btn.classList.add('active');
@@ -564,14 +579,12 @@
         const watt = parseFloat(document.getElementById('loadWatt').value);
         const hours = parseFloat(document.getElementById('loadHours').value);
         let hasError = false;
-        
         if(isNaN(watt) || watt <= 0) { highlightError('loadWatt'); hasError = true; }
         if(isNaN(hours) || hours <= 0 || hours > 24) { 
             if(!hasError) highlightError('loadHours'); 
             document.getElementById('loadHours').classList.add('input-error'); 
             hasError = true; 
         }
-        
         if(hasError) return;
         loads.push({ id: Date.now(), name, watt, hours }); renderTable(); saveLoads();
         document.getElementById('loadName').value = ''; document.getElementById('loadWatt').value = ''; document.getElementById('loadHours').value = ''; document.getElementById('presetSelect').value = '0';
@@ -594,20 +607,22 @@
     }
 
     function calculate() {
+        if (activeTab !== 3) {
+            alert(translations[currentLang].lockedMsg);
+            switchTab(3);
+            return;
+        }
+
         clearErrors(); let dailyWh = 0, nightWh = 0, peakWatts = 0, sunH = 0, firstErrorElement = null;
         const t = translations[currentLang];
 
-        // ✅ في الديمو، نحسب فقط التبويب 3
         if(activeTab === 3) {
             peakWatts = parseFloat(document.getElementById('totalWatt').value) || 0; const totalHours = parseFloat(document.getElementById('totalHours').value) || 0;
             sunH = parseFloat(document.getElementById('totalSunH').value) || 0; const nightRatio = (parseFloat(document.getElementById('nightRatio3').value) || 0) / 100;
-            
             if(peakWatts <= 0) { firstErrorElement = 'totalWatt'; } 
             else if (totalHours <= 0 || totalHours > 24) { firstErrorElement = 'totalHours'; }
-            
             if(isNaN(sunH) || sunH <= 0) { if(!firstErrorElement) firstErrorElement = 'totalSunH'; else document.getElementById('totalSunH').classList.add('input-error'); }
             if(firstErrorElement) { highlightError(firstErrorElement); return; }
-            
             dailyWh = peakWatts * totalHours; nightWh = dailyWh * nightRatio;
         }
 
@@ -633,13 +648,10 @@
         document.getElementById('rPower').innerText = (actualPower/1000).toFixed(1) + " kW";
         document.getElementById('rInvW').innerText = Math.ceil(inverterW).toLocaleString() + " W"; 
         document.getElementById('rInvVA').innerText = Math.ceil(inverterVA).toLocaleString() + " VA";
-        
         document.getElementById('rBattKwh').innerText = autonomy > 0 ? battKwh + " kWh" : t.noBattery; 
         document.getElementById('rBattAh').innerText = autonomy > 0 ? Number(battAh).toLocaleString() + " Ah" : t.noBattery;
-        
         const batteriesInSeries = sysV / 12;
         document.getElementById('rBattNote').innerHTML = autonomy > 0 ? t.battNote(battAh, sysV, batteriesInSeries) : "";
-
         const verdict = getVerdict(numPanels, inverterW, battAh, autonomy); 
         const verdictBox = document.getElementById('verdictBox'); 
         verdictBox.innerText = verdict.text; 
@@ -647,14 +659,26 @@
         
         document.getElementById('results').style.display = 'block'; 
         document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        if (!calculationDone) {
+            calculationDone = true;
+            document.getElementById('buyFullBtn').style.display = 'flex';
+        }
     }
 
-    // === التهيئة النهائية ===
+    function openPurchaseModal() {
+        if (window.parent && window.parent.buyFromDemo) {
+            window.parent.buyFromDemo();
+        } else {
+            alert(translations[currentLang].buyFull + '\n' + (currentLang === 'ar' ? 'سيتم فتح نافذة الدفع قريباً' : 'Payment window will open soon'));
+        }
+    }
+
     initLanguage();
     loadLoads();
     toggleBatteryOptions();
-    // ✅ نبدأ بالتبويب 3 مباشرة
     switchTab(3);
+    document.getElementById('buyFullBtn').style.display = 'none';
 </script>
 </body>
 </html>
