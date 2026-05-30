@@ -48,7 +48,7 @@
       color: var(--primary);
       font-weight: bold;
       font-size: 1.4rem;
-      text-align: end; /* السعر دائماً بالجهة المقابلة للاسم */
+      text-align: end;
       align-self: flex-end;
     }
     
@@ -190,7 +190,7 @@
     <p id="footerText"> DigiFlow 2026 ©  </p>
   </footer>
 
-  <!-- نافذة إدخال الإيميل فقط (بدون اختيار طريقة دفع) -->
+  <!-- نافذة إدخال الإيميل فقط -->
   <div class="modal-overlay" id="emailModal">
     <div class="modal">
       <h3><i class="ph-bold ph-envelope"></i> <span data-i18n="emailTitle">إكمال الطلب</span></h3>
@@ -253,7 +253,6 @@
     const API_ORDERS_URL = API_URL.replace('/products', '/orders');
     const DEMOS_FOLDER = 'demos/';
     
-    // ✅ إعدادات مبسطة جداً (الدفع يتم عبر Supabase/Cloudflare فقط)
     const CONFIG = {
       CURRENCY: 'USDT'
     };
@@ -322,7 +321,7 @@
         grid.innerHTML = '';
         products.forEach(p => {
           const title = lang === 'ar' ? p.title_ar : p.title_en;
-          const desc = lang === 'ar' ? (p.desc_ar || '') : (p.desc_en || ''); // ✅ الوصف من قاعدة البيانات
+          const desc = lang === 'ar' ? (p.desc_ar || '') : (p.desc_en || '');
           const priceDisplay = `${p.price} ${p.currency || CONFIG.CURRENCY}`;
           const icon = 'ph-package';
           const hasDemo = p.demo_url && p.demo_url.trim() !== '';
@@ -331,7 +330,6 @@
             <div class="product-card">
               <div class="product-image"><i class="ph-bold ${icon}"></i></div>
               <div class="product-content">
-                <!-- ✅ الاسم فوق، والسعر تحته بالجهة المقابلة -->
                 <div class="product-header">
                   <h3>${title}</h3>
                   <div class="price">${priceDisplay}</div>
@@ -445,9 +443,10 @@
       btn.disabled = true;
       btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts.processing}`;
 
-      // ✅ إرسال الطلب لـ Supabase فقط (بدون تفاصيل دفع)
+      // ✅ إصلاح: نرسل payment_method: "manual" عشان يقبل الـ Worker الطلب
       const orderData = {
         guest_email: email,
+        payment_method: "manual",  // ✅ قيمة ثابتة مقبولة من الخادم
         items: [{ product_id: selectedProductId, quantity: 1 }]
       };
 
