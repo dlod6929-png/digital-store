@@ -21,9 +21,25 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
     body { background: var(--bg); color: var(--text); line-height: 1.6; padding: 1rem; transition: background 0.4s, color 0.4s; }
 
-    header { display: flex; justify-content: center; align-items: center; padding: 1rem 1.5rem; background: var(--card); border-radius: var(--radius); margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+    header { display: flex; justify-content: center; align-items: center; padding: 1rem 1.5rem; background: var(--card); border-radius: var(--radius); margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
     .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: bold; color: var(--primary); }
     .logo i { font-size: 1.8rem; }
+
+    /* ✅ تنسيق تبويبات الفئات */
+    .category-tabs {
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+    .cat-btn {
+      padding: 0.5rem 1rem; background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; cursor: pointer; font-size: 0.9rem; font-weight: 500;
+      color: var(--text-secondary); transition: all 0.3s ease;
+    }
+    .cat-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .cat-btn.active {
+      background: var(--primary); color: white; border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.3);
+    }
 
     .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
     .product-card { background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; }
@@ -42,8 +58,8 @@
     .buy-btn:hover { background: var(--primary); color: white; box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3); transform: scale(1.02); }
     .buy-btn i { font-size: 1.2rem; }
 
-    .demo-btn { width: 100%; padding: 0.8rem; margin-top: 0.5rem; background: transparent; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s ease; }
-    .demo-btn:hover { background: var(--primary); color: white; box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3); transform: scale(1.02); }
+    .demo-btn { width: 100%; padding: 0.8rem; margin-top: 0.5rem; background: transparent; color: var(--text-secondary); border: 2px solid var(--border); border-radius: 12px; cursor: pointer; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s ease; }
+    .demo-btn:hover { border-color: var(--primary); color: var(--primary); }
 
     footer { text-align: center; margin-top: 4rem; padding: 1rem; color: var(--text-secondary); font-size: 0.9rem; }
 
@@ -101,6 +117,12 @@
     </div>
   </header>
 
+  <!-- ✅ تبويبات الفئات -->
+  <div class="category-tabs" id="categoryTabs">
+    <button class="cat-btn active" onclick="filterProducts('all')">الكل</button>
+    <!-- سيتم ملؤها بالجافاسكربت -->
+  </div>
+
   <main class="products" id="productsGrid"></main>
 
   <footer>
@@ -153,7 +175,7 @@
   </div>
 
   <script>
-    // ✅ الترجمات مدمجة داخل الكود لضمان العمل فوراً
+    // ✅ الترجمات
     const texts_ar = {
       siteName: "DigiFlow", footer: "DigiFlow 2026 © جميع الحقوق محفوظة.",
       buy: "شراء الآن", tryDemo: "🎁 جرب مجاناً", buyFull: "🔓 شراء النسخة الكاملة",
@@ -163,24 +185,33 @@
       successTitle: "تم إنشاء طلبك!", successDesc: "سيتم معالجة طلبك خلال دقائق",
       warningText: "احتفظ برقم الطلب للمتابعة", copyButton: "نسخ رقم الطلب", copied: "تم النسخ!",
       orderId: "رقم الطلب:", product: "المنتج:", email: "البريد:", amount: "المبلغ:",
-      paymentLink: "رابط الدفع:", copyLink: "نسخ الرابط", demoTitle: "تجربة المنتج", close: "إغلاق",
+      demoTitle: "تجربة المنتج", close: "إغلاق",
       loadingProducts: "جاري تحميل المنتجات...", noProducts: "لا توجد منتجات", loadFailed: "فشل التحميل",
       priceError: "⚠️ خطأ في سعر المنتج", productError: "⚠️ خطأ في المنتج", connectionError: "⚠️ فشل الاتصال",
-      defaultDesc: "منتج رقمي متميز"
+      defaultDesc: "منتج رقمي متميز",
+      catAll: "الكل"
     };
     const texts_en = {
       siteName: "DigiFlow", footer: "DigiFlow 2026 © All rights reserved.",
-      buy: "Buy Now", tryDemo: "🎁 Try Free", buyFull: "🔓 Buy Full Version",
+      buy: "Buy Now", tryDemo: "🎁 Try Free", buyFull: " Buy Full Version",
       emailTitle: "Complete Order", emailDesc: "Please enter your email to receive the product",
       emailLabel: "Email Address *", emailError: "Please enter a valid email",
       cancel: "Cancel", confirm: "Confirm", processing: "Processing...",
       successTitle: "Order Created!", successDesc: "Your order will be processed within minutes",
       warningText: "Save your order number for follow-up", copyButton: "Copy Order Number", copied: "Copied!",
       orderId: "Order ID:", product: "Product:", email: "Email:", amount: "Amount:",
-      paymentLink: "Payment Link:", copyLink: "Copy Link", demoTitle: "Product Demo", close: "Close",
+      demoTitle: "Product Demo", close: "Close",
       loadingProducts: "Loading products...", noProducts: "No products available", loadFailed: "Failed to load",
-      priceError: "⚠️ Invalid product price", productError: "️ Product not found", connectionError: "️ Connection failed",
-      defaultDesc: "Premium digital product"
+      priceError: "⚠️ Invalid product price", productError: "Product not found", connectionError: "Connection failed",
+      defaultDesc: "Premium digital product",
+      catAll: "All"
+    };
+
+    // ✅ خريطة الفئات (IDs من Supabase)
+    const CATEGORY_MAP = {
+      '5079db3f': { ar: 'مهندسي الطاقة', en: 'Engineers' },
+      'e973f13f': { ar: 'منتجات تجريبية', en: 'Demo Products' },
+      '4e7e0ee0': { ar: 'قوالب وتصاميم', en: 'Templates' }
     };
 
     const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
@@ -191,10 +222,9 @@
     let texts = {};
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    
-    // تحميل اللغة فوراً
     texts = lang === 'ar' ? texts_ar : texts_en;
 
+    let currentCategory = 'all';
     let selectedProductId = null, selectedProductName = null, selectedProductPrice = null;
     let selectedProductDemoUrl = null, currentOrderData = null, productsCache = [];
 
@@ -205,11 +235,11 @@
       document.getElementById('siteName').textContent = texts.siteName;
       document.getElementById('footerText').textContent = texts.footer;
       document.getElementById('demoTitle').textContent = texts.demoTitle;
-      
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (texts[key]) el.textContent = texts[key];
       });
+      renderCategories();
       renderProducts();
     }
 
@@ -217,6 +247,35 @@
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
       document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
     });
+
+    // ✅ عرض تبويبات الفئات
+    function renderCategories() {
+      const container = document.getElementById('categoryTabs');
+      container.innerHTML = `<button class="cat-btn active" onclick="filterProducts('all')">${texts.catAll}</button>`;
+      
+      // استخراج الفئات الفريدة من المنتجات
+      const cats = new Set();
+      productsCache.forEach(p => {
+        if (p.category_id) {
+          // البحث عن مفتاح الفئة في الخريطة
+          for (const key in CATEGORY_MAP) {
+            if (p.category_id.startsWith(key)) cats.add(key);
+          }
+        }
+      });
+
+      cats.forEach(key => {
+        const name = CATEGORY_MAP[key] ? (lang === 'ar' ? CATEGORY_MAP[key].ar : CATEGORY_MAP[key].en) : 'Category';
+        container.innerHTML += `<button class="cat-btn" onclick="filterProducts('${key}')">${name}</button>`;
+      });
+    }
+
+    function filterProducts(catId) {
+      currentCategory = catId;
+      document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      renderProducts();
+    }
 
     async function renderProducts() {
       const grid = document.getElementById('productsGrid');
@@ -228,16 +287,20 @@
         const result = await response.json();
         if (!result.success) throw new Error(result.error || 'خطأ غير معروف');
         
-        const products = result.data;
-        productsCache = products;
+        productsCache = result.data;
+        renderCategories(); // تحديث التبويبات بعد تحميل المنتجات
         
-        if (!products || products.length === 0) {
+        const filtered = currentCategory === 'all' 
+          ? productsCache 
+          : productsCache.filter(p => p.category_id && p.category_id.startsWith(currentCategory));
+
+        if (!filtered || filtered.length === 0) {
           grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${texts.noProducts}</p>`;
           return;
         }
         
         grid.innerHTML = '';
-        products.forEach(p => {
+        filtered.forEach(p => {
           const title = lang === 'ar' ? p.title_ar : p.title_en;
           const desc = (lang === 'ar' ? p.desc_ar : p.desc_en) || texts.defaultDesc;
           const priceDisplay = `${p.price} ${p.currency || CONFIG.CURRENCY}`;
@@ -258,7 +321,7 @@
         });
       } catch (err) {
         console.error('Error:', err);
-        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ ${texts.loadFailed}</p>`;
+        grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">️ ${texts.loadFailed}</p>`;
       }
     }
 
@@ -327,7 +390,8 @@
       btn.disabled = true;
       btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts.processing}`;
 
-      const orderData = { guest_email: email, payment_method: "direct_link", items: [{ product_id: selectedProductId, quantity: 1 }] };
+      // ✅ بوابة الدفع: manual
+      const orderData = { guest_email: email, payment_method: "manual", items: [{ product_id: selectedProductId, quantity: 1 }] };
 
       try {
         const response = await fetch(API_ORDERS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) });
@@ -338,7 +402,7 @@
           showSuccessModal(currentOrderData);
           selectedProductId = selectedProductName = selectedProductPrice = selectedProductDemoUrl = null;
         } else {
-          alert(`${lang === 'ar' ? '⚠️ خطأ: ' : '⚠️ Error: '}${result.error || 'فشل الإنشاء'}`);
+          alert(`${lang === 'ar' ? '️ خطأ: ' : '⚠️ Error: '}${result.error || 'فشل الإنشاء'}`);
         }
       } catch (err) {
         console.error('❌ Error:', err);
