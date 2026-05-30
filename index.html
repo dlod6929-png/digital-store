@@ -35,8 +35,8 @@
     .price { color: var(--primary); font-weight: bold; font-size: 1.4rem; margin: 0.5rem 0; }
     .desc { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem; flex-grow: 1; }
     
-    .buy-btn { width: 100%; padding: 0.8rem; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb), 0.3); }
-    .buy-btn:hover { box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3); transform: scale(1.02); }
+    .buy-btn {  width: 100%;  padding: 0.8rem;  background: transparent;  color: var(--primary);  border: 2px solid var(--primary);  border-radius: 12px;  cursor: pointer;  font-size: 1rem;  font-weight: bold;  display: flex;  align-items: center;  justify-content: center;  gap: 0.5rem;  transition: all 0.3s ease;}
+    .buy-btn:hover {  background: var(--primary);  color: white;  box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5), 0 0 20px rgba(var(--primary-rgb), 0.3);  transform: scale(1.02);}
     .buy-btn i { font-size: 1.2rem; }
 
     .demo-btn {
@@ -288,8 +288,7 @@
 
     async function renderProducts() {
       const grid = document.getElementById('productsGrid');
-      grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">جاري تحميل المنتجات...</p>`;
-      
+      grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${texts.loadingProducts}</p>`;      
       try {
         const response = await fetch(API_URL);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
