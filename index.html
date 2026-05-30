@@ -42,7 +42,6 @@
     .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: bold; color: var(--primary); }
     .logo i { font-size: 1.8rem; }
 
-    /* تبويبات الفئات */
     .category-tabs {
       display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;
       margin-bottom: 2rem;
@@ -164,7 +163,6 @@
     }
     .btn-buy-full:hover { box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.4); }
 
-    /* ✨ رسالة إعادة المحاولة */
     .retry-msg {
       text-align: center; padding: 2rem; color: var(--text-secondary);
     }
@@ -247,7 +245,6 @@
 </div>
 
 <script>
-  // -------------------- الترجمة --------------------
   const texts = {
     ar: {
       siteName: "منتجات رقمية", footer: "© 2026 Digital Products. جميع الحقوق محفوظة.", buy: "شراء الآن", tryDemo: "🎁 جرب مجاناً",
@@ -287,17 +284,13 @@
   let selectedProductId = null, selectedProductName = null, selectedProductPrice = null, currentOrderData = null;
   let currentCategoryId = null;
 
-  // ✨ دالة إعادة المحاولة (التعديل 3)
   async function fetchWithRetry(url, options = {}, retries = 3, delay = 1500) {
     for (let i = 0; i < retries; i++) {
       try {
         const res = await fetch(url, options);
-        // حتى لو الحالة مو 200، نرجع الاستجابة عشان نعالجها
         return res;
       } catch (err) {
-        // خطأ شبكة حقيقي (لا اتصال، timeout، إلخ)
         if (i === retries - 1) throw err;
-        // انتظار تصاعدي قبل المحاولة التالية
         await new Promise(r => setTimeout(r, delay * (i + 1)));
       }
     }
@@ -321,7 +314,6 @@
     document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
   });
 
-  // ✨ عرض خطأ مع زر إعادة المحاولة
   function showLoadError(container, retryFn) {
     const t = texts[lang];
     container.innerHTML = `
@@ -333,10 +325,10 @@
   }
 
   async function loadCategories() {
-  const container = document.getElementById('categoryTabs');
-  try {
-    container.innerHTML = `<p style="text-align:center;color:var(--text-secondary)">${texts[lang].retrying}</p>`;
-    const res = await fetchWithRetry(API_CATEGORIES);
+    const container = document.getElementById('categoryTabs');
+    try {
+      container.innerHTML = `<p style="text-align:center;color:var(--text-secondary)">${texts[lang].retrying}</p>`;
+      const res = await fetchWithRetry(API_CATEGORIES);
       const result = await res.json();
       if (!result.success) throw new Error(result.error);
       const categories = result.data;
@@ -359,13 +351,13 @@
     }
   }
 
- async function loadProducts() {
-  const grid = document.getElementById('productsGrid');
-  grid.innerHTML = `<p style="text-align:center; color: var(--text-secondary);"><i class="ph-bold ph-spinner-gap ph-spin" style="font-size:1.5rem;"></i> ${lang === 'ar' ? 'جاري تحميل المنتجات...' : 'Loading...'}</p>`;
-  try {
-    let url = API_PRODUCTS;
-    if (currentCategoryId) url += `?category_id=${encodeURIComponent(currentCategoryId)}`;
-    const res = await fetchWithRetry(url);
+  async function loadProducts() {
+    const grid = document.getElementById('productsGrid');
+    try {
+      grid.innerHTML = `<p style="text-align:center;color:var(--text-secondary)">${texts[lang].retrying}</p>`;
+      let url = API_PRODUCTS;
+      if (currentCategoryId) url += `?category_id=${encodeURIComponent(currentCategoryId)}`;
+      const res = await fetchWithRetry(url);
       const result = await res.json();
       if (!result.success) throw new Error(result.error);
       const products = result.data;
@@ -379,7 +371,6 @@
         const desc = (lang === 'ar' ? p.desc_ar : p.desc_en) || (lang === 'ar' ? 'منتج رقمي متميز' : 'Premium product');
         const price = `${p.price} ${p.currency || 'USD'}`;
         const hasDemo = p.demo_url && p.demo_url.trim();
-        // ✨ التعديل 2: تنظيف الشرطة المائلة من بداية demo_url
         const cleanDemoUrl = hasDemo ? (p.demo_url.startsWith('/') ? p.demo_url.substring(1) : p.demo_url) : '';
         grid.innerHTML += `
           <div class="product-card">
@@ -389,7 +380,7 @@
               <div class="price">${escapeHtml(price)}</div>
               <p class="desc">${escapeHtml(desc)}</p>
               <button class="buy-btn" data-product-id="${p.id}" data-product-name="${escapeHtml(title)}" data-product-price="${p.price}" onclick="handleBuyClick(this)"><i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}</button>
-              ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER}${escapeHtml(cleanDemoUrl)}', '${escapeHtml(title)}')"><i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}</button>` : ''}
+              ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER}${escapeHtml(cleanDemoUrl)}', '${escapeHtml(title)}', '${p.id}', ${p.price})"><i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}</button>` : ''}
             </div>
           </div>
         `;
@@ -411,19 +402,28 @@
     });
   }
 
-  // -------------------- دوال الشراء والديمو --------------------
-  function openDemo(demoUrl, productName) {
+  // ✅ تم التعديل: تخزين بيانات المنتج عند فتح الديمو
+  function openDemo(demoUrl, productName, productId, productPrice) {
+    selectedProductId = productId;
+    selectedProductName = productName;
+    selectedProductPrice = parseFloat(productPrice);
+    
     document.getElementById('demoFrame').src = demoUrl;
     document.getElementById('demoModal').classList.add('active');
   }
+
   function closeDemoModal() {
     document.getElementById('demoModal').classList.remove('active');
     document.getElementById('demoFrame').src = 'about:blank';
   }
+
   function buyFromDemo() {
     closeDemoModal();
-    if (selectedProductName && selectedProductPrice) openEmailModal(selectedProductId, selectedProductName);
+    if (selectedProductId && selectedProductName && selectedProductPrice) {
+      openEmailModal(selectedProductId, selectedProductName);
+    }
   }
+
   function handleBuyClick(button) {
     selectedProductId = button.dataset.productId;
     selectedProductName = button.dataset.productName;
@@ -431,6 +431,7 @@
     if (!selectedProductPrice || isNaN(selectedProductPrice)) { alert('⚠️ خطأ في سعر المنتج'); return; }
     openEmailModal(selectedProductId, selectedProductName);
   }
+
   function openEmailModal(productId, productName) {
     selectedProductId = productId;
     selectedProductName = productName || (lang === 'ar' ? 'منتج' : 'Product');
@@ -438,26 +439,31 @@
     document.getElementById('customerEmail').focus();
     clearEmailError();
   }
+
   function closeEmailModal() {
     document.getElementById('emailModal').classList.remove('active');
     document.getElementById('customerEmail').value = '';
     clearEmailError();
   }
+
   function clearEmailError() {
     const input = document.getElementById('customerEmail');
     input.classList.remove('error');
     document.getElementById('emailError').classList.remove('show');
     input.style.borderColor = '';
   }
+
   function showEmailError() {
     const input = document.getElementById('customerEmail');
     input.classList.add('error');
     document.getElementById('emailError').classList.add('show');
     setTimeout(clearEmailError, 3000);
   }
+
   function isValidEmail(email) {
     return /^[\x00-\x7F]+$/.test(email) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !email.includes('xn--') && /[a-zA-Z]/.test(email) && email.split('@')[0].length >= 3;
   }
+
   async function confirmPurchase(event) {
     const email = document.getElementById('customerEmail').value.trim();
     if (!email || !isValidEmail(email)) { showEmailError(); return; }
@@ -467,7 +473,6 @@
     btn.disabled = true;
     btn.innerHTML = `<i class="ph-bold ph-spinner-gap ph-spin"></i> ${texts[lang].processing}`;
     try {
-      // ✨ استخدام fetchWithRetry لإنشاء الطلب أيضاً
       const res = await fetchWithRetry(API_ORDERS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -489,6 +494,7 @@
       btn.innerHTML = original;
     }
   }
+
   function showSuccessModal(orderData) {
     const t = texts[lang];
     document.getElementById('orderDetails').innerHTML = `
@@ -497,10 +503,12 @@
       <div><strong>${t.email}</strong> <span>${orderData.email}</span></div>`;
     document.getElementById('successModal').classList.add('active');
   }
+
   function closeSuccessModal() {
     document.getElementById('successModal').classList.remove('active');
     currentOrderData = null;
   }
+
   function copyOrderDetails() {
     if (!currentOrderData) return;
     const t = texts[lang];
