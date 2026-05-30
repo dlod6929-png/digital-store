@@ -157,7 +157,7 @@
     </div>
   </header>
 
-  <!-- تبويبات الفئات (سيتم تعبئتها تلقائياً) -->
+  <!-- تبويبات الفئات (سيتم تعبئتها تلقائياً من الـ Worker) -->
   <div class="category-tabs" id="categoryTabs"></div>
 
   <main class="products" id="productsGrid"></main>
@@ -244,40 +244,17 @@
     const lang = navigator.language.startsWith('ar') ? 'ar' : 'en';
     const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     
-    // -------------------- المتغيرات العامة --------------------
-    const API_URL = 'https://digitalstore.dlod6929.workers.dev/api/products';
-    const API_ORDERS_URL = API_URL.replace('/products', '/orders');
+    // -------------------- إعدادات Worker --------------------
+    const WORKER_API = 'https://digitalstore.dlod6929.workers.dev/api';
+    const API_CATEGORIES = `${WORKER_API}/categories`;
+    const API_PRODUCTS = `${WORKER_API}/products`;
+    const API_ORDERS = `${WORKER_API}/orders`;
     const DEMOS_FOLDER = 'demos/';
 
     let selectedProductId = null;
     let selectedProductName = null;
     let selectedProductPrice = null;
     let currentOrderData = null;
-    let productsCache = [];
-    let currentCategory = 'all'; // الفئة النشطة حالياً
-
-    // خريطة أسماء الفئات (يمكنك تعديلها حسب معرفات الفئات في Supabase)
-    // مثال: 
-    //   "5079db3f-..."  : { ar: "مهندسي الطاقة", en: "Engineers" }
-    //   "e973f13f-..."  : { ar: "منتجات تجريبية", en: "Demo Products" }
-    // يمكنك إضافة أي عدد من الفئات
-    const CATEGORY_NAMES = {
-      // معرف الفئة كاملاً (UUID) أو أول 8 أحرف منه (حسب ما يظهر في منتجاتك)
-      '5079db3f': { ar: 'مهندسي الطاقة', en: 'Engineers' },
-      'e973f13f': { ar: 'منتجات تجريبية', en: 'Demo Products' },
-      '4e7e0ee0': { ar: 'قوالب وتصاميم', en: 'Templates' }
-    };
-
-    // دالة للحصول على اسم الفئة حسب المعرف
-    function getCategoryName(catId) {
-      if (!catId) return null;
-      // نتحقق من التطابق مع أول 8 أحرف (لأن UUID طويل)
-      const prefix = catId.substring(0, 8);
-      if (CATEGORY_NAMES[prefix]) {
-        return lang === 'ar' ? CATEGORY_NAMES[prefix].ar : CATEGORY_NAMES[prefix].en;
-      }
-      return null;
-    }
 
     // -------------------- تطبيق اللغة والثيم --------------------
     function applyLanguage() {
@@ -299,99 +276,92 @@
       document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
     });
 
-    // -------------------- بناء تبويبات الفئات --------------------
-    function renderCategories() {
-      const container = document.getElementById('categoryTabs');
-      if (!container) return;
-      
-      // استخراج الفئات الفريدة من المنتجات
-      const cats = new Set();
-      productsCache.forEach(p => {
-        if (p.category_id) {
-          // نستخدم أول 8 أحرف كمعرف فئة عملي
-          const prefix = p.category_id.substring(0, 8);
-          cats.add(prefix);
-        }
-      });
-      
-      // إضافة زر "الكل"
-      let html = `<button class="cat-btn ${currentCategory === 'all' ? 'active' : ''}" data-cat="all">${lang === 'ar' ? 'الكل' : 'All'}</button>`;
-      
-      // إضافة أزرار الفئات
-      cats.forEach(prefix => {
-        const catName = CATEGORY_NAMES[prefix] ? (lang === 'ar' ? CATEGORY_NAMES[prefix].ar : CATEGORY_NAMES[prefix].en) : prefix;
-        html += `<button class="cat-btn ${currentCategory === prefix ? 'active' : ''}" data-cat="${prefix}">${catName}</button>`;
-      });
-      
-      container.innerHTML = html;
-      
-      // ربط الأحداث
-      document.querySelectorAll('.cat-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          currentCategory = btn.getAttribute('data-cat');
-          renderCategories(); // إعادة بناء التبويبات (لتحديث الـ active)
-          renderProducts();   // إعادة عرض المنتجات حسب الفئة
+    // -------------------- جلب الفئات وعرضها --------------------
+    let currentCategoryId = null; // المعرف الكامل للفئة (UUID)
+
+    async function loadCategories() {
+      try {
+        const response = await fetch(API_CATEGORIES);
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+        const categories = result.data;
+        const container = document.getElementById('categoryTabs');
+        container.innerHTML = `<button class="cat-btn ${currentCategoryId === null ? 'active' : ''}" data-cat="">${lang === 'ar' ? 'الكل' : 'All'}</button>`;
+        categories.forEach(cat => {
+          const name = lang === 'ar' ? cat.name_ar : cat.name_en;
+          container.innerHTML += `<button class="cat-btn ${currentCategoryId === cat.id ? 'active' : ''}" data-cat="${cat.id}">${name}</button>`;
         });
-      });
+        // ربط الأحداث
+        document.querySelectorAll('.cat-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            currentCategoryId = btn.getAttribute('data-cat') || null;
+            loadProducts();   // جلب المنتجات حسب الفئة المختارة
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+          });
+        });
+      } catch (err) {
+        console.error('Error loading categories:', err);
+        document.getElementById('categoryTabs').innerHTML = `<p style="color:red;">${lang === 'ar' ? 'خطأ في تحميل الفئات' : 'Error loading categories'}</p>`;
+      }
     }
 
-    // -------------------- عرض المنتجات مع التصفية حسب الفئة --------------------
-    async function renderProducts() {
+    // -------------------- جلب المنتجات (مع أو بدون تصفية حسب الفئة) --------------------
+    async function loadProducts() {
       const grid = document.getElementById('productsGrid');
       grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'جاري تحميل المنتجات...' : 'Loading products...'}</p>`;
-      
       try {
-        const response = await fetch(API_URL);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const result = await response.json();
-        if (!result.success) throw new Error(result.error || 'خطأ غير معروف');
-        
-        productsCache = result.data;
-        
-        // تصفية المنتجات حسب الفئة النشطة
-        let filtered = productsCache;
-        if (currentCategory !== 'all') {
-          filtered = productsCache.filter(p => p.category_id && p.category_id.substring(0, 8) === currentCategory);
+        let url = API_PRODUCTS;
+        if (currentCategoryId) {
+          url += `?category_id=${encodeURIComponent(currentCategoryId)}`;
         }
-        
-        if (!filtered || filtered.length === 0) {
+        const response = await fetch(url);
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+        const products = result.data;
+        if (!products || products.length === 0) {
           grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--text-secondary);">${lang === 'ar' ? 'لا توجد منتجات في هذه الفئة' : 'No products in this category'}</p>`;
           return;
         }
-        
         grid.innerHTML = '';
-        filtered.forEach(p => {
+        products.forEach(p => {
           const title = lang === 'ar' ? p.title_ar : p.title_en;
           const desc = (lang === 'ar' ? p.desc_ar : p.desc_en) || (lang === 'ar' ? 'منتج رقمي متميز' : 'Premium digital product');
           const priceDisplay = `${p.price} ${p.currency || 'USD'}`;
           const hasDemo = p.demo_url && p.demo_url.trim() !== '';
-          
           grid.innerHTML += `
             <div class="product-card">
               <div class="product-image"><i class="ph-bold ph-package"></i></div>
               <div class="product-content">
-                <h3>${title}</h3>
-                <div class="price">${priceDisplay}</div>
-                <p class="desc">${desc}</p>
-                <button class="buy-btn" data-product-id="${p.id}" data-product-name="${title}" data-product-price="${p.price}" onclick="handleBuyClick(this)">
+                <h3>${escapeHtml(title)}</h3>
+                <div class="price">${escapeHtml(priceDisplay)}</div>
+                <p class="desc">${escapeHtml(desc)}</p>
+                <button class="buy-btn" data-product-id="${p.id}" data-product-name="${escapeHtml(title)}" data-product-price="${p.price}" onclick="handleBuyClick(this)">
                   <i class="ph-bold ph-shopping-cart-simple"></i> ${texts[lang].buy}
                 </button>
-                ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER + p.demo_url}', '${title}')"><i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}</button>` : ''}
+                ${hasDemo ? `<button class="demo-btn" onclick="openDemo('${DEMOS_FOLDER}${escapeHtml(p.demo_url)}', '${escapeHtml(title)}')"><i class="ph-bold ph-play-circle"></i> ${texts[lang].tryDemo}</button>` : ''}
               </div>
             </div>
           `;
         });
-        
-        // بناء تبويبات الفئات بعد تحميل المنتجات (لأول مرة)
-        renderCategories();
-        
       } catch (err) {
         console.error('Error loading products:', err);
         grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: red;">⚠️ ${lang === 'ar' ? 'فشل تحميل المنتجات' : 'Failed to load products'}</p>`;
       }
     }
 
-    // -------------------- دوال الديمو والشراء --------------------
+    // دالة مساعدة لتنقية HTML
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
+
+    // -------------------- دوال الديمو والشراء (مثل الكود الأصلي) --------------------
     function openDemo(demoUrl, productName) {
       document.getElementById('demoFrame').src = demoUrl;
       document.getElementById('demoModal').classList.add('active');
@@ -481,7 +451,7 @@
       };
 
       try {
-        const response = await fetch(API_ORDERS_URL, {
+        const response = await fetch(API_ORDERS, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(orderData)
@@ -559,7 +529,8 @@
     // -------------------- بدء التطبيق --------------------
     applyLanguage();
     applyTheme();
-    renderProducts(); // سيتم أيضاً استدعاء renderCategories داخله بعد تحميل المنتجات
+    loadCategories();
+    loadProducts();   // تحميل المنتجات لأول مرة (بدون تصفية)
   </script>
 </body>
 </html>
